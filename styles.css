@@ -7776,3 +7776,530 @@ body{
     font-size:10px!important;
   }
 }
+
+
+
+
+/* =========================================================
+   V10.2 — Cabecera limpia, continua y sin cajas superpuestas
+   ========================================================= */
+
+/* El encabezado utiliza más espacio horizontal real. */
+.main-header{
+  background:
+    linear-gradient(
+      90deg,
+      #ffffff 0%,
+      #fbfdff 55%,
+      #f4f9ff 100%
+    )!important;
+  border:0!important;
+  box-shadow:
+    0 10px 26px rgba(5,39,91,.075)!important;
+}
+
+.main-header::after{
+  display:none!important;
+}
+
+.main-header__inner{
+  width:min(1520px,calc(100% - 48px))!important;
+  min-height:78px;
+  height:auto!important;
+  display:grid!important;
+  grid-template-columns:
+    minmax(300px,340px)
+    minmax(570px,1fr)
+    minmax(350px,390px)!important;
+  align-items:center!important;
+  gap:22px!important;
+  padding:0!important;
+}
+
+/* ---------------------------------------------------------
+   Marca institucional sin caja
+   --------------------------------------------------------- */
+
+.header-brand,
+.header-brand.no-tourism-logo{
+  width:100%;
+  height:auto!important;
+  min-width:0;
+  display:grid!important;
+  align-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.header-brand{
+  grid-template-columns:
+    var(--crest-size)
+    minmax(170px,1fr)
+    1px
+    minmax(68px,var(--brand-logo-size))!important;
+  gap:13px!important;
+}
+
+.header-brand.no-tourism-logo{
+  grid-template-columns:
+    var(--crest-size)
+    minmax(170px,1fr)!important;
+}
+
+.header-brand__divider{
+  width:1px!important;
+  height:40px!important;
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(9,73,153,.18),
+      transparent
+    )!important;
+}
+
+.header-brand__copy strong{
+  font-size:clamp(22px,1.5vw,30px)!important;
+  line-height:1!important;
+  white-space:nowrap;
+}
+
+.header-brand__copy small{
+  margin-top:5px!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+  white-space:nowrap;
+}
+
+.header-tourism-logo{
+  width:auto!important;
+  max-width:var(--brand-logo-size)!important;
+  max-height:48px!important;
+}
+
+/* ---------------------------------------------------------
+   Navegación centrada, sin divisiones ni tarjetas
+   --------------------------------------------------------- */
+
+.primary-nav{
+  width:100%;
+  height:78px!important;
+  min-width:0;
+  display:flex!important;
+  align-items:stretch!important;
+  justify-content:center!important;
+  gap:4px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+.primary-nav>a,
+.nav-dropdown>button{
+  position:relative;
+  flex:0 0 auto;
+  min-width:max-content!important;
+  min-height:78px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0 clamp(13px,1vw,20px)!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#17304f!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+
+.primary-nav>a::before,
+.nav-dropdown>button::before{
+  content:""!important;
+  position:absolute!important;
+  inset:13px 5px!important;
+  z-index:-1!important;
+  border-radius:10px!important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.95),
+      rgba(234,244,255,.90)
+    )!important;
+  opacity:0!important;
+  transform:translateY(3px)!important;
+  box-shadow:
+    0 10px 22px rgba(5,43,96,.12)!important;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease!important;
+}
+
+.primary-nav>a:hover::before,
+.nav-dropdown>button:hover::before{
+  opacity:1!important;
+  transform:none!important;
+}
+
+.primary-nav>a::after,
+.nav-dropdown>button::after{
+  left:18px!important;
+  right:18px!important;
+  bottom:0!important;
+  width:auto!important;
+  height:3px!important;
+  background:
+    linear-gradient(
+      90deg,
+      #0b56b4,
+      #26a0df
+    )!important;
+}
+
+.primary-nav>a.active,
+.nav-dropdown>button.active{
+  color:#0b56b4!important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(224,239,255,.48),
+      rgba(255,255,255,0)
+    )!important;
+}
+
+.primary-nav>a.active::before,
+.nav-dropdown>button.active::before{
+  opacity:0!important;
+}
+
+/* ---------------------------------------------------------
+   Acciones públicas y usuario sin cajas pegadas
+   --------------------------------------------------------- */
+
+.header-actions{
+  width:100%;
+  min-width:0;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:9px!important;
+  padding:0!important;
+}
+
+.reader-entry{
+  min-width:106px!important;
+}
+
+.reader-entry,
+.header-search,
+.admin-entry{
+  min-height:40px!important;
+  border:1px solid rgba(9,72,150,.13)!important;
+  border-radius:9px!important;
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:none!important;
+}
+
+.reader-entry:hover,
+.header-search:hover,
+.admin-entry:hover{
+  background:#fff!important;
+  box-shadow:
+    0 9px 20px rgba(5,43,96,.11)!important;
+}
+
+/* Perfil administrativo plano, sin tarjeta exterior. */
+.admin-session{
+  width:250px!important;
+  min-width:250px!important;
+  max-width:250px!important;
+  height:auto!important;
+  display:grid!important;
+  grid-template-columns:44px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:11px!important;
+  margin:0 0 0 4px!important;
+  padding:0!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.admin-session__avatar-button{
+  width:44px!important;
+  height:44px!important;
+}
+
+.admin-session__avatar{
+  width:42px!important;
+  height:42px!important;
+  font-size:14px!important;
+  box-shadow:
+    0 8px 18px rgba(8,98,159,.18)!important;
+}
+
+.admin-session__details{
+  min-width:0;
+  display:grid!important;
+  grid-template-rows:auto 32px!important;
+  gap:5px!important;
+}
+
+.admin-session__copy{
+  min-width:0;
+  display:grid!important;
+  gap:1px!important;
+  padding:0 2px!important;
+}
+
+.admin-session__copy strong{
+  width:100%;
+  color:#173354!important;
+  font-size:13px!important;
+  line-height:1.18!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:normal!important;
+}
+
+.admin-session__copy small{
+  width:100%;
+  color:#667a93!important;
+  font-size:10.5px!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+.admin-session__button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:32px!important;
+  height:32px!important;
+  padding:0 12px!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+  box-shadow:
+    0 7px 16px rgba(8,78,166,.15)!important;
+}
+
+/* ---------------------------------------------------------
+   Desktop medio: conserva una fila y palabras completas
+   --------------------------------------------------------- */
+
+@media(max-width:1500px) and (min-width:1221px){
+  .main-header__inner{
+    width:calc(100% - 30px)!important;
+    grid-template-columns:
+      minmax(275px,310px)
+      minmax(520px,1fr)
+      minmax(315px,350px)!important;
+    gap:14px!important;
+  }
+
+  .header-brand{
+    grid-template-columns:
+      var(--crest-size)
+      minmax(145px,1fr)
+      1px
+      minmax(58px,100px)!important;
+    gap:10px!important;
+  }
+
+  .header-tourism-logo{
+    max-width:100px!important;
+  }
+
+  .primary-nav>a,
+  .nav-dropdown>button{
+    padding-inline:12px!important;
+    font-size:12px!important;
+  }
+
+  .reader-entry{
+    min-width:42px!important;
+    width:42px!important;
+    padding:0!important;
+  }
+
+  .reader-entry>span:last-child{
+    display:none!important;
+  }
+
+  .admin-session{
+    width:218px!important;
+    min-width:218px!important;
+    max-width:218px!important;
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:8px!important;
+  }
+
+  .admin-session__avatar-button{
+    width:40px!important;
+    height:40px!important;
+  }
+
+  .admin-session__avatar{
+    width:38px!important;
+    height:38px!important;
+  }
+
+  .admin-session__copy strong{
+    font-size:12px!important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Portátiles: navegación pasa a una segunda línea limpia
+   --------------------------------------------------------- */
+
+@media(max-width:1220px){
+  .main-header__inner{
+    width:calc(100% - 26px)!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;
+    gap:8px 16px!important;
+    padding:8px 0 0!important;
+  }
+
+  .header-brand{
+    grid-column:1;
+    grid-row:1;
+    max-width:430px;
+  }
+
+  .header-actions{
+    grid-column:2;
+    grid-row:1;
+  }
+
+  .primary-nav{
+    grid-column:1 / -1!important;
+    grid-row:2!important;
+    height:52px!important;
+    min-height:52px!important;
+    justify-content:center!important;
+    border-top:1px solid rgba(9,73,153,.09)!important;
+    overflow-x:auto!important;
+    scrollbar-width:none;
+  }
+
+  .primary-nav::-webkit-scrollbar{
+    display:none;
+  }
+
+  .primary-nav>a,
+  .nav-dropdown>button{
+    min-height:52px!important;
+    padding-inline:18px!important;
+  }
+
+  .admin-session{
+    width:210px!important;
+    min-width:210px!important;
+    max-width:210px!important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Tablet y móvil
+   --------------------------------------------------------- */
+
+@media(max-width:760px){
+  .main-header__inner{
+    width:calc(100% - 18px)!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:7px!important;
+  }
+
+  .header-brand{
+    max-width:none;
+    grid-template-columns:38px minmax(135px,1fr)!important;
+  }
+
+  .header-brand__divider,
+  .header-tourism-logo{
+    display:none!important;
+  }
+
+  .header-brand__copy strong{
+    font-size:19px!important;
+  }
+
+  .header-brand__copy small{
+    font-size:10.5px!important;
+  }
+
+  .reader-entry,
+  .header-search{
+    display:none!important;
+  }
+
+  .admin-session{
+    width:132px!important;
+    min-width:132px!important;
+    max-width:132px!important;
+    grid-template-columns:32px minmax(0,1fr)!important;
+    gap:5px!important;
+  }
+
+  .admin-session__avatar-button{
+    width:32px!important;
+    height:32px!important;
+  }
+
+  .admin-session__avatar{
+    width:30px!important;
+    height:30px!important;
+    font-size:11px!important;
+  }
+
+  .admin-session__details{
+    grid-template-rows:auto 27px!important;
+    gap:3px!important;
+  }
+
+  .admin-session__copy strong{
+    font-size:10.5px!important;
+    line-height:1.1!important;
+  }
+
+  .admin-session__copy small{
+    display:none!important;
+  }
+
+  .admin-session__button{
+    min-height:27px!important;
+    height:27px!important;
+    padding:0 5px!important;
+    font-size:9.5px!important;
+  }
+
+  .primary-nav{
+    justify-content:flex-start!important;
+  }
+
+  .primary-nav>a,
+  .nav-dropdown>button{
+    flex:0 0 auto!important;
+    min-width:max-content!important;
+    padding-inline:16px!important;
+  }
+}
