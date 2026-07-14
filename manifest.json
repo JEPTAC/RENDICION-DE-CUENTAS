@@ -1,10 +1,10 @@
 {
   "name": "Rendición de Cuentas San Pedro",
   "short_name": "Rendición SP",
-  "start_url": "./",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f6f7f8",
-  "theme_color": "#0a2d6a",
+  "theme_color": "#0b4fb3",
+  "background_color": "#f5f7fb",
   "icons": [
     {
       "src": "assets/favicon.png",

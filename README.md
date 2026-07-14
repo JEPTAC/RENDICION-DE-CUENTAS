@@ -1,67 +1,71 @@
-# Portal de Rendición de Cuentas — San Pedro V3
+# Portal de Rendición de Cuentas San Pedro — V4 Multipágina
 
-Versión estática avanzada para publicar en GitHub Pages.
+## Concepto visual
 
-## Credenciales administrativas de demostración
+La portada toma como referencia la organización de portales modernos de turismo:
 
-- Usuario: `admin`
-- Contraseña: `SanPedro2026*`
+- Hero amplio y visual.
+- Buscador superpuesto.
+- Tarjetas de navegación con imágenes ilustradas.
+- Bloques de destacados.
+- Franja de confianza.
+- Testimonios / propuestas ciudadanas.
+- Newsletter.
+- Footer compacto.
 
-Estas credenciales están incluidas únicamente para probar el diseño. Al tratarse de una página estática, **no proporcionan seguridad real**.
+Se combina con un tratamiento editorial tipo periódico digital mediante:
 
-## Funciones incluidas
+- Rótulos de edición.
+- Historias destacadas.
+- Portadas por vigencia.
+- Indicadores explicados.
+- Documentos vinculados a la narrativa.
 
-- Identidad visual de San Pedro con los tres logos suministrados.
-- Tres temas configurables:
-  - Municipal.
-  - San Pedro vivo.
-  - Institucional morado.
-- Cambio de colores mediante selectores.
-- Cambio de fuente, escala general y redondeado.
-- Visibilidad y reordenamiento de módulos.
-- Creación y eliminación de módulos personalizados.
-- Creación de vigencias futuras.
-- Registro de recursos.
-- Repositorio por formatos con ventanas emergentes.
-- Laboratorio de Ideas Ciudadanas.
-- Estados de ideas:
-  - Recibida.
-  - En análisis.
-  - Se tendrá en cuenta.
-  - Resuelta.
-- Respuesta institucional administrable.
-- Apoyo ciudadano a propuestas.
-- Seguimiento de compromisos.
-- Buscador general.
-- Accesibilidad.
-- Respaldo JSON.
-- Diseño responsive.
+## Arquitectura de navegación
 
-## Publicación en GitHub Pages
+La información ya no se acumula en una sola página.
 
-Suba a la raíz del repositorio:
+- `index.html`: portada general.
+- `vigencias.html`: archivo histórico.
+- `rendicion-2025.html`: edición exclusiva 2025.
+- `rendicion-2026.html`: edición exclusiva 2026.
+- `rendicion-2027.html`: edición exclusiva 2027.
+- `rendicion.html?year=2028`: plantilla dinámica para vigencias futuras creadas localmente.
+- `recursos.html`: biblioteca general.
+- `ideas.html`: Laboratorio de Ideas Ciudadanas.
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `README.md`
-- `FIREBASE_FUTURE.md`
-- la carpeta `assets`
+## Administración demostrativa
 
-Configure GitHub Pages:
+Usuario: `admin`
+
+Contraseña: `SanPedro2026*`
+
+Funciones:
+
+- Elegir tema visual.
+- Cambiar colores.
+- Ajustar escala y redondeado.
+- Crear vigencias futuras.
+- Agregar y eliminar recursos.
+- Gestionar estado y respuesta de ideas.
+- Exportar respaldo JSON.
+- Restablecer demostración.
+
+## Limitación estática
+
+La administración utiliza `localStorage`.
+
+- Los cambios solo aparecen en el navegador donde se realizan.
+- No son visibles para todos los visitantes.
+- No modifican automáticamente GitHub.
+- Las vigencias futuras utilizan `rendicion.html?year=AÑO`.
+
+La fase con Firebase debe implementar autenticación real, Firestore y Storage.
+
+## GitHub Pages
+
+Suba todos los archivos y la carpeta `assets` a la raíz del repositorio.
+
+Después:
 
 `Settings → Pages → Deploy from a branch → main → / (root)`
-
-## Limitación de la versión estática
-
-Todos los cambios administrativos se guardan en `localStorage`.
-
-Por tanto:
-
-- Permanecen en el navegador donde se realizaron.
-- No se comparten con otros visitantes.
-- No modifican los archivos del repositorio.
-- Pueden borrarse al limpiar los datos del navegador.
-- El inicio de sesión puede inspeccionarse desde el código fuente.
-
-La siguiente fase debe reemplazar esta administración local por Firebase.

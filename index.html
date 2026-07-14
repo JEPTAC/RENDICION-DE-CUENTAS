@@ -1,596 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Portal histórico de Rendición de Cuentas del Municipio de San Pedro, Valle del Cauca.">
-  <meta name="theme-color" content="#0a2d6a">
-  <link rel="icon" href="assets/favicon.png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
-  <title>Rendición de Cuentas | San Pedro, Valle del Cauca</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Portal especial de Rendición de Cuentas de San Pedro, Valle del Cauca.">
+  <link rel="icon" href="assets/favicon.png"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css">
+  <title>Rendición de Cuentas | San Pedro</title>
 </head>
-<body>
-  <div class="reading-progress" id="readingProgress"></div>
-
-  <header class="institutional-header">
-    <div class="government-strip">
-      <div class="shell government-strip__inner">
-        <span>Alcaldía Municipal de San Pedro, Valle del Cauca</span>
-        <div>
-          <a href="https://www.sanpedro-valle.gov.co/" target="_blank" rel="noopener">Portal principal</a>
-          <a href="https://www.sanpedro-valle.gov.co/transparencia" target="_blank" rel="noopener">Transparencia</a>
-          <button id="accessibilityToggle">Accesibilidad</button>
+<body data-page="home">
+  <div id="siteHeader"></div>
+  <main>
+    <section class="home-hero">
+      <div class="hero-cloud cloud-a"></div><div class="hero-cloud cloud-b"></div>
+      <div class="sun-disc"></div><div class="mountain-layer"></div><div class="lake-layer"></div><div class="hill-layer"></div>
+      <div class="hero-person"><span class="person-arm arm-left"></span><span class="person-arm arm-right"></span></div>
+      <div class="site-shell home-hero__grid">
+        <div class="home-hero__copy reveal">
+          <span>PORTAL HISTÓRICO · SAN PEDRO</span>
+          <h1>Conozca la gestión.<br>Construyamos <em>confianza</em>.</h1>
+          <p>Explore resultados, documentos, videos, compromisos e ideas ciudadanas en una experiencia visual, clara y organizada por vigencias.</p>
+          <div class="hero-buttons"><a class="button button-primary" href="rendicion-2025.html">Explorar Rendición 2025 →</a><a class="button button-secondary" href="vigencias.html">Ver todas las vigencias</a></div>
+          <div class="hero-trust"><div class="avatar-stack"><span>SP</span><span>RC</span><span>✓</span><span>+</span></div><p>Información pública organizada para ciudadanos, veedurías y comunidad.</p></div>
         </div>
       </div>
-    </div>
+      <div class="hero-float-card"><small>Edición destacada</small><strong id="homeHeroProgress">92%</strong><span>avance general 2025</span></div>
+    </section>
 
-    <div class="identity-bar shell">
-      <a class="municipal-identity" href="#inicio">
-        <img class="municipal-crest" src="assets/escudo-san-pedro.png" alt="Escudo de San Pedro">
-        <span>
-          <small>Municipio de</small>
-          <strong>San Pedro</strong>
-          <em>Donde nacen los sueños</em>
-        </span>
-      </a>
-
-      <div class="portal-identity">
-        <span>PORTAL ESPECIAL</span>
-        <strong>Rendición de Cuentas</strong>
-        <small>Información clara, memoria pública y participación ciudadana</small>
+    <section class="explorer-bar">
+      <div class="site-shell explorer-panel">
+        <div class="explorer-tabs"><button class="active">▣ Vigencias</button><button>▤ Recursos</button><button>✦ Ideas ciudadanas</button></div>
+        <form class="explorer-form" id="homeExploreForm">
+          <div class="field-box"><label>Vigencia</label><select id="homeYear"></select></div>
+          <div class="field-box"><label>Consulta principal</label><input value="Resumen general de la gestión" readonly></div>
+          <div class="field-box"><label>Contenido</label><input value="Indicadores, documentos y compromisos" readonly></div>
+          <button class="button button-primary">Abrir edición</button>
+        </form>
       </div>
+    </section>
 
-      <img class="secondary-brand" id="secondaryBrand" src="assets/marca-san-pedro-color.png" alt="Marca San Pedro">
-    </div>
-
-    <div class="navigation-shell">
-      <div class="shell navigation-inner">
-        <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
-        <nav id="mainNavigation">
-          <a href="#inicio">Inicio</a>
-          <a href="#vigencias">Vigencias</a>
-          <a href="#recursos">Recursos</a>
-          <a href="#ideas">Ideas ciudadanas</a>
-          <a href="#compromisos">Compromisos</a>
-          <a href="#participacion">Participa</a>
-        </nav>
-        <div class="navigation-actions">
-          <button class="search-button" id="openSearch">⌕ Buscar</button>
-          <button class="admin-button" id="openAdminLogin">Administrador</button>
-        </div>
+    <section class="home-section home-section--white">
+      <div class="site-shell">
+        <div class="home-section__head"><div><span>EDICIONES DISPONIBLES</span><h2>Explore las vigencias</h2></div><a class="button button-secondary" href="vigencias.html">Ver archivo histórico →</a></div>
+        <div class="editions-carousel" id="featuredYears"></div>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <aside class="accessibility-drawer" id="accessibilityDrawer" aria-hidden="true">
-    <div class="drawer-title">
-      <strong>Accesibilidad</strong>
-      <button data-close-drawer>×</button>
-    </div>
-    <button id="increaseFont">Aumentar texto</button>
-    <button id="decreaseFont">Reducir texto</button>
-    <button id="toggleContrast">Alto contraste</button>
-    <button id="toggleMotion">Reducir animaciones</button>
-    <button id="resetAccessibility">Restablecer</button>
-  </aside>
-
-  <main id="inicio">
-    <section class="hero module-section" data-module="hero">
-      <div class="hero-background"></div>
-      <div class="shell hero-grid">
-        <div class="hero-copy reveal">
-          <span class="overline">RENDICIÓN DE CUENTAS · ARCHIVO HISTÓRICO</span>
-          <h1>Todo lo que se hizo, explicado para todos.</h1>
-          <p>
-            Consulte resultados, documentos, compromisos, videos, respuestas y propuestas
-            ciudadanas de 2025, 2026 y cada nueva vigencia que se publique.
-          </p>
-          <div class="hero-actions">
-            <button class="primary-action" data-open-year="2025">Explorar rendición 2025</button>
-            <button class="secondary-action" data-scroll-target="#recursos">Abrir centro de recursos</button>
-          </div>
-          <div class="hero-meta">
-            <span><b id="heroYearCount">0</b> vigencias</span>
-            <span><b id="heroResourceCount">0</b> recursos</span>
-            <span><b id="heroIdeasCount">0</b> ideas ciudadanas</span>
-          </div>
-        </div>
-
-        <div class="hero-dashboard reveal">
-          <div class="hero-dashboard__header">
-            <span>RESUMEN DE LA VIGENCIA</span>
-            <select id="heroYearSelector" aria-label="Seleccionar vigencia"></select>
-          </div>
-          <div class="hero-dashboard__main">
-            <div class="progress-ring" id="heroProgressRing">
-              <div><strong id="heroProgress">92%</strong><small>avance</small></div>
-            </div>
-            <div>
-              <h2 id="heroYearTitle">Rendición de Cuentas 2025</h2>
-              <p id="heroYearDescription"></p>
-              <button class="text-action" id="openSelectedYear">Ver edición completa →</button>
-            </div>
-          </div>
-          <div class="hero-dashboard__stats">
-            <div><strong id="heroYearDocuments">0</strong><span>Documentos</span></div>
-            <div><strong id="heroYearVideos">0</strong><span>Videos</span></div>
-            <div><strong id="heroYearCommitments">0</strong><span>Compromisos</span></div>
-          </div>
+    <section class="home-section home-section--soft">
+      <div class="site-shell">
+        <div class="home-section__head"><div><span>PORTADA DE LA GESTIÓN</span><h2>Lo más destacado</h2></div><p>Una mezcla entre periódico digital y portal institucional: historias claras, recursos visuales y acceso rápido a las fuentes.</p></div>
+        <div class="editorial-deals">
+          <article class="editorial-feature reveal"><div><span>INFORME ESPECIAL</span><h3>La gestión explicada sin perder el contexto.</h3><p>Resultados, inversión, cobertura, retos y compromisos en una portada diseñada para comprender.</p><a class="button button-secondary" href="rendicion-2025.html">Leer edición 2025</a></div></article>
+          <div id="editorialCards" style="display:contents"></div>
         </div>
       </div>
     </section>
 
-    <section class="official-access module-section" data-module="official-access">
-      <div class="shell">
-        <div class="official-access__head reveal">
-          <span>ACCESOS INSTITUCIONALES</span>
-          <p>Enlaces rápidos que conectan este especial con los servicios oficiales del municipio.</p>
-        </div>
-        <div class="official-access__grid">
-          <a class="official-link reveal" href="https://www.sanpedro-valle.gov.co/transparencia" target="_blank" rel="noopener">
-            <i>01</i><strong>Transparencia</strong><small>Información pública y documentos institucionales</small><b>↗</b>
-          </a>
-          <a class="official-link reveal" href="https://www.sanpedro-valle.gov.co/tema/tramites-y-servicios" target="_blank" rel="noopener">
-            <i>02</i><strong>Trámites y servicios</strong><small>Consulta de servicios disponibles para la ciudadanía</small><b>↗</b>
-          </a>
-          <a class="official-link reveal" href="https://www.sanpedro-valle.gov.co/?x=1600527" target="_blank" rel="noopener">
-            <i>03</i><strong>PQRDS</strong><small>Peticiones, quejas, reclamos, denuncias y sugerencias</small><b>↗</b>
-          </a>
-          <a class="official-link reveal" href="https://www.sanpedro-valle.gov.co/tema/participa" target="_blank" rel="noopener">
-            <i>04</i><strong>Participa</strong><small>Espacios y mecanismos de participación ciudadana</small><b>↗</b>
-          </a>
-        </div>
+    <section class="home-section home-section--white">
+      <div class="site-shell trust-strip">
+        <article class="trust-card reveal"><span>✓</span><div><strong>Información verificable</strong><small>Fuentes y documentos relacionados</small></div></article>
+        <article class="trust-card reveal"><span>24/7</span><div><strong>Consulta permanente</strong><small>Repositorio disponible en cualquier momento</small></div></article>
+        <article class="trust-card reveal"><span>▣</span><div><strong>Navegación por vigencias</strong><small>Cada año tiene su propia página</small></div></article>
+        <article class="trust-card reveal"><span>✦</span><div><strong>Participación visible</strong><small>Ideas con estado y respuesta oficial</small></div></article>
       </div>
     </section>
 
-    <div class="module-stack" id="moduleStack">
-      <section class="section module-section" id="vigencias" data-module="years">
-        <div class="shell">
-          <div class="section-heading reveal">
-            <div>
-              <span class="overline">MEMORIA INSTITUCIONAL</span>
-              <h2>Rendición de Cuentas por vigencia</h2>
-            </div>
-            <p>
-              Cada año funciona como una edición independiente con sus propios resultados,
-              documentos, videos, compromisos y espacios de participación.
-            </p>
-          </div>
-          <div class="year-switcher reveal" id="yearSwitcher"></div>
-          <div class="years-grid" id="yearsGrid"></div>
-        </div>
-      </section>
+    <section class="home-section home-section--soft">
+      <div class="site-shell">
+        <div class="home-section__head"><div><span>LABORATORIO CIUDADANO</span><h2>Lo que propone la comunidad</h2></div><p><b id="homeIdeasCount">0</b> ideas ciudadanas registradas en esta demostración.</p></div>
+        <div class="citizen-layout"><div id="citizenQuotes" style="display:contents"></div><article class="ideas-cta reveal"><span>PARTICIPE</span><h3>Una gran idea puede transformar el municipio.</h3><p>Presente propuestas, apoye iniciativas y consulte la respuesta institucional.</p><a class="button button-secondary" href="ideas.html">Entrar al laboratorio →</a></article></div>
+      </div>
+    </section>
 
-      <section class="section section-tinted module-section" id="recursos" data-module="resources">
-        <div class="shell">
-          <div class="section-heading reveal">
-            <div>
-              <span class="overline">CENTRO DE RECURSOS</span>
-              <h2>Entre a la información sin llenar la portada de documentos.</h2>
-            </div>
-            <p>
-              Los contenidos se organizan en módulos interactivos. Cada botón abre únicamente
-              la información necesaria mediante ventanas emergentes.
-            </p>
-          </div>
-
-          <div class="resource-hub" id="resourceHub">
-            <button class="resource-gateway reveal" data-resource-category="informe">
-              <span class="gateway-icon">PDF</span>
-              <div><strong>Informes oficiales</strong><small>Informes centrales, resúmenes y anexos</small></div>
-              <b>Explorar →</b>
-            </button>
-            <button class="resource-gateway reveal" data-resource-category="presentacion">
-              <span class="gateway-icon">PPT</span>
-              <div><strong>Presentaciones públicas</strong><small>Material usado en audiencias y encuentros</small></div>
-              <b>Explorar →</b>
-            </button>
-            <button class="resource-gateway reveal" data-resource-category="video">
-              <span class="gateway-icon">VID</span>
-              <div><strong>Videos y transmisiones</strong><small>Audiencias, explicaciones y piezas audiovisuales</small></div>
-              <b>Explorar →</b>
-            </button>
-            <button class="resource-gateway reveal" data-resource-category="datos">
-              <span class="gateway-icon">XLS</span>
-              <div><strong>Datos abiertos</strong><small>Bases listas para consultar y reutilizar</small></div>
-              <b>Explorar →</b>
-            </button>
-            <button class="resource-gateway reveal" data-resource-category="compromiso">
-              <span class="gateway-icon">SEG</span>
-              <div><strong>Seguimiento</strong><small>Compromisos, responsables y porcentajes</small></div>
-              <b>Explorar →</b>
-            </button>
-            <button class="resource-gateway reveal" data-resource-category="respuesta">
-              <span class="gateway-icon">FAQ</span>
-              <div><strong>Preguntas y respuestas</strong><small>Respuestas oficiales a inquietudes ciudadanas</small></div>
-              <b>Explorar →</b>
-            </button>
-          </div>
-
-          <div class="resource-search-panel reveal">
-            <label>
-              <span>⌕</span>
-              <input id="resourceSearch" type="search" placeholder="Buscar un documento, tema o palabra clave">
-            </label>
-            <select id="resourceYearFilter"></select>
-            <select id="resourceTypeFilter">
-              <option value="all">Todos los formatos</option>
-              <option value="informe">Informes</option>
-              <option value="presentacion">Presentaciones</option>
-              <option value="video">Videos</option>
-              <option value="datos">Datos</option>
-              <option value="compromiso">Seguimiento</option>
-              <option value="respuesta">Respuestas</option>
-            </select>
-            <button class="primary-action" id="openFilteredResources">Ver resultados</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="section module-section" data-module="observatory">
-        <div class="shell">
-          <div class="section-heading reveal">
-            <div>
-              <span class="overline">OBSERVATORIO DE RESULTADOS</span>
-              <h2>Una lectura visual de la gestión.</h2>
-            </div>
-            <p>Indicadores demostrativos conectados con la vigencia seleccionada.</p>
-          </div>
-          <div class="observatory-grid">
-            <article class="indicator-card reveal">
-              <span>01</span><strong id="indicatorPlan">92%</strong><h3>Cumplimiento del plan</h3>
-              <button data-indicator="plan">Ver cómo se calcula</button>
-            </article>
-            <article class="indicator-card reveal">
-              <span>02</span><strong id="indicatorProjects">148</strong><h3>Proyectos ejecutados</h3>
-              <button data-indicator="projects">Ver proyectos</button>
-            </article>
-            <article class="indicator-card reveal">
-              <span>03</span><strong id="indicatorCommitments">87%</strong><h3>Compromisos atendidos</h3>
-              <button data-indicator="commitments">Ver seguimiento</button>
-            </article>
-            <article class="indicator-card reveal">
-              <span>04</span><strong id="indicatorParticipation">36</strong><h3>Espacios participativos</h3>
-              <button data-indicator="participation">Ver espacios</button>
-            </article>
-          </div>
-          <div class="sector-panel reveal">
-            <div>
-              <span class="overline">LECTURA SECTORIAL</span>
-              <h3>Avance por líneas estratégicas</h3>
-              <p>Estos valores pueden administrarse desde una base de datos en la siguiente fase.</p>
-            </div>
-            <div class="sector-bars">
-              <div><span><b>Infraestructura</b><strong>94%</strong></span><i><u style="width:94%"></u></i></div>
-              <div><span><b>Desarrollo social</b><strong>89%</strong></span><i><u style="width:89%"></u></i></div>
-              <div><span><b>Gestión administrativa</b><strong>86%</strong></span><i><u style="width:86%"></u></i></div>
-              <div><span><b>Participación ciudadana</b><strong>82%</strong></span><i><u style="width:82%"></u></i></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section ideas-lab module-section" id="ideas" data-module="ideas">
-        <div class="shell">
-          <div class="ideas-heading reveal">
-            <div>
-              <span class="overline">LABORATORIO DE IDEAS CIUDADANAS</span>
-              <h2>Las propuestas de la comunidad, visibles y con respuesta.</h2>
-              <p>
-                Un tablero público donde la ciudadanía presenta ideas y la Alcaldía informa
-                si se encuentra en análisis, si será tenida en cuenta o si ya fue resuelta.
-              </p>
-            </div>
-            <button class="ideas-main-button" id="openIdeaForm">＋ Presentar una idea</button>
-          </div>
-
-          <div class="idea-summary reveal">
-            <div><strong id="ideasTotal">0</strong><span>Ideas registradas</span></div>
-            <div><strong id="ideasAnalysis">0</strong><span>En análisis</span></div>
-            <div><strong id="ideasAccepted">0</strong><span>Se tendrán en cuenta</span></div>
-            <div><strong id="ideasResolved">0</strong><span>Resueltas</span></div>
-          </div>
-
-          <div class="idea-board" id="ideaBoard"></div>
-        </div>
-      </section>
-
-      <section class="section section-dark module-section" id="compromisos" data-module="commitments">
-        <div class="shell">
-          <div class="section-heading light reveal">
-            <div>
-              <span class="overline">SEGUIMIENTO PÚBLICO</span>
-              <h2>Compromisos con estado, responsable y evidencia.</h2>
-            </div>
-            <p>La ciudadanía puede revisar el avance sin descargar un informe completo.</p>
-          </div>
-          <div class="commitments-grid" id="commitmentsGrid"></div>
-        </div>
-      </section>
-
-      <section class="section module-section" data-module="story">
-        <div class="shell editorial-grid">
-          <article class="main-story reveal">
-            <span class="overline">HISTORIA PRINCIPAL</span>
-            <h2>La información pública también puede ser cercana, visual y fácil de comprender.</h2>
-            <p>
-              Este especial no funciona únicamente como una lista de archivos. Cada vigencia puede
-              tener portada, resumen, resultados destacados, testimonios, comparativos, preguntas,
-              compromisos y documentos relacionados.
-            </p>
-            <button class="primary-action" data-story="main">Leer historia completa</button>
-          </article>
-          <aside class="story-list reveal">
-            <button data-story="transparency"><span>TRANSPARENCIA</span><strong>Cómo se organizan y verifican los datos.</strong><b>→</b></button>
-            <button data-story="participation"><span>PARTICIPACIÓN</span><strong>Cómo se responden las inquietudes ciudadanas.</strong><b>→</b></button>
-            <button data-story="future"><span>PRÓXIMAS VIGENCIAS</span><strong>Cómo crecerá el archivo año tras año.</strong><b>→</b></button>
-          </aside>
-        </div>
-      </section>
-
-      <section class="section section-tinted module-section" id="participacion" data-module="participation">
-        <div class="shell participation-grid">
-          <div class="participation-copy reveal">
-            <span class="overline">PARTICIPACIÓN CIUDADANA</span>
-            <h2>Pregunte, proponga o solicite una aclaración.</h2>
-            <p>Este formulario es demostrativo. En Firebase podrá generar radicado, trazabilidad y notificación.</p>
-            <div class="accordion">
-              <details><summary>¿Qué incluye cada vigencia?</summary><p>Informes, recursos, indicadores, videos, compromisos, respuestas e ideas relacionadas.</p></details>
-              <details><summary>¿Las ideas son públicas?</summary><p>Sí. El tablero muestra la propuesta, su estado y la respuesta institucional publicada.</p></details>
-              <details><summary>¿Cómo se actualiza el portal?</summary><p>Por ahora mediante el panel local. Posteriormente se conectará a Firebase con roles y almacenamiento.</p></details>
-            </div>
-          </div>
-          <form class="participation-form reveal" id="participationForm">
-            <span>FORMULARIO CIUDADANO</span>
-            <h3>Enviar una consulta</h3>
-            <label>Nombre<input name="name" required></label>
-            <label>Correo<input name="email" type="email" required></label>
-            <label>Vigencia<select name="year" id="participationYear"></select></label>
-            <label>Tipo<select name="type"><option>Pregunta</option><option>Observación</option><option>Propuesta</option><option>Solicitud de aclaración</option></select></label>
-            <label>Mensaje<textarea name="message" rows="5" required></textarea></label>
-            <button class="primary-action" type="submit">Registrar participación</button>
-            <small>Modo demostración: se guarda únicamente en este navegador.</small>
-          </form>
-        </div>
-      </section>
-    </div>
-
-    <section class="custom-module-area" id="customModuleArea"></section>
-
-    <section class="newsletter">
-      <div class="shell newsletter-grid reveal">
-        <div><span>BOLETÍN DE TRANSPARENCIA</span><h2>Reciba un aviso cuando se publique nueva información.</h2></div>
-        <form id="newsletterForm"><input type="email" placeholder="Correo electrónico" required><button>Suscribirme</button></form>
+    <section class="newsletter-bar">
+      <div class="site-shell newsletter-box reveal">
+        <div><h2>Reciba nuevas publicaciones</h2><p><b id="homeResourceCount">0</b> recursos se encuentran disponibles actualmente.</p></div>
+        <form id="newsletterForm"><input type="email" placeholder="Correo electrónico" required><button class="button button-primary">Suscribirme</button></form>
       </div>
     </section>
   </main>
-
-  <footer>
-    <div class="shell footer-grid">
-      <div>
-        <div class="footer-brand">
-          <img src="assets/escudo-san-pedro.png" alt="">
-          <span><strong>Alcaldía de San Pedro</strong><small>Valle del Cauca</small></span>
-        </div>
-        <p>Portal especial de Rendición de Cuentas y participación ciudadana.</p>
-      </div>
-      <div><h3>Portal</h3><a href="#vigencias">Vigencias</a><a href="#recursos">Recursos</a><a href="#ideas">Ideas ciudadanas</a></div>
-      <div><h3>Institucional</h3><a href="https://www.sanpedro-valle.gov.co/" target="_blank">Portal principal</a><a href="https://www.sanpedro-valle.gov.co/transparencia" target="_blank">Transparencia</a></div>
-      <div><h3>Contacto</h3><p>Calle 5 # 3-85 Esquina</p><p>San Pedro, Valle del Cauca</p><p>contacto institucional</p></div>
-    </div>
-    <div class="shell footer-bottom"><span>© <span id="currentYear"></span> Municipio de San Pedro</span><span>Rendición de Cuentas</span></div>
-  </footer>
-
-  <button class="back-top" id="backTop">↑</button>
-
-  <dialog class="modal" id="genericModal">
-    <button class="modal-close" data-close-modal="genericModal">×</button>
-    <div id="genericModalContent"></div>
-  </dialog>
-
-  <dialog class="modal modal-wide" id="resourceModal">
-    <button class="modal-close" data-close-modal="resourceModal">×</button>
-    <div id="resourceModalContent"></div>
-  </dialog>
-
-  <dialog class="modal modal-wide" id="ideaModal">
-    <button class="modal-close" data-close-modal="ideaModal">×</button>
-    <div id="ideaModalContent"></div>
-  </dialog>
-
-  <dialog class="modal" id="ideaFormModal">
-    <button class="modal-close" data-close-modal="ideaFormModal">×</button>
-    <span class="overline">LABORATORIO CIUDADANO</span>
-    <h2>Presentar una idea</h2>
-    <form class="modal-form" id="ideaForm">
-      <label>Título de la propuesta<input name="title" maxlength="100" required></label>
-      <label>Nombre o colectivo<input name="author" required></label>
-      <label>Barrio, corregimiento o vereda<input name="location" required></label>
-      <label>Categoría
-        <select name="category">
-          <option>Infraestructura</option><option>Medio ambiente</option><option>Cultura</option>
-          <option>Deporte</option><option>Educación</option><option>Desarrollo social</option><option>Otra</option>
-        </select>
-      </label>
-      <label>Descripción<textarea name="description" rows="6" maxlength="900" required></textarea></label>
-      <button class="primary-action">Publicar idea</button>
-      <small>La propuesta será visible en este navegador y quedará con estado “Recibida”.</small>
-    </form>
-  </dialog>
-
-  <dialog class="modal" id="loginModal">
-    <button class="modal-close" data-close-modal="loginModal">×</button>
-    <span class="overline">ACCESO ADMINISTRATIVO</span>
-    <h2>Ingresar al panel</h2>
-    <p class="notice">Demostración local. Este acceso no reemplaza la autenticación segura que se implementará con Firebase.</p>
-    <form class="modal-form" id="loginForm">
-      <label>Usuario<input name="username" autocomplete="username" required></label>
-      <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-      <button class="primary-action">Ingresar</button>
-      <small>Credenciales de prueba incluidas en el README.</small>
-    </form>
-  </dialog>
-
-  <dialog class="admin-dialog" id="adminPanel">
-    <div class="admin-layout">
-      <aside class="admin-sidebar">
-        <div class="admin-sidebar__brand">
-          <img src="assets/escudo-san-pedro.png" alt="">
-          <span><strong>Panel administrativo</strong><small>Modo local</small></span>
-        </div>
-        <button class="admin-nav active" data-admin-tab="appearance">Apariencia</button>
-        <button class="admin-nav" data-admin-tab="modules">Módulos</button>
-        <button class="admin-nav" data-admin-tab="content">Contenido</button>
-        <button class="admin-nav" data-admin-tab="ideas">Ideas ciudadanas</button>
-        <button class="admin-nav" data-admin-tab="backup">Respaldo</button>
-        <button class="admin-nav admin-logout" id="adminLogout">Cerrar sesión</button>
-      </aside>
-
-      <section class="admin-content">
-        <div class="admin-topbar">
-          <div><span>ADMINISTRACIÓN DEL PORTAL</span><h2 id="adminTabTitle">Apariencia</h2></div>
-          <button data-close-modal="adminPanel">Cerrar ×</button>
-        </div>
-
-        <div class="admin-tab active" data-admin-panel="appearance">
-          <div class="admin-card">
-            <h3>Tema basado en identidad visual</h3>
-            <div class="theme-options">
-              <button data-theme-preset="municipal"><img src="assets/escudo-san-pedro.png" alt=""><strong>Municipal</strong><small>Azul, verde y amarillo</small></button>
-              <button data-theme-preset="colorful"><img src="assets/marca-san-pedro-color.png" alt=""><strong>San Pedro vivo</strong><small>Azul, amarillo, rojo y turquesa</small></button>
-              <button data-theme-preset="purple"><img src="assets/marca-san-pedro-morada.png" alt=""><strong>Institucional morado</strong><small>Morado profundo y blanco</small></button>
-            </div>
-          </div>
-
-          <div class="admin-grid two">
-            <div class="admin-card">
-              <h3>Colores personalizados</h3>
-              <div class="color-fields">
-                <label>Principal<input type="color" id="settingPrimary"></label>
-                <label>Secundario<input type="color" id="settingSecondary"></label>
-                <label>Acento<input type="color" id="settingAccent"></label>
-                <label>Fondo<input type="color" id="settingBackground"></label>
-                <label>Texto<input type="color" id="settingText"></label>
-              </div>
-              <button class="admin-primary" id="applyColors">Aplicar colores</button>
-            </div>
-            <div class="admin-card">
-              <h3>Tipografía y escala</h3>
-              <label class="admin-field">Fuente
-                <select id="settingFont">
-                  <option value="century">Century Gothic</option>
-                  <option value="arial">Arial</option>
-                  <option value="georgia">Georgia</option>
-                </select>
-              </label>
-              <label class="admin-field">Tamaño general <output id="fontScaleOutput">100%</output>
-                <input type="range" id="settingFontScale" min="85" max="120" value="100">
-              </label>
-              <label class="admin-field">Redondeado <output id="radiusOutput">4 px</output>
-                <input type="range" id="settingRadius" min="0" max="28" value="4">
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-tab" data-admin-panel="modules">
-          <div class="admin-grid two">
-            <div class="admin-card">
-              <h3>Visibilidad y orden</h3>
-              <div id="moduleManager"></div>
-            </div>
-            <div class="admin-card">
-              <h3>Crear un módulo nuevo</h3>
-              <form class="admin-form" id="customModuleForm">
-                <label>Título<input name="title" required></label>
-                <label>Subtítulo<input name="subtitle" required></label>
-                <label>Texto del botón<input name="button" value="Ver información" required></label>
-                <label>Contenido del pop-up<textarea name="content" rows="6" required></textarea></label>
-                <button class="admin-primary">Crear módulo</button>
-              </form>
-            </div>
-          </div>
-          <div class="admin-card">
-            <h3>Módulos personalizados</h3>
-            <div id="customModuleManager"></div>
-          </div>
-        </div>
-
-        <div class="admin-tab" data-admin-panel="content">
-          <div class="admin-grid two">
-            <div class="admin-card">
-              <h3>Agregar vigencia</h3>
-              <form class="admin-form" id="adminYearForm">
-                <label>Año<input name="year" type="number" min="2025" max="2100" required></label>
-                <label>Estado<select name="status"><option>Publicada</option><option>En construcción</option><option>Programada</option></select></label>
-                <label>Avance (%)<input name="progress" type="number" min="0" max="100" value="0" required></label>
-                <label>Descripción<textarea name="description" rows="4" required></textarea></label>
-                <button class="admin-primary">Crear vigencia</button>
-              </form>
-            </div>
-            <div class="admin-card">
-              <h3>Agregar recurso</h3>
-              <form class="admin-form" id="adminResourceForm">
-                <label>Título<input name="title" required></label>
-                <label>Vigencia<select name="year" id="adminResourceYear"></select></label>
-                <label>Tipo<select name="type"><option value="informe">Informe</option><option value="presentacion">Presentación</option><option value="video">Video</option><option value="datos">Datos</option><option value="compromiso">Seguimiento</option><option value="respuesta">Respuesta</option></select></label>
-                <label>Descripción<textarea name="description" rows="3" required></textarea></label>
-                <label>Enlace<input name="url" type="url" placeholder="https://..." value="#"></label>
-                <button class="admin-primary">Agregar recurso</button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-tab" data-admin-panel="ideas">
-          <div class="admin-card">
-            <h3>Gestión de ideas ciudadanas</h3>
-            <p>Abra una idea para modificar su estado y publicar una respuesta institucional.</p>
-            <div id="adminIdeasList"></div>
-          </div>
-        </div>
-
-        <div class="admin-tab" data-admin-panel="backup">
-          <div class="admin-grid two">
-            <div class="admin-card">
-              <h3>Exportar configuración</h3>
-              <p>Descargue años, recursos, ideas, módulos y apariencia en un archivo JSON.</p>
-              <button class="admin-primary" id="exportConfiguration">Descargar respaldo</button>
-            </div>
-            <div class="admin-card danger-card">
-              <h3>Restablecer demostración</h3>
-              <p>Elimina todos los cambios guardados en este navegador.</p>
-              <button class="admin-danger" id="resetPortal">Restablecer portal</button>
-            </div>
-          </div>
-          <div class="admin-card">
-            <h3>Siguiente fase: Firebase</h3>
-            <p>
-              La autenticación, los permisos, las publicaciones compartidas y el almacenamiento
-              de archivos deben conectarse posteriormente a Firebase Authentication, Firestore
-              y Firebase Storage.
-            </p>
-          </div>
-        </div>
-      </section>
-    </div>
-  </dialog>
-
-  <dialog class="modal" id="ideaAdminModal">
-    <button class="modal-close" data-close-modal="ideaAdminModal">×</button>
-    <div id="ideaAdminContent"></div>
-  </dialog>
-
-  <dialog class="modal" id="searchModal">
-    <button class="modal-close" data-close-modal="searchModal">×</button>
-    <span class="overline">BÚSQUEDA GENERAL</span>
-    <h2>¿Qué desea consultar?</h2>
-    <input class="large-search" id="globalSearch" type="search" placeholder="Escriba una vigencia, documento, idea o tema">
-    <div class="search-results" id="searchResults"></div>
-  </dialog>
-
-  <div class="toast" id="toast"></div>
-  <script src="app.js"></script>
+  <div id="siteFooter"></div><div id="globalDialogs"></div>
+  <script src="shared.js"></script><script src="home.js"></script>
 </body>
 </html>
