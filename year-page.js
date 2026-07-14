@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const year = helpers.getYear(yearNumber);
 
   if (!year) {
-    document.querySelector("#yearPage").innerHTML = `
+    document.querySelector("#main-content").innerHTML = `
       <section class="missing-page"><span class="section-kicker">VIGENCIA NO DISPONIBLE</span><h1>No encontramos la edición solicitada.</h1><a class="button button-primary" href="vigencias.html">Volver al archivo histórico</a></section>`;
     return;
   }

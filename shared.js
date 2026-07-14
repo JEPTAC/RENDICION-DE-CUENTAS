@@ -188,6 +188,8 @@
         toast = document.createElement("div");
         toast.id = "globalToast";
         toast.className = "toast";
+        toast.setAttribute("role", "status");
+        toast.setAttribute("aria-live", "polite");
         document.body.appendChild(toast);
       }
       toast.textContent = message;
@@ -216,33 +218,39 @@
     const active = name => page === name ? "active" : "";
     const years = [...state.years].sort((a,b) => Number(a.year) - Number(b.year));
 
+    target.className = "site-header-wrapper";
     target.innerHTML = `
+      <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
+
       <div class="top-utility">
         <div class="site-shell top-utility__inner">
           <span>Portal especial de la Alcaldía de San Pedro, Valle del Cauca</span>
           <div>
             <a href="https://www.sanpedro-valle.gov.co/" target="_blank" rel="noopener">Portal institucional</a>
             <a href="https://www.sanpedro-valle.gov.co/transparencia" target="_blank" rel="noopener">Transparencia</a>
-            <button id="accessibilityButton">Accesibilidad</button>
+            <button type="button" id="accessibilityButton" aria-expanded="false" aria-controls="accessibilityPopover">Accesibilidad</button>
           </div>
         </div>
       </div>
+
       <header class="main-header">
         <div class="site-shell main-header__inner">
-          <a class="header-brand" href="index.html">
-            <img src="assets/escudo-san-pedro.png" alt="Escudo de San Pedro">
-            <span>
+          <a class="header-brand" href="index.html" aria-label="Ir a la portada de Rendición de Cuentas de San Pedro">
+            <img class="header-crest" src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro, Valle del Cauca">
+            <span class="header-brand__copy">
               <strong>San Pedro</strong>
               <small>Rendición de Cuentas</small>
             </span>
+            <span class="header-brand__divider" aria-hidden="true"></span>
+            <img class="header-tourism-logo" src="assets/imagen-san-pedro-color.png" alt="Marca San Pedro, donde nacen los sueños">
           </a>
 
-          <button class="mobile-nav-button" id="mobileNavButton" aria-label="Abrir menú">☰</button>
+          <button class="mobile-nav-button" id="mobileNavButton" type="button" aria-label="Abrir menú principal" aria-expanded="false" aria-controls="primaryNav">☰</button>
 
-          <nav class="primary-nav" id="primaryNav">
+          <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
             <a class="${active("home")}" href="index.html">Inicio</a>
             <div class="nav-dropdown">
-              <button class="${active("year")}">Vigencias⌄</button>
+              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span aria-hidden="true">⌄</span></button>
               <div class="nav-dropdown__menu">
                 ${years.map(y => `<a href="${helpers.yearUrl(y.year)}"><b>${y.year}</b><span>${helpers.escape(y.status)}</span></a>`).join("")}
                 <a href="vigencias.html"><b>Archivo histórico</b><span>Ver todas las ediciones</span></a>
@@ -253,18 +261,43 @@
           </nav>
 
           <div class="header-actions">
-            <button class="header-search" id="headerSearch">⌕</button>
-            <button class="admin-entry" id="adminEntry">Administrador</button>
+            <button class="reader-entry" id="readerToggle" type="button" aria-label="Abrir narrador de texto" aria-expanded="false" aria-controls="readerPanel">
+              <span aria-hidden="true">🔊</span><span>Escuchar</span>
+            </button>
+            <button class="header-search" id="headerSearch" type="button" aria-label="Abrir búsqueda general"><span aria-hidden="true">⌕</span></button>
+            <button class="admin-entry" id="adminEntry" type="button">Administrador</button>
           </div>
         </div>
       </header>
-      <div class="accessibility-popover" id="accessibilityPopover">
+
+      <div class="accessibility-popover" id="accessibilityPopover" role="region" aria-label="Herramientas de accesibilidad" aria-hidden="true">
         <strong>Accesibilidad</strong>
-        <button data-access="increase">Aumentar texto</button>
-        <button data-access="decrease">Reducir texto</button>
-        <button data-access="contrast">Alto contraste</button>
-        <button data-access="motion">Reducir movimiento</button>
+        <button type="button" data-access="increase">Aumentar texto</button>
+        <button type="button" data-access="decrease">Reducir texto</button>
+        <button type="button" data-access="contrast">Alto contraste</button>
+        <button type="button" data-access="motion">Reducir movimiento</button>
       </div>
+
+      <aside class="reader-panel" id="readerPanel" role="region" aria-label="Narrador de texto" aria-hidden="true">
+        <div class="reader-panel__head">
+          <div><strong>Narrador de texto</strong><small>Lectura en español</small></div>
+          <button type="button" id="readerClose" aria-label="Cerrar narrador">×</button>
+        </div>
+        <label class="reader-field">Contenido que desea escuchar
+          <select id="readerScope">
+            <option value="page">Página completa</option>
+          </select>
+        </label>
+        <label class="reader-field">Velocidad
+          <input id="readerRate" type="range" min="0.7" max="1.4" step="0.1" value="1">
+        </label>
+        <div class="reader-controls">
+          <button type="button" id="readerPlay"><span aria-hidden="true">▶</span> Leer</button>
+          <button type="button" id="readerPause"><span aria-hidden="true">⏸</span> Pausar</button>
+          <button type="button" id="readerStop"><span aria-hidden="true">■</span> Detener</button>
+        </div>
+        <p class="reader-status" id="readerStatus" role="status" aria-live="polite">Listo para iniciar la narración.</p>
+      </aside>
     `;
   }
 
@@ -276,7 +309,7 @@
         <div class="site-shell site-footer__grid">
           <div>
             <a class="footer-brand" href="index.html">
-              <img src="assets/escudo-san-pedro.png" alt="">
+              <img src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro">
               <span><strong>San Pedro</strong><small>Donde nacen los sueños</small></span>
             </a>
             <p>Portal especial para consultar resultados, documentos, compromisos y participación ciudadana.</p>
@@ -324,7 +357,7 @@
       <dialog class="admin-panel" id="adminPanel">
         <div class="admin-panel__layout">
           <aside class="admin-sidebar">
-            <div class="admin-brand"><img src="assets/escudo-san-pedro.png" alt=""><span><strong>Administración</strong><small>Modo demostración</small></span></div>
+            <div class="admin-brand"><img src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro"><span><strong>Administración</strong><small>Modo demostración</small></span></div>
             <button class="admin-tab-button active" data-admin-tab="appearance">Apariencia</button>
             <button class="admin-tab-button" data-admin-tab="years">Vigencias</button>
             <button class="admin-tab-button" data-admin-tab="resources">Recursos</button>
@@ -335,16 +368,16 @@
           <section class="admin-main">
             <div class="admin-top">
               <div><span>PANEL ADMINISTRATIVO</span><h2 id="adminTitle">Apariencia</h2></div>
-              <button data-close-dialog="adminPanel">Cerrar ×</button>
+              <button data-close-dialog="adminPanel" aria-label="Cerrar panel administrativo">Cerrar <span aria-hidden="true">×</span></button>
             </div>
 
             <div class="admin-tab active" data-admin-panel="appearance">
               <div class="admin-card">
                 <h3>Temas visuales</h3>
                 <div class="theme-cards">
-                  <button data-theme="blue"><img src="assets/marca-san-pedro-color.png" alt=""><strong>Azul institucional</strong><small>Inspirado en el portal moderno</small></button>
-                  <button data-theme="municipal"><img src="assets/escudo-san-pedro.png" alt=""><strong>Municipal</strong><small>Azul, verde y amarillo</small></button>
-                  <button data-theme="purple"><img src="assets/marca-san-pedro-morada.png" alt=""><strong>Morado</strong><small>Identidad alternativa</small></button>
+                  <button data-theme="blue"><img src="assets/imagen-san-pedro-color.png" alt="Marca multicolor San Pedro, donde nacen los sueños"><strong>Azul institucional</strong><small>Inspirado en el portal moderno</small></button>
+                  <button data-theme="municipal"><img src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro"><strong>Municipal</strong><small>Azul, verde y amarillo</small></button>
+                  <button data-theme="purple"><img src="assets/marca-san-pedro-morada.png" alt="Marca alternativa morada de San Pedro"><strong>Morado</strong><small>Identidad alternativa</small></button>
                 </div>
               </div>
               <div class="admin-grid">
@@ -577,17 +610,24 @@
       }
     });
 
-    document.querySelector("#accessibilityButton")?.addEventListener("click", () => {
-      document.querySelector("#accessibilityPopover")?.classList.toggle("open");
+    document.querySelector("#accessibilityButton")?.addEventListener("click", event => {
+      const popover = document.querySelector("#accessibilityPopover");
+      const open = popover?.classList.toggle("open");
+      popover?.setAttribute("aria-hidden", String(!open));
+      event.currentTarget.setAttribute("aria-expanded", String(Boolean(open)));
     });
 
-    document.querySelector("#mobileNavButton")?.addEventListener("click", () => {
-      document.querySelector("#primaryNav")?.classList.toggle("open");
+    document.querySelector("#mobileNavButton")?.addEventListener("click", event => {
+      const nav = document.querySelector("#primaryNav");
+      const open = nav?.classList.toggle("open");
+      event.currentTarget.setAttribute("aria-expanded", String(Boolean(open)));
     });
 
     document.querySelector(".nav-dropdown > button")?.addEventListener("click", event => {
       event.preventDefault();
-      event.currentTarget.closest(".nav-dropdown")?.classList.toggle("open");
+      const dropdown = event.currentTarget.closest(".nav-dropdown");
+      const open = dropdown?.classList.toggle("open");
+      event.currentTarget.setAttribute("aria-expanded", String(Boolean(open)));
     });
 
     document.querySelector("#headerSearch")?.addEventListener("click", () => {
@@ -737,6 +777,218 @@
     });
   }
 
+
+  function initReader() {
+    const supported = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+    const panel = document.querySelector("#readerPanel");
+    const toggle = document.querySelector("#readerToggle");
+    const close = document.querySelector("#readerClose");
+    const play = document.querySelector("#readerPlay");
+    const pause = document.querySelector("#readerPause");
+    const stop = document.querySelector("#readerStop");
+    const scope = document.querySelector("#readerScope");
+    const rate = document.querySelector("#readerRate");
+    const status = document.querySelector("#readerStatus");
+
+    if (!panel || !toggle) return;
+
+    let chunks = [];
+    let chunkIndex = 0;
+    let currentUtterance = null;
+    let paused = false;
+
+    function setStatus(message) {
+      if (status) status.textContent = message;
+    }
+
+    function populateScopes() {
+      const previous = scope.value;
+      scope.innerHTML = '<option value="page">Página completa</option>';
+      const main = document.querySelector("main");
+      if (!main) return;
+
+      [...main.querySelectorAll("section")].forEach((section, index) => {
+        const heading = section.querySelector("h1, h2");
+        if (!heading) return;
+        if (!section.id) section.id = `seccion-narracion-${index + 1}`;
+        const option = document.createElement("option");
+        option.value = section.id;
+        option.textContent = heading.textContent.trim();
+        scope.appendChild(option);
+      });
+
+      if ([...scope.options].some(option => option.value === previous)) scope.value = previous;
+    }
+
+    function readableText(target) {
+      const selectors = "h1,h2,h3,h4,p,li,summary,figcaption,blockquote,article strong";
+      const parts = [...target.querySelectorAll(selectors)]
+        .filter(element => {
+          if (element.closest("nav,footer,form,dialog,.no-narrate,.reader-panel,.accessibility-popover")) return false;
+          const style = getComputedStyle(element);
+          return style.display !== "none" && style.visibility !== "hidden";
+        })
+        .map(element => element.textContent.replace(/\s+/g, " ").trim())
+        .filter((text, index, all) => text && all.indexOf(text) === index);
+      return parts.join(". ");
+    }
+
+    function splitText(text) {
+      const sentences = text
+        .replace(/\s+/g, " ")
+        .split(/(?<=[.!?])\s+/)
+        .map(item => item.trim())
+        .filter(Boolean);
+
+      const result = [];
+      let buffer = "";
+      sentences.forEach(sentence => {
+        if ((buffer + " " + sentence).trim().length <= 230) {
+          buffer = `${buffer} ${sentence}`.trim();
+        } else {
+          if (buffer) result.push(buffer);
+          if (sentence.length <= 230) {
+            buffer = sentence;
+          } else {
+            const words = sentence.split(" ");
+            let longBuffer = "";
+            words.forEach(word => {
+              if ((longBuffer + " " + word).trim().length > 220) {
+                result.push(longBuffer);
+                longBuffer = word;
+              } else {
+                longBuffer = `${longBuffer} ${word}`.trim();
+              }
+            });
+            buffer = longBuffer;
+          }
+        }
+      });
+      if (buffer) result.push(buffer);
+      return result;
+    }
+
+    function spanishVoice() {
+      const voices = speechSynthesis.getVoices();
+      return voices.find(voice => /^es-CO/i.test(voice.lang))
+        || voices.find(voice => /^es-/i.test(voice.lang))
+        || null;
+    }
+
+    function speakNext() {
+      if (chunkIndex >= chunks.length) {
+        setStatus("Narración finalizada.");
+        currentUtterance = null;
+        paused = false;
+        return;
+      }
+
+      currentUtterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+      currentUtterance.lang = "es-CO";
+      currentUtterance.rate = Number(rate.value || 1);
+      currentUtterance.pitch = 1;
+      const voice = spanishVoice();
+      if (voice) currentUtterance.voice = voice;
+
+      currentUtterance.onstart = () => {
+        setStatus(`Leyendo fragmento ${chunkIndex + 1} de ${chunks.length}.`);
+      };
+      currentUtterance.onend = () => {
+        chunkIndex += 1;
+        speakNext();
+      };
+      currentUtterance.onerror = event => {
+        if (event.error !== "interrupted" && event.error !== "canceled") {
+          setStatus("No fue posible continuar la narración.");
+        }
+      };
+      speechSynthesis.speak(currentUtterance);
+    }
+
+    function startReading() {
+      if (!supported) {
+        setStatus("Este navegador no admite narración de texto.");
+        return;
+      }
+
+      speechSynthesis.cancel();
+      paused = false;
+      pause.innerHTML = '<span aria-hidden="true">⏸</span> Pausar';
+
+      const target = scope.value === "page"
+        ? document.querySelector("main")
+        : document.getElementById(scope.value);
+
+      if (!target) {
+        setStatus("No se encontró el contenido seleccionado.");
+        return;
+      }
+
+      const text = readableText(target);
+      chunks = splitText(text);
+      chunkIndex = 0;
+
+      if (!chunks.length) {
+        setStatus("No hay texto disponible para narrar.");
+        return;
+      }
+      speakNext();
+    }
+
+    function togglePause() {
+      if (!supported || !speechSynthesis.speaking) return;
+      if (speechSynthesis.paused) {
+        speechSynthesis.resume();
+        paused = false;
+        pause.innerHTML = '<span aria-hidden="true">⏸</span> Pausar';
+        setStatus("Narración reanudada.");
+      } else {
+        speechSynthesis.pause();
+        paused = true;
+        pause.innerHTML = '<span aria-hidden="true">▶</span> Continuar';
+        setStatus("Narración pausada.");
+      }
+    }
+
+    function stopReading() {
+      if (supported) speechSynthesis.cancel();
+      chunks = [];
+      chunkIndex = 0;
+      paused = false;
+      pause.innerHTML = '<span aria-hidden="true">⏸</span> Pausar';
+      setStatus("Narración detenida.");
+    }
+
+    function openPanel() {
+      populateScopes();
+      panel.classList.add("open");
+      panel.setAttribute("aria-hidden", "false");
+      toggle.setAttribute("aria-expanded", "true");
+      scope.focus();
+    }
+
+    function closePanel() {
+      panel.classList.remove("open");
+      panel.setAttribute("aria-hidden", "true");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.focus();
+    }
+
+    toggle.addEventListener("click", () => panel.classList.contains("open") ? closePanel() : openPanel());
+    close.addEventListener("click", closePanel);
+    play.addEventListener("click", startReading);
+    pause.addEventListener("click", togglePause);
+    stop.addEventListener("click", stopReading);
+    window.addEventListener("beforeunload", stopReading);
+
+    if (!supported) {
+      play.disabled = true;
+      pause.disabled = true;
+      stop.disabled = true;
+      setStatus("La narración no está disponible en este navegador.");
+    }
+  }
+
   function initReveal() {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -752,6 +1004,7 @@
     renderFooter();
     renderGlobalDialogs();
     bindGlobalEvents();
+    initReader();
     syncAdmin();
     initReveal();
 

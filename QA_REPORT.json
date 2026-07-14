@@ -1,0 +1,69 @@
+{
+  "html": {
+    "ideas.html": {
+      "title": "Ideas ciudadanas | San Pedro",
+      "images": 0,
+      "buttons": 5,
+      "main_landmark": true
+    },
+    "index.html": {
+      "title": "Rendición de Cuentas | San Pedro",
+      "images": 0,
+      "buttons": 5,
+      "main_landmark": true
+    },
+    "recursos.html": {
+      "title": "Centro de recursos | Rendición de Cuentas",
+      "images": 0,
+      "buttons": 1,
+      "main_landmark": true
+    },
+    "rendicion-2025.html": {
+      "title": "Rendición de Cuentas | San Pedro",
+      "images": 0,
+      "buttons": 3,
+      "main_landmark": true
+    },
+    "rendicion-2026.html": {
+      "title": "Rendición de Cuentas | San Pedro",
+      "images": 0,
+      "buttons": 3,
+      "main_landmark": true
+    },
+    "rendicion-2027.html": {
+      "title": "Rendición de Cuentas | San Pedro",
+      "images": 0,
+      "buttons": 3,
+      "main_landmark": true
+    },
+    "rendicion.html": {
+      "title": "Rendición de Cuentas | San Pedro",
+      "images": 0,
+      "buttons": 3,
+      "main_landmark": true
+    },
+    "vigencias.html": {
+      "title": "Archivo histórico | Rendición de Cuentas",
+      "images": 0,
+      "buttons": 0,
+      "main_landmark": true
+    }
+  },
+  "javascript": {
+    "home.js": "OK",
+    "ideas.js": "OK",
+    "resources.js": "OK",
+    "shared.js": "OK",
+    "vigencias.js": "OK",
+    "year-page.js": "OK"
+  },
+  "issues": {
+    "missing_local_references": [],
+    "duplicate_ids": [],
+    "missing_alt": [],
+    "empty_alt": [],
+    "dynamic_missing_alt": [],
+    "missing_main_landmark": [],
+    "missing_spanish_lang": []
+  }
+}

@@ -8,11 +8,11 @@
 </head>
 <body data-page="home">
   <div id="siteHeader"></div>
-  <main>
+  <main id="main-content">
     <section class="home-hero">
-      <div class="hero-cloud cloud-a"></div><div class="hero-cloud cloud-b"></div>
-      <div class="sun-disc"></div><div class="mountain-layer"></div><div class="lake-layer"></div><div class="hill-layer"></div>
-      <div class="hero-person"><span class="person-arm arm-left"></span><span class="person-arm arm-right"></span></div>
+      <div class="hero-cloud cloud-a" aria-hidden="true"></div><div class="hero-cloud cloud-b" aria-hidden="true"></div>
+      <div class="sun-disc" aria-hidden="true"></div><div class="mountain-layer" aria-hidden="true"></div><div class="lake-layer" aria-hidden="true"></div><div class="hill-layer" aria-hidden="true"></div>
+      <div class="hero-person" aria-hidden="true"><span class="person-arm arm-left"></span><span class="person-arm arm-right"></span></div>
       <div class="site-shell home-hero__grid">
         <div class="home-hero__copy reveal">
           <span>PORTAL HISTÓRICO · SAN PEDRO</span>
@@ -27,8 +27,8 @@
 
     <section class="explorer-bar">
       <div class="site-shell explorer-panel">
-        <div class="explorer-tabs"><button class="active">▣ Vigencias</button><button>▤ Recursos</button><button>✦ Ideas ciudadanas</button></div>
-        <form class="explorer-form" id="homeExploreForm">
+        <div class="explorer-tabs"><button class="active" type="button"><span aria-hidden="true">▣</span> Vigencias</button><button type="button"><span aria-hidden="true">▤</span> Recursos</button><button type="button"><span aria-hidden="true">✦</span> Ideas ciudadanas</button></div>
+        <form class="explorer-form" id="homeExploreForm" aria-label="Selector de vigencia">
           <div class="field-box"><label>Vigencia</label><select id="homeYear"></select></div>
           <div class="field-box"><label>Consulta principal</label><input value="Resumen general de la gestión" readonly></div>
           <div class="field-box"><label>Contenido</label><input value="Indicadores, documentos y compromisos" readonly></div>
@@ -73,7 +73,7 @@
     <section class="newsletter-bar">
       <div class="site-shell newsletter-box reveal">
         <div><h2>Reciba nuevas publicaciones</h2><p><b id="homeResourceCount">0</b> recursos se encuentran disponibles actualmente.</p></div>
-        <form id="newsletterForm"><input type="email" placeholder="Correo electrónico" required><button class="button button-primary">Suscribirme</button></form>
+        <form id="newsletterForm" aria-label="Suscripción a publicaciones"><input type="email" placeholder="Correo electrónico" required><button class="button button-primary">Suscribirme</button></form>
       </div>
     </section>
   </main>

@@ -69,3 +69,23 @@ Suba todos los archivos y la carpeta `assets` a la raíz del repositorio.
 Después:
 
 `Settings → Pages → Deploy from a branch → main → / (root)`
+
+
+## Mejoras V5
+
+- Encabezado completo fijo durante el desplazamiento.
+- Logo multicolor suministrado por el usuario al lado del nombre del portal.
+- Alineación y alturas uniformes en tarjetas, botones y formularios.
+- Eliminación de giros y movimientos que generaban apariencia desordenada.
+- Animaciones cortas y fluidas.
+- Mejoras responsive para computadores, tabletas y celulares.
+- Enlace para saltar directamente al contenido.
+- Texto alternativo descriptivo en imágenes institucionales.
+- Controles con nombres accesibles y estados ARIA.
+- Narrador de texto con:
+  - lectura de página completa;
+  - lectura por secciones;
+  - control de velocidad;
+  - pausa, continuación y detención;
+  - preferencia por voces en español de Colombia.
+- Respeto por la configuración de movimiento reducido del dispositivo.
