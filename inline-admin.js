@@ -7,8 +7,22 @@
   let inspectorTarget = null;
   let mutationObserver = null;
   let saveTimer = null;
+  let bannerTimer = null;
+  let bannerIndex = 0;
 
   const pageKey = () => helpers.pageKey();
+
+  function normalizeBannerConfig(config = {}) {
+    if (!config || typeof config !== "object") config = {};
+    if (!Array.isArray(config.slides)) config.slides = config.image ? [config.image] : [];
+    config.slides = config.slides.filter(Boolean).slice(0,5);
+    if (!config.rotationMs) config.rotationMs = 6000;
+    if (typeof config.overlay !== "number") config.overlay = 22;
+    if (!config.position) config.position = "center center";
+    if (!config.textAlign) config.textAlign = "left";
+    return config;
+  }
+
 
   function pageData() {
     const key = pageKey();
@@ -17,6 +31,8 @@
         publication: { status:"published", publishAt:"" },
         banner: {
           image:"",
+          slides:[],
+          rotationMs:6000,
           height:"",
           position:"center center",
           overlay:22,
@@ -28,6 +44,7 @@
         customBlocks:[]
       };
     }
+    state.pageSettings[key].banner = normalizeBannerConfig(state.pageSettings[key].banner);
     return state.pageSettings[key];
   }
 
@@ -188,248 +205,139 @@
           <div><strong>Edición directa</strong><small>${pageKey()}</small></div>
         </div>
 
-        <div class="inline-admin-actions">
+        
+<div class="inline-admin-actions">
           <button type="button" class="inline-toolbar-button inline-drive-quick" id="inlineDriveQuick">
             <span class="drive-status-dot" id="inlineDriveQuickDot"></span>
             <span id="inlineDriveQuickLabel">Google Drive</span>
           </button>
 
-          <details class="inline-admin-menu">
-            <summary>Apariencia</summary>
-            <div class="inline-admin-menu__panel">
-              <label>Color principal<input id="inlinePrimary" type="color" value="${s.primary}"></label>
-              <label>Color de acento<input id="inlineAccent" type="color" value="${s.accent}"></label>
-              <label>Tamaño de letra <output id="inlineFontOutput">${s.fontScale}%</output>
-                <input id="inlineFontScale" type="range" min="90" max="125" value="${s.fontScale}">
-              </label>
-              <label>Ancho del contenido
-                <select id="inlineContentWidth">
-                  <option value="1120" ${Number(s.contentWidth)===1120?"selected":""}>Compacto</option>
-                  <option value="1200" ${Number(s.contentWidth||1200)===1200?"selected":""}>Estándar</option>
-                  <option value="1320" ${Number(s.contentWidth)===1320?"selected":""}>Amplio</option>
-                </select>
-              </label>
-              <label>Animaciones
-                <select id="inlineAnimation">
-                  <option value="smooth" ${s.animationMode==="smooth"?"selected":""}>Fluidas</option>
-                  <option value="subtle" ${s.animationMode==="subtle"?"selected":""}>Sutiles</option>
-                  <option value="none" ${s.animationMode==="none"?"selected":""}>Sin animación</option>
-                </select>
-              </label>
-            </div>
-          </details>
+          <details class="inline-admin-menu inline-admin-hub">
+            <summary>Panel de control</summary>
+            <div class="inline-admin-hub__panel">
+              <section class="inline-control-card">
+                <div class="inline-control-card__head">
+                  <strong>Apariencia general</strong>
+                  <small>Colores, tipografía, ancho y animaciones.</small>
+                </div>
+                <div class="inline-control-grid">
+                  <label>Color principal<input id="inlinePrimary" type="color" value="${s.primary}"></label>
+                  <label>Color de acento<input id="inlineAccent" type="color" value="${s.accent}"></label>
+                  <label>Tamaño de letra <output id="inlineFontOutput">${s.fontScale}%</output>
+                    <input id="inlineFontScale" type="range" min="90" max="130" value="${s.fontScale}">
+                  </label>
+                  <label>Ancho del contenido
+                    <select id="inlineContentWidth">
+                      <option value="1120" ${Number(s.contentWidth)===1120?"selected":""}>Compacto</option>
+                      <option value="1200" ${Number(s.contentWidth||1200)===1200?"selected":""}>Estándar</option>
+                      <option value="1320" ${Number(s.contentWidth)===1320?"selected":""}>Amplio</option>
+                    </select>
+                  </label>
+                  <label>Animaciones
+                    <select id="inlineAnimation">
+                      <option value="smooth" ${s.animationMode==="smooth"?"selected":""}>Fluidas</option>
+                      <option value="subtle" ${s.animationMode==="subtle"?"selected":""}>Sutiles</option>
+                      <option value="none" ${s.animationMode==="none"?"selected":""}>Sin animación</option>
+                    </select>
+                  </label>
+                </div>
+              </section>
 
-          <details class="inline-admin-menu">
-            <summary>Encabezado y logos</summary>
-            <div class="inline-admin-menu__panel">
-              <label>Altura de la barra <output id="inlineHeaderOutput">${s.headerHeight}px</output>
-                <input id="inlineHeaderHeight" type="range" min="64" max="96" value="${s.headerHeight}">
-              </label>
-              <label>Tamaño del escudo <output id="inlineCrestOutput">${s.crestSize}px</output>
-                <input id="inlineCrestSize" type="range" min="34" max="72" value="${s.crestSize}">
-              </label>
-              <label>Tamaño de la marca <output id="inlineBrandOutput">${s.brandSize}px</output>
-                <input id="inlineBrandSize" type="range" min="72" max="210" value="${s.brandSize}">
-              </label>
-              <label class="inline-check"><input id="inlineShowBrand" type="checkbox" ${s.showTourismLogo!==false?"checked":""}> Mostrar marca San Pedro</label>
-              <label class="inline-file">Cambiar escudo<input id="inlineCrestUpload" type="file" accept="image/*"></label>
-              <label class="inline-file">Cambiar marca<input id="inlineBrandUpload" type="file" accept="image/*"></label>
-              <button type="button" class="inline-mini-button" id="inlineResetLogos">Restablecer logos</button>
-            </div>
-          </details>
+              <section class="inline-control-card">
+                <div class="inline-control-card__head">
+                  <strong>Encabezado y logos</strong>
+                  <small>Escudo, marca San Pedro y tamaño de la cabecera.</small>
+                </div>
+                <div class="inline-control-grid">
+                  <label>Altura de la barra <output id="inlineHeaderOutput">${s.headerHeight}px</output>
+                    <input id="inlineHeaderHeight" type="range" min="64" max="110" value="${s.headerHeight}">
+                  </label>
+                  <label>Tamaño del escudo <output id="inlineCrestOutput">${s.crestSize}px</output>
+                    <input id="inlineCrestSize" type="range" min="34" max="82" value="${s.crestSize}">
+                  </label>
+                  <label>Tamaño de la marca <output id="inlineBrandOutput">${s.brandSize}px</output>
+                    <input id="inlineBrandSize" type="range" min="72" max="230" value="${s.brandSize}">
+                  </label>
+                  <label class="inline-check"><input id="inlineShowBrand" type="checkbox" ${s.showTourismLogo!==false?"checked":""}> Mostrar marca San Pedro</label>
+                  <label class="inline-file">Cambiar escudo<input id="inlineCrestUpload" type="file" accept="image/*"></label>
+                  <label class="inline-file">Cambiar marca<input id="inlineBrandUpload" type="file" accept="image/*"></label>
+                </div>
+                <div class="inline-control-actions">
+                  <button type="button" class="inline-mini-button" id="inlineResetLogos">Restablecer logos</button>
+                </div>
+              </section>
 
-          <details class="inline-admin-menu">
-            <summary>Banner</summary>
-            <div class="inline-admin-menu__panel">
-              <label class="inline-file">Subir imagen del banner<input id="inlineBannerUpload" type="file" accept="image/*"></label>
-              <label>Altura <output id="inlineBannerOutput">${p.banner.height || "Automática"}</output>
-                <input id="inlineBannerHeight" type="range" min="360" max="820" value="${parseInt(p.banner.height)||610}">
-              </label>
-              <label>Posición
-                <select id="inlineBannerPosition">
-                  ${["center center","center top","center bottom","left center","right center"].map(value => `<option value="${value}" ${p.banner.position===value?"selected":""}>${value.replace("center","Centro").replace("top","Arriba").replace("bottom","Abajo").replace("left","Izquierda").replace("right","Derecha")}</option>`).join("")}
-                </select>
-              </label>
-              <label>Oscurecimiento <output id="inlineOverlayOutput">${p.banner.overlay}%</output>
-                <input id="inlineBannerOverlay" type="range" min="0" max="70" value="${p.banner.overlay}">
-              </label>
-              <label>Alineación del texto
-                <select id="inlineBannerAlign">
-                  <option value="left" ${p.banner.textAlign==="left"?"selected":""}>Izquierda</option>
-                  <option value="center" ${p.banner.textAlign==="center"?"selected":""}>Centro</option>
-                </select>
-              </label>
-              <button type="button" class="inline-mini-button" id="inlineRemoveBanner">Quitar imagen</button>
-            </div>
-          </details>
-
-          <details class="inline-admin-menu">
-            <summary>Publicación</summary>
-            <div class="inline-admin-menu__panel">
-              <label>Estado
-                <select id="inlinePublicationStatus">
-                  <option value="published" ${p.publication.status==="published"?"selected":""}>Publicado</option>
-                  <option value="draft" ${p.publication.status==="draft"?"selected":""}>Borrador</option>
-                  <option value="scheduled" ${p.publication.status==="scheduled"?"selected":""}>Programado</option>
-                </select>
-              </label>
-              <label>Fecha de publicación<input id="inlinePublishAt" type="datetime-local" value="${p.publication.publishAt || ""}"></label>
-              <p>La programación funciona localmente en esta versión estática.</p>
-            </div>
-          </details>
-
-          <details class="inline-admin-menu">
-            <summary>Contenido ＋</summary>
-            <div class="inline-admin-menu__panel">
-              <button type="button" class="inline-content-create" data-create-entity="year">＋ Nueva vigencia</button>
-              <button type="button" class="inline-content-create" data-create-entity="resource">＋ Nuevo recurso</button>
-              <button type="button" class="inline-content-create" data-create-entity="idea">＋ Nueva idea ciudadana</button>
-            </div>
-          </details>
-
-          <details class="inline-admin-menu drive-admin-menu drive-admin-drawer" id="inlineDriveMenu">
-            <summary class="drive-hidden-summary">Configuración de Google Drive</summary>
-
-            <section class="inline-admin-menu__panel drive-admin-panel"
-              role="dialog"
-              aria-modal="false"
-              aria-labelledby="drivePanelTitle">
-
-              <header class="drive-panel-heading">
-                <div class="drive-panel-title">
-                  <span class="drive-panel-logo" aria-hidden="true"><i></i><b></b><u></u></span>
+              <section class="inline-control-card">
+                <div class="inline-control-card__head">
+                  <strong>Banner principal</strong>
+                  <small>Carrusel institucional de hasta 5 imágenes. Tamaño recomendado: 1600 × 900 px.</small>
+                </div>
+                <div class="inline-control-grid">
+                  <label class="inline-file">Subir imagen principal<input id="inlineBannerUpload" type="file" accept="image/*"></label>
+                  <label class="inline-file">Subir galería del banner (máx. 5 imágenes)<input id="inlineBannerGallery" type="file" accept="image/*" multiple></label>
+                  <label>Altura <output id="inlineBannerOutput">${p.banner.height || "Automática"}</output>
+                    <input id="inlineBannerHeight" type="range" min="420" max="860" value="${parseInt(p.banner.height)||610}">
+                  </label>
+                  <label>Posición
+                    <select id="inlineBannerPosition">
+                      ${["center center","center top","center bottom","left center","right center"].map(value => `<option value="${value}" ${p.banner.position===value?"selected":""}>${value.replace("center","Centro").replace("top","Arriba").replace("bottom","Abajo").replace("left","Izquierda").replace("right","Derecha")}</option>`).join("")}
+                    </select>
+                  </label>
+                  <label>Intensidad del degradado <output id="inlineOverlayOutput">${p.banner.overlay}%</output>
+                    <input id="inlineBannerOverlay" type="range" min="0" max="75" value="${p.banner.overlay}">
+                  </label>
+                  <label>Alineación del texto
+                    <select id="inlineBannerAlign">
+                      <option value="left" ${p.banner.textAlign==="left"?"selected":""}>Izquierda</option>
+                      <option value="center" ${p.banner.textAlign==="center"?"selected":""}>Centro</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="inline-banner-meta">
                   <div>
-                    <strong id="drivePanelTitle">Google Drive del portal</strong>
-                    <small>Archivos, evidencias y documentos institucionales</small>
+                    <strong>Rotación automática:</strong>
+                    <span>cada 6 segundos</span>
+                  </div>
+                  <div>
+                    <strong>Imágenes cargadas:</strong>
+                    <span id="inlineBannerCount">${(p.banner.slides || []).filter(Boolean).length || (p.banner.image ? 1 : 0)}</span>
                   </div>
                 </div>
-
-                <button type="button"
-                  id="inlineDriveClose"
-                  class="drive-icon-button drive-close-button"
-                  aria-label="Cerrar panel de Google Drive">×</button>
-              </header>
-
-              <div class="drive-panel-body">
-                <div class="drive-connection-card">
-                  <div class="drive-connection-copy">
-                    <span class="drive-status-dot" id="inlineDriveDot"></span>
-                    <div>
-                      <strong id="inlineDriveConfigurationTitle">Configuración preparada</strong>
-                      <small id="inlineDriveStatus">Validando configuración…</small>
-                    </div>
-                  </div>
-
-                  <button type="button"
-                    class="drive-main-connect"
-                    id="inlineDriveConnect">
-                    Conectar Google Drive
-                  </button>
+                <div class="inline-banner-preview-strip" id="inlineBannerPreviewStrip"></div>
+                <div class="inline-control-actions">
+                  <button type="button" class="inline-mini-button" id="inlineRemoveBanner">Limpiar banner</button>
                 </div>
+              </section>
 
-                <section class="drive-panel-section">
-                  <div class="drive-section-heading">
-                    <div>
-                      <span>01</span>
-                      <div>
-                        <strong>Carpeta principal</strong>
-                        <small>Seleccione dónde se organizarán los archivos del portal.</small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="drive-folder-grid">
-                    <label>Nombre de la carpeta
-                      <input id="inlineDriveFolderName"
-                        value="${helpers.escape(driveConfig.rootFolderName || "Rendición de Cuentas San Pedro")}">
-                    </label>
-
-                    <label>ID de carpeta existente
-                      <input id="inlineDriveFolderId"
-                        value="${helpers.escape(driveConfig.rootFolderId || "")}"
-                        placeholder="Puede permanecer vacío">
-                    </label>
-                  </div>
-
-                  <div class="drive-folder-actions">
-                    <button type="button" class="drive-secondary-action" id="inlineDrivePick">
-                      Elegir carpeta
-                    </button>
-                    <button type="button" class="drive-secondary-action" id="inlineDriveCreate">
-                      Crear carpeta nueva
-                    </button>
-                    <button type="button" class="drive-secondary-action" id="inlineDriveOpen">
-                      Abrir carpeta
-                    </button>
-                  </div>
-                </section>
-
-                <details class="drive-advanced-settings">
-                  <summary>
-                    <span>02</span>
-                    <div>
-                      <strong>Configuración técnica</strong>
-                      <small>Client ID, Picker API key y número del proyecto.</small>
-                    </div>
-                    <b aria-hidden="true">＋</b>
-                  </summary>
-
-                  <div class="drive-fields-grid">
-                    <label class="drive-field-wide">ID de cliente OAuth
-                      <input id="inlineDriveClientId"
-                        autocomplete="off"
-                        value="${helpers.escape(driveConfig.clientId || "")}"
-                        placeholder="000000000000-....apps.googleusercontent.com">
-                    </label>
-
-                    <label class="drive-field-wide">API key de Google Picker
-                      <input id="inlineDriveApiKey"
-                        autocomplete="off"
-                        value="${helpers.escape(driveConfig.apiKey || "")}"
-                        placeholder="AIza...">
-                    </label>
-
-                    <label>Número del proyecto
-                      <input id="inlineDriveAppId"
-                        inputmode="numeric"
-                        value="${helpers.escape(driveConfig.appId || "")}"
-                        placeholder="103022555921">
-                    </label>
-
-                    <label class="inline-check drive-public-check">
-                      <input id="inlineDrivePublic"
-                        type="checkbox"
-                        ${driveConfig.makeFilesPublic !== false ? "checked" : ""}>
-                      <span>Publicar archivos para cualquier persona con el enlace</span>
-                    </label>
-                  </div>
-                </details>
-
-                <div class="drive-upload-progress" id="inlineDriveProgress" hidden>
-                  <span id="inlineDriveProgressLabel">Preparando archivo…</span>
-                  <i><u id="inlineDriveProgressBar"></u></i>
+              <section class="inline-control-card">
+                <div class="inline-control-card__head">
+                  <strong>Publicación y estructura</strong>
+                  <small>Estado de la edición y creación de contenidos.</small>
                 </div>
-
-                <footer class="drive-panel-footer">
-                  <p class="drive-panel-note">
-                    <strong>Distribución de la información:</strong>
-                    Firestore almacena datos, indicadores y enlaces. Google Drive conserva PDF, Excel, imágenes, videos y evidencias.
-                  </p>
-
-                  <button type="button"
-                    class="drive-disconnect-button"
-                    id="inlineDriveDisconnect">
-                    Desconectar cuenta
-                  </button>
-                </footer>
-              </div>
-            </section>
+                <div class="inline-control-grid">
+                  <label>Estado
+                    <select id="inlinePublicationStatus">
+                      <option value="published" ${p.publication.status==="published"?"selected":""}>Publicado</option>
+                      <option value="draft" ${p.publication.status==="draft"?"selected":""}>Borrador</option>
+                      <option value="scheduled" ${p.publication.status==="scheduled"?"selected":""}>Programado</option>
+                    </select>
+                  </label>
+                  <label>Fecha de publicación<input id="inlinePublishAt" type="datetime-local" value="${p.publication.publishAt || ""}"></label>
+                </div>
+                <p class="inline-control-note">La programación funciona localmente en esta versión estática.</p>
+                <div class="inline-control-actions inline-control-actions--wrap">
+                  <button type="button" class="inline-content-create" data-create-entity="year">＋ Nueva vigencia</button>
+                  <button type="button" class="inline-content-create" data-create-entity="resource">＋ Nuevo recurso</button>
+                  <button type="button" class="inline-content-create" data-create-entity="idea">＋ Nueva idea ciudadana</button>
+                  <button type="button" class="inline-toolbar-button" id="inlineNewBlock">＋ Nuevo bloque</button>
+                  <button type="button" class="inline-toolbar-button" id="inlineVisitorView">Vista visitante</button>
+                </div>
+              </section>
+            </div>
           </details>
 
           <button type="button" class="inline-toolbar-button firebase-sync-button" id="inlineFirebaseSync"><span class="firebase-sync-dot"></span> Firestore</button>
           <button type="button" class="inline-toolbar-button users-admin-button" id="inlineManageUsers" hidden>Usuarios</button>
-          <button type="button" class="inline-toolbar-button" id="inlineNewBlock">＋ Nuevo bloque</button>
-          <button type="button" class="inline-toolbar-button" id="inlineVisitorView">Vista visitante</button>
           <button type="button" class="inline-toolbar-button is-danger" id="inlineLogout">Cerrar sesión</button>
         </div>
 
@@ -558,9 +466,38 @@
 
     get("#inlineBannerUpload")?.addEventListener("change", async event => {
       try {
-        pageData().banner.image = await persistImage(await compressedImage(event.target.files[0], {maxWidth:2200,maxHeight:1200,quality:.84}),`banners/${pageKey()}`);
+        const savedImage = await persistImage(await compressedImage(event.target.files[0], {maxWidth:2200,maxHeight:1200,quality:.84}),`banners/${pageKey()}`);
+        const banner = normalizeBannerConfig(pageData().banner);
+        banner.image = savedImage;
+        if (!banner.slides.length) banner.slides = [savedImage];
+        else banner.slides[0] = savedImage;
+        updateBannerPreview();
         applyBanner();
         persist();
+      } catch (error) { helpers.toast(error.message); }
+      event.target.value = "";
+    });
+
+    get("#inlineBannerGallery")?.addEventListener("change", async event => {
+      try {
+        const files = Array.from(event.target.files || []).slice(0,5);
+        if (!files.length) return;
+        const slides = [];
+        for (let index = 0; index < files.length; index += 1) {
+          const file = files[index];
+          const saved = await persistImage(
+            await compressedImage(file, {maxWidth:2200,maxHeight:1400,quality:.84}),
+            `banners/${pageKey()}/slide-${index + 1}`
+          );
+          slides.push(saved);
+        }
+        const banner = normalizeBannerConfig(pageData().banner);
+        banner.slides = slides;
+        banner.image = slides[0] || banner.image || "";
+        updateBannerPreview();
+        applyBanner();
+        persist();
+        helpers.toast(`Galería del banner actualizada (${slides.length} imágenes).`);
       } catch (error) { helpers.toast(error.message); }
       event.target.value = "";
     });
@@ -588,8 +525,11 @@
       persist();
     });
     get("#inlineRemoveBanner")?.addEventListener("click", () => {
-      pageData().banner.image = "";
-      pageData().banner.height = "";
+      const banner = normalizeBannerConfig(pageData().banner);
+      banner.image = "";
+      banner.slides = [];
+      banner.height = "";
+      updateBannerPreview();
       applyBanner();
       persist();
     });
@@ -608,6 +548,7 @@
     document.querySelectorAll("[data-create-entity]").forEach(button => {
       button.addEventListener("click", () => openNewEntityInspector(button.dataset.createEntity));
     });
+    updateBannerPreview();
     const driveMenu = get("#inlineDriveMenu");
 
     function setDrivePanelOpen(open) {
@@ -728,6 +669,49 @@
     get("#inlineInspectorClose")?.addEventListener("click", closeInspector);
   }
 
+
+  function updateBannerPreview() {
+    const holder = document.querySelector("#inlineBannerPreviewStrip");
+    const count = document.querySelector("#inlineBannerCount");
+    if (!holder || !count) return;
+    const banner = normalizeBannerConfig(pageData().banner);
+    const slides = banner.slides.length ? banner.slides : (banner.image ? [banner.image] : []);
+    count.textContent = String(slides.length);
+    holder.innerHTML = slides.length
+      ? slides.map((src, index) => `<span class="inline-banner-thumb${index===0?" is-active":""}" style="background-image:url('${helpers.escape(src)}')" aria-label="Imagen ${index + 1} del banner"></span>`).join("")
+      : `<span class="inline-banner-thumb is-empty">Sin imágenes</span>`;
+  }
+
+  function ensureBannerMediaLayer(banner) {
+    let layer = banner.querySelector(".hero-custom-media");
+    if (!layer) {
+      layer = document.createElement("div");
+      layer.className = "hero-custom-media";
+      layer.setAttribute("aria-hidden","true");
+      banner.prepend(layer);
+    }
+    return layer;
+  }
+
+  function stopBannerRotation() {
+    if (bannerTimer) {
+      clearInterval(bannerTimer);
+      bannerTimer = null;
+    }
+    bannerIndex = 0;
+  }
+
+  function paintBannerLayer(layer, source, position) {
+    if (!layer) return;
+    layer.classList.add("is-fading");
+    window.setTimeout(() => {
+      layer.style.backgroundImage = source ? `url("${source}")` : "";
+      layer.style.backgroundPosition = position || "center center";
+      layer.style.backgroundSize = "cover";
+      layer.classList.remove("is-fading");
+    }, 140);
+  }
+
   function updateDrivePanel() {
     const status = window.DrivePortal?.getStatus?.();
     const config = window.DrivePortal?.getConfig?.() || {};
@@ -819,32 +803,48 @@
     return document.querySelector(".home-hero,.page-hero");
   }
 
+
   function applyBanner() {
     const banner = bannerElement();
     if (!banner) return;
-    const config = pageData().banner;
+    const config = normalizeBannerConfig(pageData().banner);
 
     banner.style.minHeight = config.height || "";
     banner.style.setProperty("--admin-banner-position", config.position || "center center");
     banner.style.setProperty("--admin-banner-overlay", String((config.overlay || 0) / 100));
 
-    if (config.image) {
-      banner.classList.add("has-admin-banner");
-      banner.style.backgroundImage =
-        `linear-gradient(rgba(3,29,67,${(config.overlay||0)/100}),rgba(3,29,67,${Math.min(.78,(config.overlay||0)/100+.12)})),url("${config.image}")`;
-      banner.style.backgroundPosition = config.position || "center center";
-      banner.style.backgroundSize = "cover";
-    } else {
-      banner.classList.remove("has-admin-banner");
-      banner.style.backgroundImage = "";
-      banner.style.backgroundPosition = "";
-      banner.style.backgroundSize = "";
-    }
-
     const copy = banner.querySelector(".home-hero__copy,.page-hero__grid>div:first-child");
     if (copy) {
       copy.style.textAlign = config.textAlign || "left";
       copy.classList.toggle("is-centered", config.textAlign === "center");
+    }
+
+    const slides = config.slides.length ? config.slides : (config.image ? [config.image] : []);
+    const media = ensureBannerMediaLayer(banner);
+
+    stopBannerRotation();
+
+    if (slides.length) {
+      banner.classList.add("has-admin-banner","has-hero-gallery");
+      paintBannerLayer(media, slides[0], config.position || "center center");
+      if (slides.length > 1) {
+        bannerTimer = window.setInterval(() => {
+          bannerIndex = (bannerIndex + 1) % slides.length;
+          paintBannerLayer(media, slides[bannerIndex], config.position || "center center");
+          document.querySelectorAll(".inline-banner-thumb").forEach((item, index) => {
+            item.classList.toggle("is-active", index === bannerIndex);
+          });
+        }, Number(config.rotationMs) || 6000);
+      } else {
+        document.querySelectorAll(".inline-banner-thumb").forEach((item, index) => {
+          item.classList.toggle("is-active", index === 0);
+        });
+      }
+    } else {
+      banner.classList.remove("has-admin-banner","has-hero-gallery");
+      media.style.backgroundImage = "";
+      media.style.backgroundPosition = "";
+      media.style.backgroundSize = "";
     }
   }
 
