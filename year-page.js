@@ -12,6 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.title = `Rendición de Cuentas ${year.year} | San Pedro`;
+  const yearMain = document.querySelector("#main-content");
+  if (yearMain) {
+    yearMain.dataset.adminEntity = "year";
+    yearMain.dataset.entityId = String(year.year);
+  }
   document.querySelectorAll("[data-year-text]").forEach(el => el.textContent = year.year);
   document.querySelector("#yearStatus").textContent = year.status;
   document.querySelector("#yearHeadline").textContent = year.headline;
@@ -41,11 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const resources = state.resources.filter(r => Number(r.year) === year.year);
   const featured = resources.slice(0,6);
   document.querySelector("#yearResources").innerHTML = featured.length ? featured.map(item => `
-    <button class="year-resource-card reveal visible" data-resource-id="${item.id}">
-      <span>${helpers.typeIcon(item.type)}</span>
+    <article class="year-resource-card reveal visible" data-resource-id="${item.id}" data-admin-entity="resource" data-entity-id="${item.id}">
+      <span class="${item.image ? "has-resource-image" : ""}" ${item.image ? `style="background-image:url('${item.image}')"` : ""}>${item.image ? "" : helpers.typeIcon(item.type)}</span>
       <div><small>${helpers.typeLabel(item.type)}</small><strong>${helpers.escape(item.title)}</strong><p>${helpers.escape(item.meta)}</p></div>
-      <b>↗</b>
-    </button>`).join("") : `
+      <button class="year-resource-open" type="button" aria-label="Ver recurso">↗</button>
+    </article>`).join("") : `
     <div class="empty-year"><strong>La documentación todavía no está publicada.</strong><p>La estructura está preparada para incorporar los recursos cuando estén disponibles.</p></div>`;
 
   const stories = [
@@ -82,6 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
       openDialog("storyDialog");
     }
   });
+
+  window.dispatchEvent(new CustomEvent("portal:rendered"));
 
   document.querySelector("#yearNewsletter").addEventListener("submit", event => {
     event.preventDefault();

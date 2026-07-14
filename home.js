@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const grid = document.querySelector("#featuredYears");
   grid.innerHTML = years.slice(0,4).map((year,index) => `
-    <article class="edition-card reveal visible ${index === 0 ? "edition-card--featured" : ""}">
-      <div class="edition-card__visual edition-visual-${index%3}">
+    <article class="edition-card reveal visible ${index === 0 ? "edition-card--featured" : ""}" data-admin-entity="year" data-entity-id="${year.year}">
+      <div class="edition-card__visual edition-visual-${index%3}${year.cover ? " has-cover-image" : ""}" ${year.cover ? `style="background-image:linear-gradient(rgba(5,34,78,.12),rgba(5,34,78,.3)),url('${year.cover}')"` : ""}>
         <span class="edition-discount">${year.progress}%</span>
         <div class="edition-landscape"><i></i><b></b><u></u></div>
         <small>${helpers.escape(year.status)}</small>
@@ -34,18 +34,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const editorialResources = state.resources.filter(r => r.featured).slice(0,3);
   document.querySelector("#editorialCards").innerHTML = editorialResources.map((item,index) => `
-    <article class="deal-card reveal visible">
-      <div class="deal-card__visual deal-${index}"><span>${helpers.typeIcon(item.type)}</span></div>
+    <article class="deal-card reveal visible" data-admin-entity="resource" data-entity-id="${item.id}">
+      <div class="deal-card__visual deal-${index}${item.image ? " has-cover-image" : ""}" ${item.image ? `style="background-image:linear-gradient(rgba(7,46,105,.18),rgba(7,46,105,.25)),url('${item.image}')"` : ""}><span>${helpers.typeIcon(item.type)}</span></div>
       <div><small>${item.year} · ${helpers.typeLabel(item.type)}</small><h3>${helpers.escape(item.title)}</h3><p>${helpers.escape(item.meta)}</p><a href="recursos.html?q=${encodeURIComponent(item.title)}">Ver detalles →</a></div>
     </article>`).join("");
 
   const ideas = state.ideas.slice(0,3);
   document.querySelector("#citizenQuotes").innerHTML = ideas.map(idea => `
-    <article class="quote-card reveal visible">
+    <article class="quote-card reveal visible" data-admin-entity="idea" data-entity-id="${idea.id}">
       <div class="quote-symbol">“</div>
       <p>${helpers.escape(idea.description)}</p>
       <div class="quote-author"><span>${helpers.escape(idea.author).charAt(0)}</span><div><strong>${helpers.escape(idea.author)}</strong><small>${helpers.escape(idea.location)} · ♥ ${idea.votes}</small></div></div>
     </article>`).join("");
+
+  const ideaEntryButton = document.querySelector(".ideas-cta .button");
+  if (ideaEntryButton) {
+    ideaEntryButton.textContent = "Ingresa o inicia →";
+    ideaEntryButton.classList.remove("button-secondary");
+    ideaEntryButton.classList.add("button-primary", "ideas-entry-button");
+  }
+
+  window.dispatchEvent(new CustomEvent("portal:rendered"));
 
   document.querySelector("#newsletterForm").addEventListener("submit", event => {
     event.preventDefault();

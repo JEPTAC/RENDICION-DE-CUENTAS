@@ -13,11 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return `<section class="idea-column">
         <div class="idea-column__head"><strong>${label}</strong><span>${ideas.length}</span></div>
         ${ideas.map(idea => `
-          <button class="idea-public-card" data-idea-open="${idea.id}">
+          <article class="idea-public-card" data-idea-open="${idea.id}" data-admin-entity="idea" data-entity-id="${idea.id}" role="button" tabindex="0">
             <div><span>${helpers.escape(idea.category)}</span><time>${helpers.escape(idea.created)}</time></div>
             <h3>${helpers.escape(idea.title)}</h3><p>${helpers.escape(idea.description)}</p>
             <footer><span>${helpers.escape(idea.location)}</span><b>♥ ${idea.votes}</b></footer>
-          </button>`).join("")}
+          </article>`).join("")}
       </section>`;
     }).join("");
 
@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#ideaAnalysis").textContent = state.ideas.filter(i => i.status === "analisis").length;
     document.querySelector("#ideaAccepted").textContent = state.ideas.filter(i => i.status === "aceptada").length;
     document.querySelector("#ideaResolved").textContent = state.ideas.filter(i => i.status === "resuelta").length;
+    window.dispatchEvent(new CustomEvent("portal:rendered"));
   }
 
   function openIdea(id) {
@@ -60,6 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
     Portal.closeDialog("newIdeaDialog");
     render();
     helpers.toast("Idea publicada en el tablero.");
+  });
+
+  document.addEventListener("keydown", event => {
+    const card = event.target.closest("[data-idea-open]");
+    if (card && (event.key === "Enter" || event.key === " ")) {
+      event.preventDefault();
+      openIdea(card.dataset.ideaOpen);
+    }
   });
 
   document.addEventListener("click", event => {

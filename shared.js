@@ -3,8 +3,10 @@
     years: "sp_v4_years",
     resources: "sp_v4_resources",
     ideas: "sp_v4_ideas",
-    settings: "sp_v4_settings",
-    admin: "sp_v4_admin"
+    settings: "sp_v6_settings",
+    content: "sp_v6_content",
+    pageSettings: "sp_v6_page_settings",
+    admin: "sp_v6_admin"
   };
 
   const DEFAULT_YEARS = [
@@ -106,8 +108,16 @@
     accent:"#f4b41a",
     background:"#f5f7fb",
     text:"#14213d",
-    fontScale:100,
-    radius:18
+    fontScale:106,
+    radius:18,
+    headerHeight:76,
+    crestSize:46,
+    brandSize:132,
+    showTourismLogo:true,
+    headerCrest:"",
+    headerBrand:"",
+    animationMode:"smooth",
+    contentWidth:1200
   };
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
@@ -135,6 +145,8 @@
     resources: loadArray(KEYS.resources, DEFAULT_RESOURCES),
     ideas: loadArray(KEYS.ideas, DEFAULT_IDEAS),
     settings: loadObject(KEYS.settings, DEFAULT_SETTINGS),
+    content: loadObject(KEYS.content, {}),
+    pageSettings: loadObject(KEYS.pageSettings, {}),
     admin: sessionStorage.getItem(KEYS.admin) === "1"
   };
 
@@ -181,6 +193,16 @@
       localStorage.setItem(KEYS.resources, JSON.stringify(state.resources));
       localStorage.setItem(KEYS.ideas, JSON.stringify(state.ideas));
       localStorage.setItem(KEYS.settings, JSON.stringify(state.settings));
+      localStorage.setItem(KEYS.content, JSON.stringify(state.content));
+      localStorage.setItem(KEYS.pageSettings, JSON.stringify(state.pageSettings));
+    },
+    pageKey() {
+      const filename = location.pathname.split("/").pop() || "index.html";
+      if (filename === "rendicion.html") {
+        const year = new URLSearchParams(location.search).get("year") || "general";
+        return `rendicion-${year}`;
+      }
+      return filename.replace(/\.html$/i, "") || "inicio";
     },
     toast(message) {
       let toast = document.querySelector("#globalToast");
@@ -209,6 +231,12 @@
     root.style.setProperty("--ink", s.text);
     root.style.setProperty("--font-scale", Number(s.fontScale) / 100);
     root.style.setProperty("--radius", `${s.radius}px`);
+    root.style.setProperty("--site-width", `${Number(s.contentWidth || 1200)}px`);
+    root.style.setProperty("--main-header-height", `${Number(s.headerHeight || 76)}px`);
+    root.style.setProperty("--header-base-height", `${31 + Number(s.headerHeight || 76)}px`);
+    root.style.setProperty("--crest-size", `${Number(s.crestSize || 46)}px`);
+    root.style.setProperty("--brand-logo-size", `${Number(s.brandSize || 132)}px`);
+    document.body.dataset.animationMode = s.animationMode || "smooth";
   }
 
   function renderHeader() {
@@ -235,14 +263,14 @@
 
       <header class="main-header">
         <div class="site-shell main-header__inner">
-          <a class="header-brand" href="index.html" aria-label="Ir a la portada de Rendición de Cuentas de San Pedro">
-            <img class="header-crest" src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro, Valle del Cauca">
+          <a class="header-brand${state.settings.showTourismLogo === false ? " no-tourism-logo" : ""}" href="index.html" aria-label="Ir a la portada de Rendición de Cuentas de San Pedro">
+            <img class="header-crest" src="${helpers.escape(state.settings.headerCrest || "assets/escudo-san-pedro.png")}" alt="Escudo oficial del municipio de San Pedro, Valle del Cauca">
             <span class="header-brand__copy">
               <strong>San Pedro</strong>
               <small>Rendición de Cuentas</small>
             </span>
-            <span class="header-brand__divider" aria-hidden="true"></span>
-            <img class="header-tourism-logo" src="assets/imagen-san-pedro-color.png" alt="Marca San Pedro, donde nacen los sueños">
+            <span class="header-brand__divider${state.settings.showTourismLogo === false ? " is-hidden" : ""}" aria-hidden="true"></span>
+            <img class="header-tourism-logo${state.settings.showTourismLogo === false ? " is-hidden" : ""}" src="${helpers.escape(state.settings.headerBrand || "assets/imagen-san-pedro-color.png")}" alt="Marca San Pedro, donde nacen los sueños">
           </a>
 
           <button class="mobile-nav-button" id="mobileNavButton" type="button" aria-label="Abrir menú principal" aria-expanded="false" aria-controls="primaryNav">☰</button>
@@ -250,7 +278,7 @@
           <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
             <a class="${active("home")}" href="index.html">Inicio</a>
             <div class="nav-dropdown">
-              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span aria-hidden="true">⌄</span></button>
+              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span class="nav-status-dot" aria-hidden="true"></span></button>
               <div class="nav-dropdown__menu">
                 ${years.map(y => `<a href="${helpers.yearUrl(y.year)}"><b>${y.year}</b><span>${helpers.escape(y.status)}</span></a>`).join("")}
                 <a href="vigencias.html"><b>Archivo histórico</b><span>Ver todas las ediciones</span></a>
@@ -265,7 +293,7 @@
               <span aria-hidden="true">🔊</span><span>Escuchar</span>
             </button>
             <button class="header-search" id="headerSearch" type="button" aria-label="Abrir búsqueda general"><span aria-hidden="true">⌕</span></button>
-            <button class="admin-entry" id="adminEntry" type="button">Administrador</button>
+            <button class="admin-entry${state.admin ? " is-active" : ""}" id="adminEntry" type="button">${state.admin ? "Editar página" : "Administrador"}</button>
           </div>
         </div>
       </header>
@@ -350,8 +378,8 @@
       <dialog class="dialog" id="loginDialog">
         <button class="dialog-close" data-close-dialog="loginDialog">×</button>
         <span class="section-kicker">ACCESO ADMINISTRATIVO</span>
-        <h2>Ingresar al panel</h2>
-        <p class="dialog-note">Acceso demostrativo local. La autenticación real se conectará posteriormente a Firebase.</p>
+        <h2>Activar edición directa</h2>
+        <p class="dialog-note">Al iniciar sesión se habilitarán controles de edición directamente sobre la página.</p>
         <form class="dialog-form" id="adminLoginForm">
           <label>Usuario<input name="username" required></label>
           <label>Contraseña<input name="password" type="password" required></label>
@@ -647,7 +675,11 @@
     document.querySelector("#globalSearchInput")?.addEventListener("input", event => searchPortal(event.target.value));
 
     document.querySelector("#adminEntry")?.addEventListener("click", () => {
-      state.admin ? (syncAdmin(), openDialog("adminPanel")) : openDialog("loginDialog");
+      if (state.admin) {
+        window.InlineAdmin?.activate();
+      } else {
+        openDialog("loginDialog");
+      }
     });
 
     document.querySelector("#adminLoginForm")?.addEventListener("submit", event => {
@@ -659,8 +691,13 @@
         event.target.reset();
         closeDialog("loginDialog");
         syncAdmin();
-        openDialog("adminPanel");
-        helpers.toast("Sesión iniciada.");
+        const button = document.querySelector("#adminEntry");
+        if (button) {
+          button.textContent = "Editar página";
+          button.classList.add("is-active");
+        }
+        window.InlineAdmin?.activate();
+        helpers.toast("Edición directa activada.");
       } else {
         helpers.toast("Credenciales incorrectas.");
       }
@@ -670,6 +707,12 @@
       state.admin = false;
       sessionStorage.removeItem(KEYS.admin);
       closeDialog("adminPanel");
+      window.InlineAdmin?.deactivate();
+      const button = document.querySelector("#adminEntry");
+      if (button) {
+        button.textContent = "Administrador";
+        button.classList.remove("is-active");
+      }
       helpers.toast("Sesión cerrada.");
     });
 
@@ -756,13 +799,18 @@
 
     document.querySelector("#exportPortal")?.addEventListener("click", () => {
       const blob = new Blob([JSON.stringify({
-        years:state.years, resources:state.resources, ideas:state.ideas, settings:state.settings,
+        years:state.years,
+        resources:state.resources,
+        ideas:state.ideas,
+        settings:state.settings,
+        content:state.content,
+        pageSettings:state.pageSettings,
         exportedAt:new Date().toISOString()
       }, null, 2)], { type:"application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "respaldo-rendicion-san-pedro-v4.json";
+      link.download = "respaldo-rendicion-san-pedro-v6.json";
       link.click();
       URL.revokeObjectURL(url);
     });
@@ -781,6 +829,21 @@
         if (event.target === dialog) dialog.close();
       });
     });
+  }
+
+
+  function loadInlineAdministration() {
+    if (document.querySelector('script[data-inline-admin]')) return;
+
+    const script = document.createElement("script");
+    script.src = "inline-admin.js";
+    script.dataset.inlineAdmin = "true";
+    script.onload = () => {
+      window.InlineAdmin?.init();
+      if (state.admin) window.InlineAdmin?.activate();
+    };
+    script.onerror = () => helpers.toast("No fue posible cargar el editor directo.");
+    document.head.appendChild(script);
   }
 
 
@@ -1171,6 +1234,7 @@
     renderGlobalDialogs();
     bindGlobalEvents();
     initReader();
+    loadInlineAdministration();
     syncAdmin();
     initReveal();
 
@@ -1183,6 +1247,6 @@
     });
   }
 
-  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings };
+  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, KEYS };
   document.addEventListener("DOMContentLoaded", init);
 })();

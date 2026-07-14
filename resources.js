@@ -18,14 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.querySelector("#resourceResultsCount").textContent = list.length;
     document.querySelector("#resourcePageGrid").innerHTML = list.length ? list.map(item => `
-      <article class="resource-library-card reveal visible">
-        <div class="resource-library-card__cover"><span>${helpers.typeIcon(item.type)}</span><small>${item.year}</small></div>
+      <article class="resource-library-card reveal visible" data-admin-entity="resource" data-entity-id="${item.id}">
+        <div class="resource-library-card__cover${item.image ? " has-cover-image" : ""}" ${item.image ? `style="background-image:linear-gradient(rgba(6,43,101,.12),rgba(6,43,101,.28)),url('${item.image}')"` : ""}><span>${item.image ? "" : helpers.typeIcon(item.type)}</span><small>${item.year}</small></div>
         <div class="resource-library-card__body"><small>${helpers.typeLabel(item.type)}</small><h3>${helpers.escape(item.title)}</h3><p>${helpers.escape(item.description)}</p><div><span>${helpers.escape(item.meta)}</span><button data-resource-open="${item.id}">Ver recurso →</button></div></div>
       </article>`).join("") : `<div class="empty-library"><strong>No encontramos recursos.</strong><p>Cambie los filtros o utilice otra palabra clave.</p></div>`;
+    window.dispatchEvent(new CustomEvent("portal:rendered"));
   }
 
   [search, yearFilter, typeFilter].forEach(el => el.addEventListener("input", render));
   render();
+  window.addEventListener("portal:datachange", render);
 
   document.addEventListener("click", event => {
     const button = event.target.closest("[data-resource-open]");
