@@ -1,219 +1,319 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Portal histórico y repositorio de Rendición de Cuentas." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portal histórico de Rendición de Cuentas: resultados, documentos, indicadores, compromisos y participación ciudadana.">
+  <meta name="theme-color" content="#08284b">
   <title>Rendición de Cuentas | Portal Histórico</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="reading-progress" id="readingProgress"></div>
 
-  <header class="topbar">
-    <div class="container topbar-inner">
+  <div class="accessibility-panel" id="accessibilityPanel" aria-hidden="true">
+    <div class="accessibility-head">
+      <strong>Accesibilidad</strong>
+      <button type="button" data-close-panel aria-label="Cerrar">×</button>
+    </div>
+    <button type="button" id="fontIncrease">Aumentar texto</button>
+    <button type="button" id="fontDecrease">Reducir texto</button>
+    <button type="button" id="contrastToggle">Alto contraste</button>
+    <button type="button" id="motionToggle">Reducir movimiento</button>
+    <button type="button" id="resetAccessibility">Restablecer</button>
+  </div>
+
+  <header class="site-header">
+    <div class="utility-bar">
+      <div class="container utility-inner">
+        <span>Portal institucional de información pública</span>
+        <div>
+          <button class="utility-button" id="accessibilityButton">Accesibilidad</button>
+          <button class="utility-button" id="openManagerButton">Gestionar portal</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="masthead container">
       <a class="brand" href="#inicio" aria-label="Ir al inicio">
         <span class="brand-seal">RC</span>
-        <span>
+        <span class="brand-copy">
           <strong>Rendición de Cuentas</strong>
-          <small>Transparencia, resultados y participación</small>
+          <small>Memoria institucional, resultados y participación</small>
         </span>
       </a>
 
-      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <div class="masthead-meta">
+        <span class="live-dot"></span>
+        <span>Repositorio activo</span>
+        <strong id="headerResourceCount">0 recursos</strong>
+      </div>
+    </div>
 
-      <nav class="main-nav" id="mainNav">
-        <a href="#inicio">Inicio</a>
-        <a href="#ediciones">Ediciones</a>
-        <a href="#resultados">Resultados</a>
-        <a href="#repositorio">Repositorio</a>
-        <a href="#participacion">Participación</a>
-      </nav>
-
-      <button class="search-trigger" id="searchTrigger" aria-label="Buscar">⌕</button>
+    <div class="nav-shell">
+      <div class="container nav-inner">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+        <nav class="main-nav" id="mainNav">
+          <a href="#inicio">Portada</a>
+          <a href="#vigencias">Vigencias</a>
+          <a href="#resultados">Resultados</a>
+          <a href="#historias">Historias</a>
+          <a href="#repositorio">Repositorio</a>
+          <a href="#compromisos">Compromisos</a>
+          <a href="#participacion">Participación</a>
+        </nav>
+        <button class="search-trigger" id="searchTrigger" aria-label="Abrir buscador">⌕ Buscar</button>
+      </div>
     </div>
   </header>
 
-  <section class="ticker" aria-label="Información destacada">
+  <section class="ticker" aria-label="Noticias destacadas">
     <div class="container ticker-inner">
-      <span class="ticker-label">AL DÍA</span>
-      <div class="ticker-track">
-        <span>Consulta informes, presentaciones, videos, indicadores y compromisos de cada vigencia.</span>
-        <span>La edición 2025 reúne los principales avances de la gestión institucional.</span>
-        <span>Participa, comenta y descarga la información pública disponible.</span>
+      <span class="ticker-label">EN PORTADA</span>
+      <div class="ticker-window">
+        <div class="ticker-track">
+          <span>Consulte informes, presentaciones, videos, bases de datos y compromisos por vigencia.</span>
+          <span>La edición 2025 reúne el balance institucional y las respuestas a la ciudadanía.</span>
+          <span>El portal está preparado para crear nuevas vigencias sin rediseñar la página.</span>
+          <span>Consulte informes, presentaciones, videos, bases de datos y compromisos por vigencia.</span>
+        </div>
       </div>
     </div>
   </section>
 
   <main id="inicio">
-    <section class="hero container reveal">
-      <div class="hero-main">
-        <div class="edition-kicker">EDICIÓN ESPECIAL · VIGENCIA 2025</div>
-        <h1>La gestión pública, explicada con datos, historias y resultados.</h1>
+    <section class="hero container">
+      <div class="hero-copy reveal">
+        <div class="edition-line">
+          <span class="edition-kicker">EDICIÓN HISTÓRICA</span>
+          <span id="heroCurrentEdition">VIGENCIA 2025</span>
+        </div>
+        <h1>La gestión pública se entiende mejor cuando cada dato cuenta una historia.</h1>
         <p class="hero-summary">
-          Un portal histórico para consultar la Rendición de Cuentas de cada año,
-          seguir el cumplimiento de metas y comprender el impacto de las decisiones institucionales.
+          Un gran repositorio editorial para revisar, comparar y comprender la Rendición de Cuentas
+          de 2025, 2026, 2027 y todas las vigencias que se creen en adelante.
         </p>
         <div class="hero-actions">
-          <a href="#ediciones" class="btn btn-primary">Explorar vigencias</a>
-          <a href="#repositorio" class="btn btn-light">Consultar documentos</a>
+          <a href="#vigencias" class="btn btn-primary">Explorar vigencias</a>
+          <button class="btn btn-secondary" id="openSummaryButton">Ver resumen rápido</button>
         </div>
-        <div class="hero-meta">
-          <span>Actualizado: julio de 2026</span>
-          <span>Lectura estimada: 8 min</span>
-          <span>Información pública</span>
+        <div class="hero-facts">
+          <div><strong id="heroYearsCount">3</strong><span>Vigencias</span></div>
+          <div><strong id="heroDocsCount">0</strong><span>Recursos</span></div>
+          <div><strong id="heroQuestionsCount">18</strong><span>Respuestas</span></div>
         </div>
       </div>
 
-      <aside class="hero-cover">
-        <div class="cover-overlay"></div>
-        <div class="cover-content">
-          <span class="cover-tag">Informe central</span>
-          <h2>Balance de gestión 2025</h2>
-          <p>Principales logros, inversión, cobertura, retos y compromisos.</p>
-          <a href="#resultados">Ver resumen ejecutivo →</a>
+      <aside class="hero-visual reveal" aria-label="Portada destacada">
+        <div class="visual-grid"></div>
+        <div class="visual-orbit orbit-one"></div>
+        <div class="visual-orbit orbit-two"></div>
+        <div class="newspaper-card">
+          <div class="newspaper-top">
+            <span>INFORME CENTRAL</span>
+            <span>2025</span>
+          </div>
+          <h2>Balance de gestión</h2>
+          <p>Avances, inversión, cobertura, retos y compromisos institucionales.</p>
+          <div class="newspaper-bars">
+            <span style="width:92%"></span>
+            <span style="width:74%"></span>
+            <span style="width:84%"></span>
+          </div>
+          <button type="button" class="text-link" data-open-year="2025">Abrir edición completa →</button>
         </div>
+        <div class="floating-note note-one">92%<small>Cumplimiento</small></div>
+        <div class="floating-note note-two">148<small>Proyectos</small></div>
       </aside>
     </section>
 
-    <section class="year-nav-wrap" id="ediciones">
+    <section class="quick-access">
+      <div class="container quick-grid">
+        <button class="quick-card reveal" data-scroll="#repositorio">
+          <span class="quick-icon">01</span>
+          <strong>Informes oficiales</strong>
+          <small>Documentos principales y anexos</small>
+        </button>
+        <button class="quick-card reveal" data-scroll="#resultados">
+          <span class="quick-icon">02</span>
+          <strong>Indicadores de gestión</strong>
+          <small>Avances y comparativos</small>
+        </button>
+        <button class="quick-card reveal" data-scroll="#compromisos">
+          <span class="quick-icon">03</span>
+          <strong>Compromisos</strong>
+          <small>Seguimiento público</small>
+        </button>
+        <button class="quick-card reveal" data-scroll="#participacion">
+          <span class="quick-icon">04</span>
+          <strong>Participación ciudadana</strong>
+          <small>Preguntas y observaciones</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="year-section" id="vigencias">
       <div class="container">
         <div class="section-heading reveal">
-          <span class="eyebrow">ARCHIVO HISTÓRICO</span>
-          <h2>Ediciones por vigencia</h2>
-          <p>Una estructura escalable para incorporar nuevas rendiciones de cuentas año tras año.</p>
-        </div>
-
-        <div class="year-tabs reveal" role="tablist" aria-label="Vigencias">
-          <button class="year-tab active" data-year="2025">2025</button>
-          <button class="year-tab" data-year="2026">2026</button>
-          <button class="year-tab" data-year="2027">2027</button>
-          <button class="year-tab" data-year="2028">2028</button>
-          <button class="year-tab" data-year="historico">Histórico</button>
-        </div>
-
-        <div class="year-feature reveal" id="yearFeature">
           <div>
-            <span class="year-status">VIGENCIA PUBLICADA</span>
-            <h3 id="yearTitle">Rendición de Cuentas 2025</h3>
-            <p id="yearDescription">
-              Consulte el informe central, la presentación pública, los anexos técnicos,
-              las respuestas ciudadanas y el seguimiento a compromisos.
-            </p>
+            <span class="eyebrow">ARCHIVO HISTÓRICO</span>
+            <h2>Una edición para cada vigencia</h2>
           </div>
-          <div class="year-stats">
-            <div><strong id="docsCount">18</strong><span>Documentos</span></div>
-            <div><strong id="videoCount">6</strong><span>Videos</span></div>
-            <div><strong id="commitmentCount">24</strong><span>Compromisos</span></div>
-          </div>
-          <a href="#repositorio" class="year-link">Abrir edición completa →</a>
+          <p>
+            Seleccione un año para consultar su portada, indicadores, documentos y compromisos.
+            También puede crear nuevas vigencias desde el módulo de gestión.
+          </p>
         </div>
+
+        <div class="year-toolbar reveal">
+          <div class="year-tabs" id="yearTabs" role="tablist" aria-label="Vigencias"></div>
+          <button class="add-year-button" id="addYearButton">＋ Crear vigencia</button>
+        </div>
+
+        <article class="year-feature reveal" id="yearFeature">
+          <div class="year-feature-main">
+            <span class="status-pill" id="yearStatus">PUBLICADA</span>
+            <h3 id="yearTitle">Rendición de Cuentas 2025</h3>
+            <p id="yearDescription"></p>
+            <div class="year-actions">
+              <button class="btn btn-primary" id="openYearButton">Abrir edición</button>
+              <button class="btn btn-ghost" id="compareButton">Comparar vigencias</button>
+            </div>
+          </div>
+          <div class="year-feature-stats">
+            <div><strong id="yearProgress">92%</strong><span>Avance general</span></div>
+            <div><strong id="docsCount">0</strong><span>Documentos</span></div>
+            <div><strong id="videoCount">0</strong><span>Videos</span></div>
+            <div><strong id="commitmentCount">0</strong><span>Compromisos</span></div>
+          </div>
+          <div class="progress-panel">
+            <div class="progress-label"><span>Cumplimiento de metas</span><strong id="progressLabel">92%</strong></div>
+            <div class="progress-track"><span id="progressBar" style="width:92%"></span></div>
+            <small>Valor demostrativo configurable por vigencia.</small>
+          </div>
+        </article>
+
+        <div class="year-cards" id="yearCards"></div>
       </div>
     </section>
 
     <section class="results-section" id="resultados">
       <div class="container">
         <div class="section-heading light reveal">
-          <span class="eyebrow">RESULTADOS EN CONTEXTO</span>
-          <h2>La gestión de un vistazo</h2>
-          <p>Indicadores demostrativos que pueden conectarse posteriormente a una base de datos o tablero institucional.</p>
+          <div>
+            <span class="eyebrow">RESULTADOS EN CONTEXTO</span>
+            <h2>Los números más importantes, sin perder el contexto</h2>
+          </div>
+          <p>Indicadores generales de la vigencia seleccionada. Pueden conectarse posteriormente a Supabase o a un tablero institucional.</p>
         </div>
 
         <div class="metrics-grid">
           <article class="metric-card reveal">
             <span class="metric-index">01</span>
-            <strong class="counter" data-target="92">0</strong><em>%</em>
+            <div><strong class="counter" id="metricPlan" data-target="92">0</strong><em>%</em></div>
             <h3>Cumplimiento del plan</h3>
-            <p>Avance consolidado de metas estratégicas para la vigencia seleccionada.</p>
+            <p>Avance consolidado de metas estratégicas.</p>
+            <button class="metric-more" data-info="plan">Más información</button>
           </article>
           <article class="metric-card reveal">
             <span class="metric-index">02</span>
-            <strong class="counter" data-target="148">0</strong>
+            <div><strong class="counter" id="metricProjects" data-target="148">0</strong></div>
             <h3>Proyectos ejecutados</h3>
-            <p>Iniciativas finalizadas o en operación con resultados verificables.</p>
+            <p>Iniciativas terminadas o en operación.</p>
+            <button class="metric-more" data-info="projects">Más información</button>
           </article>
           <article class="metric-card reveal">
             <span class="metric-index">03</span>
-            <strong class="counter" data-target="87">0</strong><em>%</em>
+            <div><strong class="counter" id="metricCommitments" data-target="87">0</strong><em>%</em></div>
             <h3>Compromisos atendidos</h3>
-            <p>Solicitudes y compromisos ciudadanos con gestión documentada.</p>
+            <p>Solicitudes con gestión documentada.</p>
+            <button class="metric-more" data-info="commitments">Más información</button>
           </article>
           <article class="metric-card reveal">
             <span class="metric-index">04</span>
-            <strong class="counter" data-target="36">0</strong>
+            <div><strong class="counter" id="metricParticipation" data-target="36">0</strong></div>
             <h3>Espacios de participación</h3>
-            <p>Encuentros, mesas, audiencias y ejercicios de diálogo ciudadano.</p>
+            <p>Mesas, encuentros y audiencias públicas.</p>
+            <button class="metric-more" data-info="participation">Más información</button>
           </article>
+        </div>
+
+        <div class="results-dashboard reveal">
+          <div class="dashboard-copy">
+            <span class="eyebrow">LECTURA VISUAL</span>
+            <h3>Distribución demostrativa del cumplimiento sectorial</h3>
+            <p>
+              Este componente resume el desempeño por líneas estratégicas. Los porcentajes y nombres
+              pueden administrarse desde una futura base de datos.
+            </p>
+          </div>
+          <div class="sector-bars">
+            <div><span><b>Infraestructura</b><strong>94%</strong></span><i><u style="width:94%"></u></i></div>
+            <div><span><b>Desarrollo social</b><strong>89%</strong></span><i><u style="width:89%"></u></i></div>
+            <div><span><b>Gestión administrativa</b><strong>86%</strong></span><i><u style="width:86%"></u></i></div>
+            <div><span><b>Participación ciudadana</b><strong>82%</strong></span><i><u style="width:82%"></u></i></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="editorial-grid container">
-      <article class="main-story reveal">
-        <span class="eyebrow">HISTORIA PRINCIPAL</span>
-        <h2>Más que cifras: una lectura clara del impacto de la gestión.</h2>
-        <p class="dropcap">
-          La Rendición de Cuentas debe permitir que cualquier ciudadano entienda qué se hizo,
-          cuánto se invirtió, qué cambió y cuáles asuntos siguen pendientes. Esta portada editorial
-          organiza la información por temas, vigencias y formatos.
-        </p>
-        <div class="story-columns">
-          <p>
-            Cada edición podrá incluir un resumen ejecutivo, noticias destacadas, indicadores,
-            comparativos, galerías, videos, respuestas ciudadanas, anexos y documentos descargables.
-          </p>
-          <p>
-            La navegación histórica facilita comparar resultados entre años y mantener la memoria
-            institucional en un único repositorio público, accesible y consultable.
-          </p>
-        </div>
-      </article>
-
-      <aside class="side-stories reveal">
-        <article>
-          <span>TRANSPARENCIA</span>
-          <h3>Información organizada por sectores, metas y dependencias.</h3>
-          <a href="#repositorio">Consultar fuentes →</a>
-        </article>
-        <article>
-          <span>PARTICIPACIÓN</span>
-          <h3>Preguntas ciudadanas, respuestas y seguimiento público.</h3>
-          <a href="#participacion">Participar →</a>
-        </article>
-        <article>
-          <span>DATOS ABIERTOS</span>
-          <h3>Descargas listas para análisis, verificación y reutilización.</h3>
-          <a href="#repositorio">Ver archivos →</a>
-        </article>
-      </aside>
-    </section>
-
-    <section class="timeline-section">
+    <section class="stories-section" id="historias">
       <div class="container">
         <div class="section-heading reveal">
-          <span class="eyebrow">RUTA DE LA RENDICIÓN</span>
-          <h2>Del dato al diálogo ciudadano</h2>
+          <div>
+            <span class="eyebrow">PERIÓDICO DE LA GESTIÓN</span>
+            <h2>Historias, avances y temas destacados</h2>
+          </div>
+          <p>La información técnica también puede presentarse de forma clara, visual y periodística.</p>
         </div>
-        <div class="timeline">
-          <article class="timeline-item reveal">
-            <span>1</span>
-            <div><h3>Preparación</h3><p>Consolidación de cifras, evidencias, informes y avances institucionales.</p></div>
+
+        <div class="editorial-layout">
+          <article class="lead-story reveal">
+            <div class="story-image story-image-main">
+              <span>GESTIÓN 2025</span>
+            </div>
+            <div class="lead-story-copy">
+              <span class="story-category">INFORME ESPECIAL</span>
+              <h3>Más que cifras: una lectura clara del impacto de la gestión institucional.</h3>
+              <p>
+                Cada edición reúne resultados, inversión, cobertura, proyectos, retos y compromisos
+                para que cualquier ciudadano pueda comprender qué se hizo y qué sigue pendiente.
+              </p>
+              <button class="text-link" data-open-story="impacto">Leer historia completa →</button>
+            </div>
           </article>
-          <article class="timeline-item reveal">
-            <span>2</span>
-            <div><h3>Publicación</h3><p>Divulgación de documentos, piezas informativas y resumen de resultados.</p></div>
-          </article>
-          <article class="timeline-item reveal">
-            <span>3</span>
-            <div><h3>Diálogo</h3><p>Audiencia pública, preguntas ciudadanas y explicación de la gestión.</p></div>
-          </article>
-          <article class="timeline-item reveal">
-            <span>4</span>
-            <div><h3>Seguimiento</h3><p>Registro de compromisos, responsables, fechas y estado de cumplimiento.</p></div>
-          </article>
+
+          <div class="secondary-stories">
+            <article class="story-card reveal">
+              <div class="story-image story-image-blue"><span>TRANSPARENCIA</span></div>
+              <span class="story-category">DATOS ABIERTOS</span>
+              <h3>Información organizada por sectores, metas y dependencias.</h3>
+              <button class="text-link" data-open-story="transparencia">Leer más →</button>
+            </article>
+            <article class="story-card reveal">
+              <div class="story-image story-image-gold"><span>PARTICIPACIÓN</span></div>
+              <span class="story-category">VOZ CIUDADANA</span>
+              <h3>Preguntas, respuestas oficiales y seguimiento público.</h3>
+              <button class="text-link" data-open-story="participacion">Leer más →</button>
+            </article>
+          </div>
+
+          <aside class="news-column reveal">
+            <div class="news-column-head"><span>ÚLTIMAS PUBLICACIONES</span><b>Actualidad</b></div>
+            <article>
+              <time>14 JUL 2026</time>
+              <h3>Se habilita el repositorio histórico para nuevas vigencias.</h3>
+            </article>
+            <article>
+              <time>30 JUN 2026</time>
+              <h3>Avanza la consolidación documental de la edición 2026.</h3>
+            </article>
+            <article>
+              <time>18 MAR 2026</time>
+              <h3>Seguimiento a compromisos derivados de la audiencia 2025.</h3>
+            </article>
+            <button class="text-link" id="openNewsButton">Ver todas las publicaciones →</button>
+          </aside>
         </div>
       </div>
     </section>
@@ -221,138 +321,159 @@
     <section class="repository-section" id="repositorio">
       <div class="container">
         <div class="section-heading reveal">
-          <span class="eyebrow">CENTRO DOCUMENTAL</span>
-          <h2>Repositorio de información</h2>
-          <p>Filtre los recursos por vigencia, tipo documental o palabra clave.</p>
+          <div>
+            <span class="eyebrow">CENTRO DOCUMENTAL</span>
+            <h2>Repositorio general de información</h2>
+          </div>
+          <p>Busque, filtre, visualice y organice recursos por año, formato o palabra clave.</p>
+        </div>
+
+        <div class="repository-summary reveal">
+          <div><strong id="repositoryTotal">0</strong><span>Recursos disponibles</span></div>
+          <div><strong id="repositoryPublished">0</strong><span>Publicados</span></div>
+          <div><strong id="repositoryYears">0</strong><span>Vigencias</span></div>
+          <button class="btn btn-primary" id="addResourceButton">＋ Agregar recurso</button>
         </div>
 
         <div class="repository-toolbar reveal">
           <label class="search-box">
             <span>⌕</span>
-            <input type="search" id="resourceSearch" placeholder="Buscar informe, anexo, presentación..." />
+            <input type="search" id="resourceSearch" placeholder="Buscar informe, anexo, presentación o tema...">
           </label>
-          <select id="yearFilter" aria-label="Filtrar por año">
+          <select id="yearFilter" aria-label="Filtrar por vigencia">
             <option value="all">Todas las vigencias</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
           </select>
-          <select id="typeFilter" aria-label="Filtrar por tipo">
+          <select id="typeFilter" aria-label="Filtrar por formato">
             <option value="all">Todos los formatos</option>
             <option value="informe">Informes</option>
             <option value="presentacion">Presentaciones</option>
             <option value="video">Videos</option>
             <option value="datos">Datos</option>
+            <option value="anexo">Anexos</option>
+          </select>
+          <select id="statusFilter" aria-label="Filtrar por estado">
+            <option value="all">Todos los estados</option>
+            <option value="publicado">Publicado</option>
+            <option value="borrador">Borrador</option>
+            <option value="programado">Programado</option>
           </select>
         </div>
 
-        <div class="resource-grid" id="resourceGrid">
-          <article class="resource-card reveal" data-year="2025" data-type="informe" data-search="informe de gestión central resultados 2025">
-            <div class="resource-icon">PDF</div>
-            <div>
-              <span>2025 · INFORME</span>
-              <h3>Informe de Gestión y Rendición de Cuentas</h3>
-              <p>Documento principal con resultados, ejecución, metas y retos.</p>
-              <div class="resource-meta"><span>84 páginas</span><span>4.8 MB</span></div>
-            </div>
-            <a href="#" aria-label="Abrir informe">↗</a>
-          </article>
+        <div class="resource-grid" id="resourceGrid"></div>
+        <div class="empty-state" id="emptyState">
+          <strong>No encontramos recursos</strong>
+          <p>Pruebe con otros filtros o agregue un nuevo documento.</p>
+        </div>
+      </div>
+    </section>
 
-          <article class="resource-card reveal" data-year="2025" data-type="presentacion" data-search="presentación audiencia pública 2025">
-            <div class="resource-icon">PPT</div>
-            <div>
-              <span>2025 · PRESENTACIÓN</span>
-              <h3>Presentación de la Audiencia Pública</h3>
-              <p>Síntesis visual utilizada durante la jornada de diálogo.</p>
-              <div class="resource-meta"><span>42 diapositivas</span><span>9.2 MB</span></div>
-            </div>
-            <a href="#" aria-label="Abrir presentación">↗</a>
-          </article>
-
-          <article class="resource-card reveal" data-year="2025" data-type="video" data-search="video audiencia pública transmisión 2025">
-            <div class="resource-icon">VID</div>
-            <div>
-              <span>2025 · VIDEO</span>
-              <h3>Transmisión de la Audiencia Pública</h3>
-              <p>Registro audiovisual completo del ejercicio de rendición.</p>
-              <div class="resource-meta"><span>1 h 48 min</span><span>Streaming</span></div>
-            </div>
-            <a href="#" aria-label="Abrir video">↗</a>
-          </article>
-
-          <article class="resource-card reveal" data-year="2025" data-type="datos" data-search="base de datos indicadores ejecución 2025">
-            <div class="resource-icon">XLS</div>
-            <div>
-              <span>2025 · DATOS</span>
-              <h3>Base consolidada de indicadores</h3>
-              <p>Archivo estructurado para consulta, análisis y reutilización.</p>
-              <div class="resource-meta"><span>12 hojas</span><span>1.3 MB</span></div>
-            </div>
-            <a href="#" aria-label="Abrir datos">↗</a>
-          </article>
-
-          <article class="resource-card reveal" data-year="2026" data-type="informe" data-search="avance informe preliminar 2026">
-            <div class="resource-icon">PDF</div>
-            <div>
-              <span>2026 · INFORME</span>
-              <h3>Informe preliminar de avance</h3>
-              <p>Corte de seguimiento para la preparación de la nueva vigencia.</p>
-              <div class="resource-meta"><span>En preparación</span><span>Borrador</span></div>
-            </div>
-            <a href="#" aria-label="Abrir informe">↗</a>
-          </article>
-
-          <article class="resource-card reveal" data-year="2027" data-type="informe" data-search="espacio reservado rendición 2027">
-            <div class="resource-icon">ARC</div>
-            <div>
-              <span>2027 · ARCHIVO</span>
-              <h3>Espacio reservado para la vigencia 2027</h3>
-              <p>La estructura se habilitará al iniciar el proceso correspondiente.</p>
-              <div class="resource-meta"><span>Próximamente</span><span>Programado</span></div>
-            </div>
-            <a href="#" aria-label="Abrir archivo">↗</a>
-          </article>
+    <section class="commitments-section" id="compromisos">
+      <div class="container">
+        <div class="section-heading light reveal">
+          <div>
+            <span class="eyebrow">SEGUIMIENTO PÚBLICO</span>
+            <h2>Compromisos derivados de la Rendición de Cuentas</h2>
+          </div>
+          <p>Una vista clara del estado, responsable, avance y fecha prevista de cada compromiso.</p>
         </div>
 
-        <p class="empty-state" id="emptyState">No se encontraron recursos con los filtros seleccionados.</p>
+        <div class="commitment-board">
+          <article class="commitment-card reveal">
+            <div class="commitment-top"><span class="commitment-status completed">Cumplido</span><b>2025-01</b></div>
+            <h3>Publicar la base consolidada de indicadores.</h3>
+            <p>Responsable: Planeación institucional</p>
+            <div class="mini-progress"><span style="width:100%"></span></div>
+            <small>100% · Actualizado el 30 de junio de 2026</small>
+          </article>
+          <article class="commitment-card reveal">
+            <div class="commitment-top"><span class="commitment-status progress">En ejecución</span><b>2025-02</b></div>
+            <h3>Fortalecer el seguimiento a solicitudes ciudadanas.</h3>
+            <p>Responsable: Atención al ciudadano</p>
+            <div class="mini-progress"><span style="width:74%"></span></div>
+            <small>74% · Próximo corte: septiembre de 2026</small>
+          </article>
+          <article class="commitment-card reveal">
+            <div class="commitment-top"><span class="commitment-status pending">Pendiente</span><b>2025-03</b></div>
+            <h3>Incorporar nuevos conjuntos de datos abiertos.</h3>
+            <p>Responsable: Tecnología y comunicaciones</p>
+            <div class="mini-progress"><span style="width:28%"></span></div>
+            <small>28% · Fecha prevista: diciembre de 2026</small>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="route-section">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">RUTA DE LA RENDICIÓN</span>
+            <h2>Del dato institucional al diálogo ciudadano</h2>
+          </div>
+        </div>
+        <div class="route-grid">
+          <article class="route-card reveal"><span>01</span><h3>Preparación</h3><p>Consolidación de cifras, evidencias e informes.</p></article>
+          <article class="route-card reveal"><span>02</span><h3>Publicación</h3><p>Divulgación de documentos y resultados.</p></article>
+          <article class="route-card reveal"><span>03</span><h3>Diálogo</h3><p>Audiencia, preguntas y explicación de la gestión.</p></article>
+          <article class="route-card reveal"><span>04</span><h3>Seguimiento</h3><p>Registro de compromisos y cumplimiento.</p></article>
+        </div>
       </div>
     </section>
 
     <section class="participation-section" id="participacion">
       <div class="container participation-grid">
-        <div class="reveal">
+        <div class="participation-copy reveal">
           <span class="eyebrow">VOZ CIUDADANA</span>
           <h2>La rendición se completa cuando la ciudadanía participa.</h2>
           <p>
-            Este módulo puede conectarse a un formulario institucional para recibir preguntas,
-            propuestas, observaciones y solicitudes de aclaración.
+            Consulte preguntas frecuentes o envíe observaciones relacionadas con una vigencia,
+            un documento, un indicador o un compromiso.
           </p>
-          <ul>
-            <li>Consultar respuestas oficiales</li>
-            <li>Hacer seguimiento a compromisos</li>
-            <li>Participar en la próxima audiencia</li>
-          </ul>
+
+          <div class="faq-list">
+            <details>
+              <summary>¿Qué documentos puedo encontrar en cada vigencia?</summary>
+              <p>Informes centrales, presentaciones, anexos, videos, bases de datos, respuestas y compromisos.</p>
+            </details>
+            <details>
+              <summary>¿Cómo se crea una nueva vigencia?</summary>
+              <p>Use “Gestionar portal” o “Crear vigencia”. En esta versión estática los datos se guardan en el navegador.</p>
+            </details>
+            <details>
+              <summary>¿Puedo comparar dos años?</summary>
+              <p>Sí. Use el botón “Comparar vigencias” para revisar indicadores y disponibilidad documental.</p>
+            </details>
+          </div>
         </div>
+
         <form class="participation-card reveal" id="participationForm">
-          <label>Nombre
-            <input type="text" placeholder="Nombre completo" required />
+          <div class="form-head">
+            <span>FORMULARIO CIUDADANO</span>
+            <h3>Envíe su pregunta u observación</h3>
+          </div>
+          <label>Nombre completo
+            <input type="text" name="name" placeholder="Escriba su nombre" required>
           </label>
           <label>Correo electrónico
-            <input type="email" placeholder="correo@ejemplo.com" required />
+            <input type="email" name="email" placeholder="correo@ejemplo.com" required>
           </label>
-          <label>Vigencia
-            <select required>
-              <option value="">Seleccione</option>
-              <option>2025</option>
-              <option>2026</option>
-              <option>2027</option>
+          <label>Vigencia relacionada
+            <select name="year" id="participationYear" required></select>
+          </label>
+          <label>Tipo de participación
+            <select name="type" required>
+              <option value="">Seleccione una opción</option>
+              <option>Pregunta</option>
+              <option>Observación</option>
+              <option>Propuesta</option>
+              <option>Solicitud de aclaración</option>
             </select>
           </label>
-          <label>Pregunta u observación
-            <textarea rows="4" placeholder="Escriba su mensaje..." required></textarea>
+          <label>Mensaje
+            <textarea name="message" rows="5" placeholder="Escriba su mensaje..." required></textarea>
           </label>
-          <button class="btn btn-primary" type="submit">Enviar participación</button>
-          <small id="formMessage"></small>
+          <button class="btn btn-primary" type="submit">Registrar participación</button>
+          <small id="formMessage">Los datos no se envían a un servidor en esta demostración.</small>
         </form>
       </div>
     </section>
@@ -361,10 +482,10 @@
       <div class="container newsletter-inner reveal">
         <div>
           <span>BOLETÍN DE TRANSPARENCIA</span>
-          <h2>Reciba actualizaciones sobre nuevas publicaciones.</h2>
+          <h2>Reciba avisos cuando se publique nueva información.</h2>
         </div>
         <form id="newsletterForm">
-          <input type="email" placeholder="Correo electrónico" required />
+          <input type="email" placeholder="Correo electrónico" required>
           <button type="submit">Suscribirme</button>
         </form>
       </div>
@@ -376,24 +497,27 @@
       <div>
         <div class="brand footer-brand">
           <span class="brand-seal">RC</span>
-          <span><strong>Rendición de Cuentas</strong><small>Portal histórico institucional</small></span>
+          <span class="brand-copy">
+            <strong>Rendición de Cuentas</strong>
+            <small>Portal histórico institucional</small>
+          </span>
         </div>
-        <p>Repositorio general de información pública, resultados, participación y seguimiento.</p>
+        <p>Repositorio general de resultados, documentos, compromisos y participación ciudadana.</p>
       </div>
       <div>
         <h3>Explorar</h3>
-        <a href="#ediciones">Vigencias</a>
+        <a href="#vigencias">Vigencias</a>
         <a href="#resultados">Resultados</a>
-        <a href="#repositorio">Documentos</a>
+        <a href="#repositorio">Repositorio</a>
       </div>
       <div>
-        <h3>Información</h3>
-        <a href="#">Transparencia</a>
-        <a href="#">Accesibilidad</a>
-        <a href="#">Protección de datos</a>
+        <h3>Participación</h3>
+        <a href="#compromisos">Compromisos</a>
+        <a href="#participacion">Preguntas</a>
+        <a href="#participacion">Observaciones</a>
       </div>
       <div>
-        <h3>Contacto</h3>
+        <h3>Información institucional</h3>
         <p>Entidad / Alcaldía / Institución</p>
         <p>Ciudad, Colombia</p>
         <p>contacto@entidad.gov.co</p>
@@ -405,18 +529,139 @@
     </div>
   </footer>
 
-  <dialog class="search-modal" id="searchModal">
-    <button class="modal-close" id="modalClose" aria-label="Cerrar">×</button>
-    <span class="eyebrow">BÚSQUEDA GENERAL</span>
-    <h2>¿Qué información desea consultar?</h2>
-    <input id="globalSearch" type="search" placeholder="Escriba una vigencia, informe o tema..." autofocus />
-    <div class="search-suggestions">
-      <button data-query="2025">Rendición 2025</button>
-      <button data-query="informes">Informes</button>
-      <button data-query="indicadores">Indicadores</button>
-      <button data-query="participación">Participación</button>
+  <button class="back-top" id="backTop" aria-label="Volver arriba">↑</button>
+
+  <dialog class="modal modal-wide" id="welcomeModal">
+    <button class="modal-close" data-close-dialog="welcomeModal" aria-label="Cerrar">×</button>
+    <div class="welcome-grid">
+      <div class="welcome-visual">
+        <span>PORTAL HISTÓRICO</span>
+        <strong>2025 →</strong>
+      </div>
+      <div>
+        <span class="eyebrow">BIENVENIDO</span>
+        <h2>Una nueva forma de consultar la Rendición de Cuentas.</h2>
+        <p>Explore la información por vigencia, revise documentos, compare resultados y consulte compromisos.</p>
+        <div class="modal-actions">
+          <button class="btn btn-primary" data-close-dialog="welcomeModal">Comenzar recorrido</button>
+          <button class="btn btn-ghost" id="dontShowWelcome">No volver a mostrar</button>
+        </div>
+      </div>
     </div>
   </dialog>
+
+  <dialog class="modal" id="searchModal">
+    <button class="modal-close" data-close-dialog="searchModal" aria-label="Cerrar">×</button>
+    <span class="eyebrow">BÚSQUEDA GENERAL</span>
+    <h2>¿Qué información desea consultar?</h2>
+    <input class="modal-search-input" id="globalSearch" type="search" placeholder="Escriba una vigencia, informe o tema...">
+    <div class="search-results" id="globalSearchResults"></div>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="yearModal">
+    <button class="modal-close" data-close-dialog="yearModal" aria-label="Cerrar">×</button>
+    <div id="yearModalContent"></div>
+  </dialog>
+
+  <dialog class="modal" id="infoModal">
+    <button class="modal-close" data-close-dialog="infoModal" aria-label="Cerrar">×</button>
+    <div id="infoModalContent"></div>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="resourceModal">
+    <button class="modal-close" data-close-dialog="resourceModal" aria-label="Cerrar">×</button>
+    <div id="resourceModalContent"></div>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="compareModal">
+    <button class="modal-close" data-close-dialog="compareModal" aria-label="Cerrar">×</button>
+    <span class="eyebrow">COMPARADOR HISTÓRICO</span>
+    <h2>Compare dos vigencias</h2>
+    <div class="compare-controls">
+      <select id="compareYearA"></select>
+      <span>versus</span>
+      <select id="compareYearB"></select>
+      <button class="btn btn-primary" id="runCompare">Comparar</button>
+    </div>
+    <div id="compareResult"></div>
+  </dialog>
+
+  <dialog class="modal" id="managerModal">
+    <button class="modal-close" data-close-dialog="managerModal" aria-label="Cerrar">×</button>
+    <span class="eyebrow">GESTIÓN DEL PORTAL</span>
+    <h2>Administrar contenido local</h2>
+    <p class="modal-note">En GitHub Pages los cambios se guardan únicamente en este navegador. Para hacerlos públicos para todos debe conectarse una base de datos.</p>
+    <div class="manager-grid">
+      <button class="manager-card" id="managerAddYear"><span>＋</span><strong>Crear vigencia</strong><small>Agregar un nuevo año al archivo histórico</small></button>
+      <button class="manager-card" id="managerAddResource"><span>▤</span><strong>Agregar recurso</strong><small>Registrar informes, videos o bases de datos</small></button>
+      <button class="manager-card" id="exportData"><span>⇩</span><strong>Exportar configuración</strong><small>Descargar respaldo en formato JSON</small></button>
+      <button class="manager-card danger" id="resetDemo"><span>↺</span><strong>Restablecer demostración</strong><small>Eliminar cambios guardados localmente</small></button>
+    </div>
+  </dialog>
+
+  <dialog class="modal" id="yearFormModal">
+    <button class="modal-close" data-close-dialog="yearFormModal" aria-label="Cerrar">×</button>
+    <span class="eyebrow">NUEVA VIGENCIA</span>
+    <h2>Crear edición histórica</h2>
+    <form class="modal-form" id="yearForm">
+      <label>Año
+        <input type="number" name="year" min="2025" max="2100" placeholder="2028" required>
+      </label>
+      <label>Estado
+        <select name="status" required>
+          <option value="PROGRAMADA">Programada</option>
+          <option value="EN CONSTRUCCIÓN">En construcción</option>
+          <option value="PUBLICADA">Publicada</option>
+        </select>
+      </label>
+      <label>Descripción
+        <textarea name="description" rows="4" placeholder="Descripción general de la vigencia..." required></textarea>
+      </label>
+      <label>Avance general (%)
+        <input type="number" name="progress" min="0" max="100" value="0" required>
+      </label>
+      <button class="btn btn-primary" type="submit">Crear vigencia</button>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="resourceFormModal">
+    <button class="modal-close" data-close-dialog="resourceFormModal" aria-label="Cerrar">×</button>
+    <span class="eyebrow">NUEVO RECURSO</span>
+    <h2>Agregar documento o publicación</h2>
+    <form class="modal-form" id="resourceForm">
+      <label>Título
+        <input type="text" name="title" required>
+      </label>
+      <label>Vigencia
+        <select name="year" id="resourceYear" required></select>
+      </label>
+      <label>Formato
+        <select name="type" required>
+          <option value="informe">Informe</option>
+          <option value="presentacion">Presentación</option>
+          <option value="video">Video</option>
+          <option value="datos">Datos</option>
+          <option value="anexo">Anexo</option>
+        </select>
+      </label>
+      <label>Estado
+        <select name="status" required>
+          <option value="publicado">Publicado</option>
+          <option value="borrador">Borrador</option>
+          <option value="programado">Programado</option>
+        </select>
+      </label>
+      <label>Descripción
+        <textarea name="description" rows="3" required></textarea>
+      </label>
+      <label>Enlace del recurso
+        <input type="url" name="url" placeholder="https://..." value="#">
+      </label>
+      <button class="btn btn-primary" type="submit">Guardar recurso</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
 
   <script src="script.js"></script>
 </body>

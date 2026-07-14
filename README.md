@@ -1,22 +1,68 @@
-# Landing Page – Rendición de Cuentas
+# Portal Histórico de Rendición de Cuentas — Versión 2
 
-Primera versión funcional de un portal histórico para las vigencias 2025, 2026, 2027 y posteriores.
+Landing page estática, responsive y preparada para GitHub Pages.
 
-## Archivos
-- `index.html`: estructura general.
-- `styles.css`: diseño editorial, responsive y animaciones.
-- `script.js`: navegación por años, filtros, buscador, contadores y formularios demostrativos.
+## Principales mejoras
 
-## Uso
-Abra `index.html` en cualquier navegador moderno.
+- Tipografía Century Gothic y alternativas compatibles.
+- Diseño editorial tipo periódico digital.
+- Portada animada.
+- Ventana de bienvenida.
+- Buscador general con resultados.
+- Pop-ups de vigencias, indicadores, historias y recursos.
+- Comparador entre dos vigencias.
+- Creación de nuevas vigencias.
+- Registro de nuevos recursos documentales.
+- Filtros por año, formato, estado y palabra clave.
+- Seguimiento de compromisos.
+- Preguntas frecuentes.
+- Herramientas de accesibilidad.
+- Exportación de configuración en JSON.
+- Diseño adaptable a celulares, tabletas y computadores.
 
-## Personalización recomendada
-1. Reemplazar “Entidad / Alcaldía / Institución” por el nombre oficial.
-2. Actualizar correo, ciudad y enlaces.
-3. Sustituir los valores demostrativos de indicadores.
-4. Cambiar los enlaces `href="#"` por URLs reales de documentos, videos y datasets.
-5. Conectar el formulario de participación a una base de datos, formulario institucional o servicio de correo.
-6. Publicar en GitHub Pages, Netlify, Vercel o servidor institucional.
+## Publicación en GitHub Pages
 
-## Escalabilidad
-El objeto `yearData` en `script.js` permite agregar nuevas vigencias sin modificar el diseño.
+Suba a la raíz del repositorio:
+
+- `index.html`
+- `styles.css`
+- `script.js`
+- `README.md`
+
+Después configure:
+
+`Settings → Pages → Deploy from a branch → main → / (root)`
+
+## Importante sobre la administración
+
+GitHub Pages publica archivos estáticos. En esta versión:
+
+- Las vigencias y recursos creados desde “Gestionar portal” se guardan mediante `localStorage`.
+- Los cambios solo aparecen en el navegador donde fueron realizados.
+- No modifican automáticamente los archivos del repositorio.
+- No son visibles para otros usuarios.
+
+Para convertir el portal en un sistema administrable real y multiusuario, debe conectarse a una base de datos como Supabase. La estructura recomendada incluye:
+
+- `rendicion_years`
+- `rendicion_resources`
+- `rendicion_news`
+- `rendicion_commitments`
+- `rendicion_questions`
+- `rendicion_settings`
+
+También se recomienda autenticación y roles:
+
+- `super_admin`
+- `admin`
+- `editor`
+- `visitor`
+
+## Personalización pendiente
+
+- Reemplazar el nombre genérico de la entidad.
+- Agregar logo oficial.
+- Actualizar datos de contacto.
+- Cargar cifras reales.
+- Reemplazar enlaces `#` por documentos reales.
+- Conectar formularios y panel administrativo.
