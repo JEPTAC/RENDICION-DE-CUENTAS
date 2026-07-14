@@ -198,34 +198,203 @@
       window.DrivePortal?.getConfig?.()
       || window.DRIVE_CONFIG
       || {};
+
     return `
-      <div class="inline-admin-toolbar" id="inlineAdminToolbar" role="region" aria-label="Barra de edición directa">
-        <div class="inline-admin-brand">
-          <span class="admin-live-dot"></span>
-          <div><strong>Edición directa</strong><small>${pageKey()}</small></div>
-        </div>
+      <div class="admin-console-shell"
+        id="inlineAdminToolbar"
+        aria-hidden="true">
 
-        
-<div class="inline-admin-actions">
-          <button type="button" class="inline-toolbar-button inline-drive-quick" id="inlineDriveQuick">
-            <span class="drive-status-dot" id="inlineDriveQuickDot"></span>
-            <span id="inlineDriveQuickLabel">Google Drive</span>
-          </button>
+        <button class="admin-console-backdrop"
+          id="inlineConsoleBackdrop"
+          type="button"
+          aria-label="Cerrar panel administrativo"></button>
 
-          <details class="inline-admin-menu inline-admin-hub">
-            <summary>Panel de control</summary>
-            <div class="inline-admin-hub__panel">
-              <section class="inline-control-card">
-                <div class="inline-control-card__head">
-                  <strong>Apariencia general</strong>
-                  <small>Colores, tipografía, ancho y animaciones.</small>
+        <aside class="admin-console"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inlineConsoleTitle">
+
+          <header class="admin-console__header">
+            <div class="admin-console__identity">
+              <span class="admin-console__avatar" id="inlineConsoleAvatar">A</span>
+              <div>
+                <small>Sesión administrativa</small>
+                <strong id="inlineConsoleUser">Administrador</strong>
+                <span id="inlineConsoleRole">Gestión del portal</span>
+              </div>
+            </div>
+
+            <div class="admin-console__header-actions">
+              <span class="inline-admin-saved" id="inlineAdminSaved">Guardado</span>
+              <button type="button"
+                class="admin-console__close"
+                id="inlineConsoleClose"
+                aria-label="Cerrar panel administrativo">×</button>
+            </div>
+          </header>
+
+          <div class="admin-console__layout">
+            <nav class="admin-console__nav"
+              aria-label="Módulos administrativos">
+
+              <button type="button"
+                class="active"
+                data-console-tab="editing">
+                <span aria-hidden="true">✎</span>
+                <b>Edición</b>
+                <small>Editar la página</small>
+              </button>
+
+              <button type="button" data-console-tab="appearance">
+                <span aria-hidden="true">◐</span>
+                <b>Apariencia</b>
+                <small>Colores y tipografía</small>
+              </button>
+
+              <button type="button" data-console-tab="header">
+                <span aria-hidden="true">▤</span>
+                <b>Encabezado</b>
+                <small>Logos y tamaños</small>
+              </button>
+
+              <button type="button" data-console-tab="banner">
+                <span aria-hidden="true">▧</span>
+                <b>Banner</b>
+                <small>Carrusel e imágenes</small>
+              </button>
+
+              <button type="button" data-console-tab="publishing">
+                <span aria-hidden="true">✓</span>
+                <b>Publicación</b>
+                <small>Estado y contenido</small>
+              </button>
+
+              <button type="button"
+                id="inlineDriveQuick"
+                data-console-tab="drive">
+                <span class="drive-status-dot" id="inlineDriveQuickDot"></span>
+                <b id="inlineDriveQuickLabel">Google Drive</b>
+                <small>Archivos y evidencias</small>
+              </button>
+
+              <button type="button" data-console-tab="firestore">
+                <span class="firebase-sync-dot"></span>
+                <b>Firestore</b>
+                <small>Sincronización de datos</small>
+              </button>
+
+              <button type="button"
+                id="inlineUsersNav"
+                data-console-tab="users">
+                <span aria-hidden="true">◎</span>
+                <b>Usuarios</b>
+                <small>Roles y accesos</small>
+              </button>
+
+              <div class="admin-console__nav-footer">
+                <button type="button"
+                  class="admin-console__visitor"
+                  id="inlineVisitorView">
+                  <span aria-hidden="true">◉</span>
+                  <b>Vista visitante</b>
+                  <small>Revisar la página sin controles</small>
+                </button>
+
+                <button type="button"
+                  class="admin-console__logout"
+                  id="inlineLogout">
+                  <span aria-hidden="true">↪</span>
+                  <b>Cerrar sesión</b>
+                </button>
+              </div>
+            </nav>
+
+            <div class="admin-console__content">
+              <section class="admin-console-panel active"
+                data-console-panel="editing">
+                <div class="admin-console-panel__heading">
+                  <span>EDICIÓN DIRECTA</span>
+                  <h2 id="inlineConsoleTitle">Administración del portal</h2>
+                  <p>Active la edición para modificar textos, imágenes, secciones y tarjetas directamente sobre la página.</p>
                 </div>
-                <div class="inline-control-grid">
-                  <label>Color principal<input id="inlinePrimary" type="color" value="${s.primary}"></label>
-                  <label>Color de acento<input id="inlineAccent" type="color" value="${s.accent}"></label>
-                  <label>Tamaño de letra <output id="inlineFontOutput">${s.fontScale}%</output>
-                    <input id="inlineFontScale" type="range" min="90" max="130" value="${s.fontScale}">
+
+                <div class="admin-editing-status" id="inlineEditingStatus">
+                  <span class="admin-live-dot"></span>
+                  <div>
+                    <strong id="inlineEditingStatusTitle">Vista visitante</strong>
+                    <small id="inlineEditingStatusText">Los controles de edición están ocultos.</small>
+                  </div>
+                </div>
+
+                <div class="admin-primary-actions">
+                  <button type="button"
+                    class="admin-action-primary"
+                    id="inlineEditModeToggle">
+                    Activar edición en la página
+                  </button>
+
+                  <button type="button"
+                    class="admin-action-secondary"
+                    id="inlineVisitorViewSecondary">
+                    Cambiar a vista visitante
+                  </button>
+                </div>
+
+                <div class="admin-console-card">
+                  <div class="admin-console-card__heading">
+                    <strong>Crear contenido</strong>
+                    <small>Agregue nuevos elementos sin salir del panel.</small>
+                  </div>
+
+                  <div class="admin-create-grid">
+                    <button type="button"
+                      class="inline-content-create"
+                      data-create-entity="year">＋ Nueva vigencia</button>
+                    <button type="button"
+                      class="inline-content-create"
+                      data-create-entity="resource">＋ Nuevo recurso</button>
+                    <button type="button"
+                      class="inline-content-create"
+                      data-create-entity="idea">＋ Nueva idea ciudadana</button>
+                    <button type="button"
+                      class="inline-content-create"
+                      id="inlineNewBlock">＋ Nuevo bloque</button>
+                  </div>
+                </div>
+
+                <div class="admin-console-tip">
+                  <strong>Consejo:</strong>
+                  cierre el panel después de activar la edición para trabajar sobre la página con mayor espacio.
+                </div>
+              </section>
+
+              <section class="admin-console-panel"
+                data-console-panel="appearance">
+                <div class="admin-console-panel__heading">
+                  <span>DISEÑO GENERAL</span>
+                  <h2>Apariencia</h2>
+                  <p>Controle la identidad visual y la escala del portal.</p>
+                </div>
+
+                <div class="admin-form-grid">
+                  <label>Color principal
+                    <input id="inlinePrimary" type="color" value="${s.primary}">
                   </label>
+
+                  <label>Color de acento
+                    <input id="inlineAccent" type="color" value="${s.accent}">
+                  </label>
+
+                  <label class="admin-field-wide">
+                    Tamaño de letra
+                    <output id="inlineFontOutput">${s.fontScale}%</output>
+                    <input id="inlineFontScale"
+                      type="range"
+                      min="90"
+                      max="130"
+                      value="${s.fontScale}">
+                  </label>
+
                   <label>Ancho del contenido
                     <select id="inlineContentWidth">
                       <option value="1120" ${Number(s.contentWidth)===1120?"selected":""}>Compacto</option>
@@ -233,6 +402,7 @@
                       <option value="1320" ${Number(s.contentWidth)===1320?"selected":""}>Amplio</option>
                     </select>
                   </label>
+
                   <label>Animaciones
                     <select id="inlineAnimation">
                       <option value="smooth" ${s.animationMode==="smooth"?"selected":""}>Fluidas</option>
@@ -243,49 +413,128 @@
                 </div>
               </section>
 
-              <section class="inline-control-card">
-                <div class="inline-control-card__head">
-                  <strong>Encabezado y logos</strong>
-                  <small>Escudo, marca San Pedro y tamaño de la cabecera.</small>
+              <section class="admin-console-panel"
+                data-console-panel="header">
+                <div class="admin-console-panel__heading">
+                  <span>IDENTIDAD INSTITUCIONAL</span>
+                  <h2>Encabezado y logos</h2>
+                  <p>Ajuste la cabecera sin afectar la navegación pública.</p>
                 </div>
-                <div class="inline-control-grid">
-                  <label>Altura de la barra <output id="inlineHeaderOutput">${s.headerHeight}px</output>
-                    <input id="inlineHeaderHeight" type="range" min="64" max="110" value="${s.headerHeight}">
+
+                <div class="admin-form-grid">
+                  <label class="admin-field-wide">
+                    Altura de la cabecera
+                    <output id="inlineHeaderOutput">${s.headerHeight}px</output>
+                    <input id="inlineHeaderHeight"
+                      type="range"
+                      min="64"
+                      max="110"
+                      value="${s.headerHeight}">
                   </label>
-                  <label>Tamaño del escudo <output id="inlineCrestOutput">${s.crestSize}px</output>
-                    <input id="inlineCrestSize" type="range" min="34" max="82" value="${s.crestSize}">
+
+                  <label>
+                    Tamaño del escudo
+                    <output id="inlineCrestOutput">${s.crestSize}px</output>
+                    <input id="inlineCrestSize"
+                      type="range"
+                      min="34"
+                      max="82"
+                      value="${s.crestSize}">
                   </label>
-                  <label>Tamaño de la marca <output id="inlineBrandOutput">${s.brandSize}px</output>
-                    <input id="inlineBrandSize" type="range" min="72" max="230" value="${s.brandSize}">
+
+                  <label>
+                    Tamaño de la marca
+                    <output id="inlineBrandOutput">${s.brandSize}px</output>
+                    <input id="inlineBrandSize"
+                      type="range"
+                      min="72"
+                      max="230"
+                      value="${s.brandSize}">
                   </label>
-                  <label class="inline-check"><input id="inlineShowBrand" type="checkbox" ${s.showTourismLogo!==false?"checked":""}> Mostrar marca San Pedro</label>
-                  <label class="inline-file">Cambiar escudo<input id="inlineCrestUpload" type="file" accept="image/*"></label>
-                  <label class="inline-file">Cambiar marca<input id="inlineBrandUpload" type="file" accept="image/*"></label>
+
+                  <label class="admin-toggle-field admin-field-wide">
+                    <input id="inlineShowBrand"
+                      type="checkbox"
+                      ${s.showTourismLogo!==false?"checked":""}>
+                    <span>Mostrar marca San Pedro</span>
+                  </label>
+
+                  <label class="admin-upload-field">
+                    <span>Cambiar escudo</span>
+                    <input id="inlineCrestUpload"
+                      type="file"
+                      accept="image/*">
+                  </label>
+
+                  <label class="admin-upload-field">
+                    <span>Cambiar marca</span>
+                    <input id="inlineBrandUpload"
+                      type="file"
+                      accept="image/*">
+                  </label>
                 </div>
-                <div class="inline-control-actions">
-                  <button type="button" class="inline-mini-button" id="inlineResetLogos">Restablecer logos</button>
-                </div>
+
+                <button type="button"
+                  class="admin-action-secondary"
+                  id="inlineResetLogos">Restablecer logos</button>
               </section>
 
-              <section class="inline-control-card">
-                <div class="inline-control-card__head">
-                  <strong>Banner principal</strong>
-                  <small>Carrusel institucional de hasta 5 imágenes. Tamaño recomendado: 1600 × 900 px.</small>
+              <section class="admin-console-panel"
+                data-console-panel="banner">
+                <div class="admin-console-panel__heading">
+                  <span>PORTADA VISUAL</span>
+                  <h2>Banner principal</h2>
+                  <p>Cargue hasta cinco imágenes. El carrusel cambia automáticamente cada seis segundos.</p>
                 </div>
-                <div class="inline-control-grid">
-                  <label class="inline-file">Subir imagen principal<input id="inlineBannerUpload" type="file" accept="image/*"></label>
-                  <label class="inline-file">Subir galería del banner (máx. 5 imágenes)<input id="inlineBannerGallery" type="file" accept="image/*" multiple></label>
-                  <label>Altura <output id="inlineBannerOutput">${p.banner.height || "Automática"}</output>
-                    <input id="inlineBannerHeight" type="range" min="420" max="860" value="${parseInt(p.banner.height)||610}">
+
+                <div class="banner-dimension-card">
+                  <strong>Tamaño recomendado</strong>
+                  <span>1600 × 900 píxeles</span>
+                  <small>Proporción 16:9. Mantenga el contenido importante hacia el centro y la derecha.</small>
+                </div>
+
+                <div class="admin-form-grid">
+                  <label class="admin-upload-field">
+                    <span>Imagen principal</span>
+                    <input id="inlineBannerUpload"
+                      type="file"
+                      accept="image/*">
                   </label>
+
+                  <label class="admin-upload-field">
+                    <span>Galería del banner — máximo 5</span>
+                    <input id="inlineBannerGallery"
+                      type="file"
+                      accept="image/*"
+                      multiple>
+                  </label>
+
+                  <label class="admin-field-wide">
+                    Altura
+                    <output id="inlineBannerOutput">${p.banner.height || "Automática"}</output>
+                    <input id="inlineBannerHeight"
+                      type="range"
+                      min="420"
+                      max="860"
+                      value="${parseInt(p.banner.height)||610}">
+                  </label>
+
                   <label>Posición
                     <select id="inlineBannerPosition">
                       ${["center center","center top","center bottom","left center","right center"].map(value => `<option value="${value}" ${p.banner.position===value?"selected":""}>${value.replace("center","Centro").replace("top","Arriba").replace("bottom","Abajo").replace("left","Izquierda").replace("right","Derecha")}</option>`).join("")}
                     </select>
                   </label>
-                  <label>Intensidad del degradado <output id="inlineOverlayOutput">${p.banner.overlay}%</output>
-                    <input id="inlineBannerOverlay" type="range" min="0" max="75" value="${p.banner.overlay}">
+
+                  <label>
+                    Intensidad del degradado
+                    <output id="inlineOverlayOutput">${p.banner.overlay}%</output>
+                    <input id="inlineBannerOverlay"
+                      type="range"
+                      min="0"
+                      max="75"
+                      value="${p.banner.overlay}">
                   </label>
+
                   <label>Alineación del texto
                     <select id="inlineBannerAlign">
                       <option value="left" ${p.banner.textAlign==="left"?"selected":""}>Izquierda</option>
@@ -293,28 +542,35 @@
                     </select>
                   </label>
                 </div>
+
                 <div class="inline-banner-meta">
                   <div>
-                    <strong>Rotación automática:</strong>
+                    <strong>Rotación automática</strong>
                     <span>cada 6 segundos</span>
                   </div>
                   <div>
-                    <strong>Imágenes cargadas:</strong>
+                    <strong>Imágenes cargadas</strong>
                     <span id="inlineBannerCount">${(p.banner.slides || []).filter(Boolean).length || (p.banner.image ? 1 : 0)}</span>
                   </div>
                 </div>
-                <div class="inline-banner-preview-strip" id="inlineBannerPreviewStrip"></div>
-                <div class="inline-control-actions">
-                  <button type="button" class="inline-mini-button" id="inlineRemoveBanner">Limpiar banner</button>
-                </div>
+
+                <div class="inline-banner-preview-strip"
+                  id="inlineBannerPreviewStrip"></div>
+
+                <button type="button"
+                  class="admin-action-danger"
+                  id="inlineRemoveBanner">Limpiar banner</button>
               </section>
 
-              <section class="inline-control-card">
-                <div class="inline-control-card__head">
-                  <strong>Publicación y estructura</strong>
-                  <small>Estado de la edición y creación de contenidos.</small>
+              <section class="admin-console-panel"
+                data-console-panel="publishing">
+                <div class="admin-console-panel__heading">
+                  <span>CONTROL EDITORIAL</span>
+                  <h2>Publicación</h2>
+                  <p>Defina cuándo y cómo se mostrará esta página.</p>
                 </div>
-                <div class="inline-control-grid">
+
+                <div class="admin-form-grid">
                   <label>Estado
                     <select id="inlinePublicationStatus">
                       <option value="published" ${p.publication.status==="published"?"selected":""}>Publicado</option>
@@ -322,38 +578,185 @@
                       <option value="scheduled" ${p.publication.status==="scheduled"?"selected":""}>Programado</option>
                     </select>
                   </label>
-                  <label>Fecha de publicación<input id="inlinePublishAt" type="datetime-local" value="${p.publication.publishAt || ""}"></label>
+
+                  <label>Fecha de publicación
+                    <input id="inlinePublishAt"
+                      type="datetime-local"
+                      value="${p.publication.publishAt || ""}">
+                  </label>
                 </div>
-                <p class="inline-control-note">La programación funciona localmente en esta versión estática.</p>
-                <div class="inline-control-actions inline-control-actions--wrap">
-                  <button type="button" class="inline-content-create" data-create-entity="year">＋ Nueva vigencia</button>
-                  <button type="button" class="inline-content-create" data-create-entity="resource">＋ Nuevo recurso</button>
-                  <button type="button" class="inline-content-create" data-create-entity="idea">＋ Nueva idea ciudadana</button>
-                  <button type="button" class="inline-toolbar-button" id="inlineNewBlock">＋ Nuevo bloque</button>
-                  <button type="button" class="inline-toolbar-button" id="inlineVisitorView">Vista visitante</button>
+
+                <div class="admin-console-tip">
+                  La programación funciona localmente mientras el portal continúe publicado como sitio estático.
                 </div>
               </section>
+
+              <section class="admin-console-panel"
+                id="inlineDriveMenu"
+                data-console-panel="drive">
+                <div class="admin-console-panel__heading">
+                  <span>ARCHIVOS DEL PORTAL</span>
+                  <h2>Google Drive</h2>
+                  <p>Administre documentos, fotografías, videos y evidencias.</p>
+                </div>
+
+                <div class="drive-connection-card">
+                  <div class="drive-connection-copy">
+                    <span class="drive-status-dot" id="inlineDriveDot"></span>
+                    <div>
+                      <strong id="inlineDriveConfigurationTitle">Configuración preparada</strong>
+                      <small id="inlineDriveStatus">Validando configuración…</small>
+                    </div>
+                  </div>
+
+                  <button type="button"
+                    class="drive-main-connect"
+                    id="inlineDriveConnect">Conectar Google Drive</button>
+                </div>
+
+                <div class="admin-console-card">
+                  <div class="admin-console-card__heading">
+                    <strong>Carpeta principal</strong>
+                    <small>Seleccione dónde se organizarán los archivos.</small>
+                  </div>
+
+                  <div class="admin-form-grid">
+                    <label>Nombre de la carpeta
+                      <input id="inlineDriveFolderName"
+                        value="${helpers.escape(driveConfig.rootFolderName || "Rendición de Cuentas San Pedro")}">
+                    </label>
+
+                    <label>ID de carpeta existente
+                      <input id="inlineDriveFolderId"
+                        value="${helpers.escape(driveConfig.rootFolderId || "")}"
+                        placeholder="Puede permanecer vacío">
+                    </label>
+                  </div>
+
+                  <div class="drive-folder-actions">
+                    <button type="button"
+                      class="drive-secondary-action"
+                      id="inlineDrivePick">Elegir carpeta</button>
+                    <button type="button"
+                      class="drive-secondary-action"
+                      id="inlineDriveCreate">Crear carpeta</button>
+                    <button type="button"
+                      class="drive-secondary-action"
+                      id="inlineDriveOpen">Abrir carpeta</button>
+                  </div>
+                </div>
+
+                <details class="drive-advanced-settings">
+                  <summary>
+                    <span>Configuración técnica</span>
+                    <b aria-hidden="true">＋</b>
+                  </summary>
+
+                  <div class="drive-fields-grid">
+                    <label class="drive-field-wide">ID de cliente OAuth
+                      <input id="inlineDriveClientId"
+                        autocomplete="off"
+                        value="${helpers.escape(driveConfig.clientId || "")}">
+                    </label>
+
+                    <label class="drive-field-wide">API key de Google Picker
+                      <input id="inlineDriveApiKey"
+                        autocomplete="off"
+                        value="${helpers.escape(driveConfig.apiKey || "")}">
+                    </label>
+
+                    <label>Número del proyecto
+                      <input id="inlineDriveAppId"
+                        inputmode="numeric"
+                        value="${helpers.escape(driveConfig.appId || "")}">
+                    </label>
+
+                    <label class="admin-toggle-field">
+                      <input id="inlineDrivePublic"
+                        type="checkbox"
+                        ${driveConfig.makeFilesPublic !== false ? "checked" : ""}>
+                      <span>Publicar archivos mediante enlace</span>
+                    </label>
+                  </div>
+                </details>
+
+                <div class="drive-upload-progress"
+                  id="inlineDriveProgress"
+                  hidden>
+                  <span id="inlineDriveProgressLabel">Preparando archivo…</span>
+                  <i><u id="inlineDriveProgressBar"></u></i>
+                </div>
+
+                <button type="button"
+                  class="admin-action-danger"
+                  id="inlineDriveDisconnect">Desconectar cuenta</button>
+              </section>
+
+              <section class="admin-console-panel"
+                data-console-panel="firestore">
+                <div class="admin-console-panel__heading">
+                  <span>BASE DE DATOS</span>
+                  <h2>Firestore</h2>
+                  <p>Sincronice contenido, indicadores, vigencias y enlaces con la base de datos.</p>
+                </div>
+
+                <div class="admin-service-card">
+                  <span class="firebase-sync-dot"></span>
+                  <div>
+                    <strong>Sincronización manual</strong>
+                    <small>Guarde inmediatamente los cambios actuales del portal.</small>
+                  </div>
+                </div>
+
+                <button type="button"
+                  class="admin-action-primary"
+                  id="inlineFirebaseSync">Sincronizar ahora</button>
+              </section>
+
+              <section class="admin-console-panel"
+                data-console-panel="users">
+                <div class="admin-console-panel__heading">
+                  <span>CONTROL DE ACCESO</span>
+                  <h2>Usuarios</h2>
+                  <p>Consulte usuarios invitados y administre sus roles.</p>
+                </div>
+
+                <div class="admin-service-card">
+                  <span aria-hidden="true">◎</span>
+                  <div>
+                    <strong>Gestión de usuarios</strong>
+                    <small>Disponible exclusivamente para el superadministrador.</small>
+                  </div>
+                </div>
+
+                <button type="button"
+                  class="admin-action-primary"
+                  id="inlineManageUsers">Abrir gestión de usuarios</button>
+              </section>
             </div>
-          </details>
-
-          <button type="button" class="inline-toolbar-button firebase-sync-button" id="inlineFirebaseSync"><span class="firebase-sync-dot"></span> Firestore</button>
-          <button type="button" class="inline-toolbar-button users-admin-button" id="inlineManageUsers" hidden>Usuarios</button>
-          <button type="button" class="inline-toolbar-button is-danger" id="inlineLogout">Cerrar sesión</button>
-        </div>
-
-        <span class="inline-admin-saved" id="inlineAdminSaved">Guardado</span>
+          </div>
+        </aside>
       </div>
 
-      <aside class="inline-admin-inspector" id="inlineAdminInspector" aria-label="Inspector de edición">
+      <aside class="inline-admin-inspector"
+        id="inlineAdminInspector"
+        aria-label="Inspector de edición">
         <div class="inline-inspector-head">
-          <div><strong id="inlineInspectorTitle">Editor</strong><small id="inlineInspectorSubtitle">Seleccione un elemento</small></div>
-          <button type="button" id="inlineInspectorClose" aria-label="Cerrar inspector">×</button>
+          <div>
+            <strong id="inlineInspectorTitle">Editor</strong>
+            <small id="inlineInspectorSubtitle">Seleccione un elemento</small>
+          </div>
+          <button type="button"
+            id="inlineInspectorClose"
+            aria-label="Cerrar inspector">×</button>
         </div>
-        <div class="inline-inspector-content" id="inlineInspectorContent">
+
+        <div class="inline-inspector-content"
+          id="inlineInspectorContent">
           <div class="inline-empty-state">
             <span>✦</span>
             <strong>Seleccione una sección, tarjeta, texto o imagen.</strong>
-            <p>Los cambios se guardan automáticamente en este navegador.</p>
+            <p>Los cambios se guardan automáticamente.</p>
           </div>
         </div>
       </aside>
@@ -366,12 +769,101 @@
     holder.id = "inlineAdminRoot";
     holder.innerHTML = toolbarTemplate();
 
-    const header = document.querySelector("#siteHeader");
-    if (header) header.appendChild(holder);
-    else document.body.prepend(holder);
+    document.body.appendChild(holder);
 
     bindToolbar();
     updateDrivePanel();
+    updateConsoleIdentity();
+    updateEditingInterface();
+  }
+
+  function selectConsoleTab(tabName = "editing") {
+    document.querySelectorAll("[data-console-tab]").forEach(button => {
+      const selected = button.dataset.consoleTab === tabName;
+      button.classList.toggle("active",selected);
+      button.setAttribute("aria-selected",String(selected));
+    });
+
+    document.querySelectorAll("[data-console-panel]").forEach(panel => {
+      const selected = panel.dataset.consolePanel === tabName;
+      panel.classList.toggle("active",selected);
+      panel.hidden = !selected;
+    });
+
+    if (tabName === "drive") updateDrivePanel();
+    if (tabName === "users") updateUserManagementButton();
+  }
+
+  function updateConsoleIdentity() {
+    const status = window.FirebasePortal?.getStatus?.() || {};
+    const profile = status.profile || {};
+    const displayName =
+      profile.displayName
+      || status.user?.displayName
+      || status.user?.email
+      || (sessionStorage.getItem("sp_admin_mode") === "local"
+        ? "Administrador local"
+        : "Administrador");
+
+    const role =
+      status.roleLabel
+      || window.FirebasePortal?.roleLabel?.(status.role)
+      || (sessionStorage.getItem("sp_admin_mode") === "local"
+        ? "Acceso local"
+        : "Gestión del portal");
+
+    const nameNode = document.querySelector("#inlineConsoleUser");
+    const roleNode = document.querySelector("#inlineConsoleRole");
+    const avatarNode = document.querySelector("#inlineConsoleAvatar");
+
+    if (nameNode) nameNode.textContent = displayName;
+    if (roleNode) roleNode.textContent = role;
+    if (avatarNode) avatarNode.textContent =
+      String(displayName).trim().charAt(0).toUpperCase() || "A";
+  }
+
+  function updateEditingInterface() {
+    const title = document.querySelector("#inlineEditingStatusTitle");
+    const text = document.querySelector("#inlineEditingStatusText");
+    const toggle = document.querySelector("#inlineEditModeToggle");
+    const status = document.querySelector("#inlineEditingStatus");
+
+    if (title) title.textContent = active ? "Edición activa" : "Vista visitante";
+    if (text) {
+      text.textContent = active
+        ? "Puede editar directamente los elementos visibles de la página."
+        : "Los controles de edición están ocultos.";
+    }
+    if (toggle) {
+      toggle.textContent = active
+        ? "Desactivar edición"
+        : "Activar edición en la página";
+    }
+    status?.classList.toggle("is-active",active);
+  }
+
+  function openConsole(tabName = "editing") {
+    injectToolbar();
+    const shell = document.querySelector("#inlineAdminToolbar");
+    if (!shell) return;
+
+    shell.classList.add("open");
+    shell.setAttribute("aria-hidden","false");
+    document.body.classList.add("admin-console-open");
+    selectConsoleTab(tabName);
+    updateConsoleIdentity();
+    updateEditingInterface();
+
+    window.setTimeout(() => {
+      document.querySelector(".admin-console__close")?.focus();
+    },60);
+  }
+
+  function closeConsole() {
+    const shell = document.querySelector("#inlineAdminToolbar");
+    shell?.classList.remove("open");
+    shell?.setAttribute("aria-hidden","true");
+    document.body.classList.remove("admin-console-open");
   }
 
   function bindToolbar() {
@@ -549,34 +1041,43 @@
       button.addEventListener("click", () => openNewEntityInspector(button.dataset.createEntity));
     });
     updateBannerPreview();
-    const driveMenu = get("#inlineDriveMenu");
 
-    function setDrivePanelOpen(open) {
-      if (!driveMenu) return;
-      driveMenu.open = Boolean(open);
-      document.body.classList.toggle("drive-panel-open",Boolean(open));
-      get("#inlineDriveQuick")?.setAttribute("aria-expanded",String(Boolean(open)));
-    }
-
-    get("#inlineDriveQuick")?.addEventListener("click", () => {
-      setDrivePanelOpen(!driveMenu?.open);
-      if (driveMenu?.open) updateDrivePanel();
+    document.querySelectorAll("[data-console-tab]").forEach(button => {
+      button.addEventListener("click", () => {
+        selectConsoleTab(button.dataset.consoleTab);
+      });
     });
 
-    get("#inlineDriveClose")?.addEventListener("click", () => {
-      setDrivePanelOpen(false);
-    });
-
-    driveMenu?.addEventListener("toggle", () => {
-      document.body.classList.toggle("drive-panel-open",driveMenu.open);
-      get("#inlineDriveQuick")?.setAttribute("aria-expanded",String(driveMenu.open));
-    });
+    get("#inlineConsoleClose")?.addEventListener("click",closeConsole);
+    get("#inlineConsoleBackdrop")?.addEventListener("click",closeConsole);
 
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && driveMenu?.open) {
-        setDrivePanelOpen(false);
+      if (event.key === "Escape"
+        && document.querySelector("#inlineAdminToolbar")?.classList.contains("open")) {
+        closeConsole();
       }
     });
+
+    get("#inlineEditModeToggle")?.addEventListener("click", () => {
+      if (active) {
+        deactivate(false);
+        openConsole("editing");
+        helpers.toast("Edición desactivada. Está revisando la vista visitante.");
+      } else {
+        activate(false);
+        openConsole("editing");
+        helpers.toast("Edición directa activada.");
+      }
+    });
+
+    const visitorMode = () => {
+      deactivate(false);
+      closeConsole();
+      helpers.toast("Vista de visitante activada.");
+    };
+
+    get("#inlineVisitorView")?.addEventListener("click",visitorMode);
+    get("#inlineVisitorViewSecondary")?.addEventListener("click",visitorMode);
 
     function saveDriveConfiguration() {
       if (!window.DrivePortal) return null;
@@ -664,7 +1165,6 @@
       }
     });
     get("#inlineNewBlock")?.addEventListener("click", () => openNewBlockInspector());
-    get("#inlineVisitorView")?.addEventListener("click", () => deactivate(false));
     get("#inlineLogout")?.addEventListener("click", logout);
     get("#inlineInspectorClose")?.addEventListener("click", closeInspector);
   }
@@ -1012,56 +1512,60 @@
     });
   }
 
-  function activate() {
+  function activate(openPanel = true) {
     active = true;
     state.admin = true;
-    sessionStorage.setItem(Portal.KEYS.admin, "1");
+    sessionStorage.setItem(Portal.KEYS.admin,"1");
     document.body.classList.add("admin-inline-active");
+
     injectToolbar();
-    document.querySelector("#inlineAdminRoot")?.classList.remove("is-hidden");
     applyBanner();
     applyPublicationState();
     decorate();
+    updateEditingInterface();
 
-    const adminButton = document.querySelector("#adminEntry");
-    if (adminButton) {
-      adminButton.textContent = "Edición activa";
-      adminButton.classList.add("is-active");
-    }
+    if (openPanel) openConsole("editing");
 
     if (!mutationObserver) {
       mutationObserver = new MutationObserver(() => {
+        if (!active) return;
         clearTimeout(mutationObserver._timer);
-        mutationObserver._timer = setTimeout(decorate, 90);
+        mutationObserver._timer = setTimeout(decorate,90);
       });
       const main = document.querySelector("main");
-      if (main) mutationObserver.observe(main, {childList:true,subtree:true});
+      if (main) mutationObserver.observe(main,{childList:true,subtree:true});
     }
   }
 
   function deactivate(showMessage = true) {
     active = false;
-    document.body.classList.remove("drive-panel-open");
-    const driveMenu = document.querySelector("#inlineDriveMenu");
-    if (driveMenu) driveMenu.open = false;
-    document.body.classList.remove("admin-inline-active","admin-inspector-open");
+    document.body.classList.remove(
+      "drive-panel-open",
+      "admin-inline-active",
+      "admin-inspector-open"
+    );
+
     closeInspector();
     undecorate();
-    document.querySelector("#inlineAdminRoot")?.classList.add("is-hidden");
-    const button = document.querySelector("#adminEntry");
-    if (button) button.textContent = "Editar página";
-    if (showMessage) helpers.toast("Vista de visitante activada.");
+    updateEditingInterface();
+
+    if (showMessage) {
+      helpers.toast("Vista de visitante activada.");
+    }
   }
 
-  function logout() {
+  async function logout() {
     state.admin = false;
     sessionStorage.removeItem(Portal.KEYS.admin);
+    sessionStorage.removeItem("sp_admin_mode");
     deactivate(false);
-    const button = document.querySelector("#adminEntry");
-    if (button) {
-      button.textContent = "Administrador";
-      button.classList.remove("is-active");
+    closeConsole();
+
+    if (window.FirebasePortal?.getStatus?.()?.user) {
+      await window.FirebasePortal.signOut?.().catch(() => {});
     }
+
+    window.dispatchEvent(new CustomEvent("portal:adminlogout"));
     helpers.toast("Sesión administrativa cerrada.");
   }
 
@@ -1502,9 +2006,12 @@
 
   function updateUserManagementButton() {
     const button = document.querySelector("#inlineManageUsers");
-    if (!button) return;
+    const nav = document.querySelector("#inlineUsersNav");
     const status = window.FirebasePortal?.getStatus?.();
-    button.hidden = !Boolean(status?.isSuperAdmin);
+    const allowed = Boolean(status?.isSuperAdmin);
+
+    if (button) button.hidden = !allowed;
+    if (nav) nav.hidden = !allowed;
   }
 
   function userRoleOptions(selected) {
@@ -1942,7 +2449,14 @@
     window.addEventListener("drive:config", updateDrivePanel);
     window.addEventListener("drive:upload", event => updateDriveProgress(event.detail));
     window.addEventListener("drive:warning", event => helpers.toast(event.detail?.message || "Revise los permisos del archivo en Drive."));
-    window.addEventListener("firebase:auth",updateUserManagementButton);
+    window.addEventListener("firebase:auth",event => {
+      updateUserManagementButton();
+      updateConsoleIdentity();
+      if (!event.detail?.canWrite && event.detail?.user) {
+        closeConsole();
+        deactivate(false);
+      }
+    });
     window.addEventListener("firebase:users",() => {
       if (document.querySelector("#inlineInspectorTitle")?.textContent === "Gestión de usuarios") {
         openUsersInspector();
@@ -1971,6 +2485,9 @@
     init,
     activate,
     deactivate,
+    openConsole,
+    closeConsole,
+    isEditing:() => active,
     decorate,
     openEntityEditor:openEntityInspector,
     openUsers:openUsersInspector

@@ -314,8 +314,36 @@
             <button class="reader-entry" id="readerToggle" type="button" aria-label="Abrir narrador de texto" aria-expanded="false" aria-controls="readerPanel">
               <span aria-hidden="true">🔊</span><span>Escuchar</span>
             </button>
-            <button class="header-search" id="headerSearch" type="button" aria-label="Abrir búsqueda general"><span aria-hidden="true">⌕</span></button>
-            <button class="admin-entry${state.admin ? " is-active" : ""}" id="adminEntry" type="button">${state.admin ? "Editar página" : "Ingresar"}</button>
+
+            <button class="header-search" id="headerSearch" type="button" aria-label="Abrir búsqueda general">
+              <span aria-hidden="true">⌕</span>
+            </button>
+
+            <button class="admin-entry" id="adminEntry" type="button">
+              Ingresar
+            </button>
+
+            <div class="admin-session"
+              id="adminSession"
+              ${state.admin ? "" : "hidden"}>
+
+              <button type="button"
+                class="admin-session__identity"
+                id="adminSessionIdentity"
+                aria-label="Abrir información de la cuenta">
+                <span class="admin-session__avatar" id="adminSessionAvatar">A</span>
+                <span class="admin-session__copy">
+                  <strong id="adminSessionName">Administrador</strong>
+                  <small id="adminSessionRole">Sesión administrativa</small>
+                </span>
+              </button>
+
+              <button type="button"
+                class="admin-session__button"
+                id="adminConsoleEntry">
+                Administrador
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -708,6 +736,45 @@
     openDialog("ideaAdminDialog");
   }
 
+  function updateAdminHeader(detail = {}) {
+    const session = document.querySelector("#adminSession");
+    const entry = document.querySelector("#adminEntry");
+    const avatar = document.querySelector("#adminSessionAvatar");
+    const name = document.querySelector("#adminSessionName");
+    const role = document.querySelector("#adminSessionRole");
+
+    const canWrite = Boolean(detail.canWrite)
+      || sessionStorage.getItem("sp_admin_mode") === "local";
+
+    if (!canWrite) {
+      if (session) session.hidden = true;
+      if (entry) entry.hidden = false;
+      return;
+    }
+
+    const displayName =
+      detail.profile?.displayName
+      || detail.user?.displayName
+      || detail.user?.email
+      || (sessionStorage.getItem("sp_admin_mode") === "local"
+        ? "Administrador local"
+        : "Administrador");
+
+    const roleName =
+      detail.roleLabel
+      || roleLabel(detail.role)
+      || (sessionStorage.getItem("sp_admin_mode") === "local"
+        ? "Acceso local"
+        : "Administrador");
+
+    if (session) session.hidden = false;
+    if (entry) entry.hidden = true;
+    if (avatar) avatar.textContent =
+      String(displayName).trim().charAt(0).toUpperCase() || "A";
+    if (name) name.textContent = displayName;
+    if (role) role.textContent = roleName;
+  }
+
   function roleLabel(role) {
     return window.FirebasePortal?.roleLabel?.(role) || {
       super_admin:"Superadministrador",
@@ -798,8 +865,10 @@
     closeDialog("accountDialog");
     window.InlineAdmin?.deactivate?.(false);
 
+    updateAdminHeader({canWrite:false});
     const button = document.querySelector("#adminEntry");
     if (button) {
+      button.hidden = false;
       button.textContent = "Ingresar";
       button.classList.remove("is-active");
     }
@@ -881,10 +950,26 @@
     document.querySelector("#globalSearchInput")?.addEventListener("input", event => searchPortal(event.target.value));
 
     document.querySelector("#adminEntry")?.addEventListener("click", () => {
-      if (state.admin) {
-        window.InlineAdmin?.activate();
+      const firebaseStatus = window.FirebasePortal?.getStatus?.();
+
+      if (firebaseStatus?.user) {
+        updateAccountDialog({
+          ...firebaseStatus,
+          roleLabel:roleLabel(firebaseStatus.role)
+        });
+        openDialog("accountDialog");
         return;
       }
+
+      setAuthView("login");
+      openDialog("loginDialog");
+    });
+
+    document.querySelector("#adminConsoleEntry")?.addEventListener("click", () => {
+      window.InlineAdmin?.openConsole?.("editing");
+    });
+
+    document.querySelector("#adminSessionIdentity")?.addEventListener("click", () => {
       const firebaseStatus = window.FirebasePortal?.getStatus?.();
       if (firebaseStatus?.user) {
         updateAccountDialog({
@@ -893,8 +978,7 @@
         });
         openDialog("accountDialog");
       } else {
-        setAuthView("login");
-        openDialog("loginDialog");
+        window.InlineAdmin?.openConsole?.("editing");
       }
     });
 
@@ -916,13 +1000,13 @@
         event.target.reset();
         closeDialog("loginDialog");
 
-        const button = document.querySelector("#adminEntry");
-        if (button) {
-          button.textContent = "Editar página";
-          button.classList.add("is-active");
-        }
-        window.InlineAdmin?.activate();
-        helpers.toast("Modo administrativo local activado. Los cambios no se compartirán hasta iniciar con Firebase.");
+        updateAdminHeader({
+          canWrite:true,
+          roleLabel:"Acceso local",
+          profile:{displayName:"Administrador local"}
+        });
+        window.InlineAdmin?.openConsole?.("editing");
+        helpers.toast("Sesión administrativa local iniciada. Active la edición desde el panel cuando la necesite.");
         return;
       }
 
@@ -1043,6 +1127,14 @@
     document.querySelector("#accountSignout")?.addEventListener("click",performFirebaseSignout);
 
     document.querySelector("#adminSignout")?.addEventListener("click",performFirebaseSignout);
+
+    if (state.admin && sessionStorage.getItem("sp_admin_mode") === "local") {
+      updateAdminHeader({
+        canWrite:true,
+        roleLabel:"Acceso local",
+        profile:{displayName:"Administrador local"}
+      });
+    }
 
     document.querySelector("#applyAdminColors")?.addEventListener("click", () => {
       state.settings.primary = document.querySelector("#adminPrimary").value;
@@ -1196,7 +1288,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=9.8-panel-banner";
+    script.src = "firebase-service.js?v=9.9-admin-console";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1207,7 +1299,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=9.8-panel-banner";
+    script.src = "inline-admin.js?v=9.9-admin-console";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -1614,12 +1706,8 @@
         sessionStorage.setItem(KEYS.admin,"1");
         sessionStorage.setItem("sp_admin_mode","firebase");
 
-        if (button) {
-          button.textContent = "Editar página";
-          button.classList.add("is-active");
-        }
-
-        window.InlineAdmin?.activate?.();
+        updateAdminHeader(detail);
+        window.InlineAdmin?.deactivate?.(false);
 
         if (detail.reason !== "initial") {
           helpers.toast(
@@ -1632,7 +1720,9 @@
         sessionStorage.removeItem("sp_admin_mode");
         window.InlineAdmin?.deactivate?.(false);
 
+        updateAdminHeader({canWrite:false});
         if (button) {
+          button.hidden = false;
           button.textContent = "Mi cuenta";
           button.classList.remove("is-active");
         }
@@ -1649,7 +1739,9 @@
         sessionStorage.removeItem(KEYS.admin);
         sessionStorage.removeItem("sp_admin_mode");
 
+        updateAdminHeader({canWrite:false});
         if (button) {
+          button.hidden = false;
           button.textContent = "Ingresar";
           button.classList.remove("is-active");
         }
@@ -1658,6 +1750,15 @@
 
     window.addEventListener("firebase:data", () => {
       window.dispatchEvent(new CustomEvent("portal:datachange"));
+    });
+
+    window.addEventListener("portal:adminlogout", () => {
+      updateAdminHeader({canWrite:false});
+      const button = document.querySelector("#adminEntry");
+      if (button) {
+        button.hidden = false;
+        button.textContent = "Ingresar";
+      }
     });
   }
 
@@ -1675,7 +1776,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=9.8-panel-banner`;
+      const versioned = `${base}?v=9.9-admin-console`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
