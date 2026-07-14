@@ -1168,12 +1168,12 @@
 
     return new Promise((resolve, reject) => {
       const configScript = document.createElement("script");
-      configScript.src = "drive-config.js";
+      configScript.src = "drive-config.js?v=9.3-drive-visible";
       configScript.dataset.driveConfig = "true";
 
       configScript.onload = () => {
         const serviceScript = document.createElement("script");
-        serviceScript.src = "drive-service.js";
+        serviceScript.src = "drive-service.js?v=9.3-drive-visible";
         serviceScript.dataset.drivePortal = "true";
         serviceScript.onload = () => {
           window.DrivePortal?.init?.().finally(resolve);
@@ -1196,7 +1196,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=9.1-cdn-fix";
+    script.src = "firebase-service.js?v=9.3-drive-visible";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1207,7 +1207,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js";
+    script.src = "inline-admin.js?v=9.3-drive-visible";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();

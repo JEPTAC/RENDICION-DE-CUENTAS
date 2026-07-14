@@ -177,6 +177,10 @@
   function toolbarTemplate() {
     const s = state.settings;
     const p = pageData();
+    const driveConfig =
+      window.DrivePortal?.getConfig?.()
+      || window.DRIVE_CONFIG
+      || {};
     return `
       <div class="inline-admin-toolbar" id="inlineAdminToolbar" role="region" aria-label="Barra de edición directa">
         <div class="inline-admin-brand">
@@ -185,6 +189,11 @@
         </div>
 
         <div class="inline-admin-actions">
+          <button type="button" class="inline-toolbar-button inline-drive-quick" id="inlineDriveQuick">
+            <span class="drive-status-dot" id="inlineDriveQuickDot"></span>
+            <span id="inlineDriveQuickLabel">Google Drive</span>
+          </button>
+
           <details class="inline-admin-menu">
             <summary>Apariencia</summary>
             <div class="inline-admin-menu__panel">
@@ -278,39 +287,78 @@
             </div>
           </details>
 
-          <details class="inline-admin-menu drive-admin-menu">
-            <summary><span class="drive-status-dot" id="inlineDriveDot"></span> Google Drive</summary>
+          <details class="inline-admin-menu drive-admin-menu drive-admin-drawer" id="inlineDriveMenu">
+            <summary class="drive-hidden-summary">Configuración de Google Drive</summary>
             <div class="inline-admin-menu__panel drive-admin-panel">
               <div class="drive-panel-heading">
-                <div><strong>Archivos del portal</strong><small id="inlineDriveStatus">Sin configurar</small></div>
-                <button type="button" id="inlineDriveOpen" class="drive-icon-button" aria-label="Abrir carpeta de Google Drive">↗</button>
+                <div>
+                  <strong>Google Drive del portal</strong>
+                  <small id="inlineDriveStatus">Validando configuración…</small>
+                </div>
+                <div class="drive-panel-heading__actions">
+                  <button type="button" id="inlineDriveOpen" class="drive-icon-button" aria-label="Abrir carpeta de Google Drive">↗</button>
+                  <button type="button" id="inlineDriveClose" class="drive-icon-button" aria-label="Cerrar panel de Google Drive">×</button>
+                </div>
+              </div>
+
+              <div class="drive-configured-banner">
+                <span class="drive-status-dot" id="inlineDriveDot"></span>
+                <div>
+                  <strong id="inlineDriveConfigurationTitle">Configuración del proyecto</strong>
+                  <small>Los datos ya vienen diligenciados. Solo debe autorizar su cuenta y crear o elegir la carpeta.</small>
+                </div>
               </div>
 
               <label>ID de cliente OAuth
-                <input id="inlineDriveClientId" autocomplete="off" placeholder="000000000000-....apps.googleusercontent.com">
+                <input id="inlineDriveClientId"
+                  autocomplete="off"
+                  value="${helpers.escape(driveConfig.clientId || "")}"
+                  placeholder="000000000000-....apps.googleusercontent.com">
               </label>
-              <label>API key
-                <input id="inlineDriveApiKey" autocomplete="off" placeholder="AIza...">
+
+              <label>API key de Google Picker
+                <input id="inlineDriveApiKey"
+                  autocomplete="off"
+                  value="${helpers.escape(driveConfig.apiKey || "")}"
+                  placeholder="AIza...">
               </label>
+
               <label>Número del proyecto
-                <input id="inlineDriveAppId" inputmode="numeric" placeholder="509564686428">
+                <input id="inlineDriveAppId"
+                  inputmode="numeric"
+                  value="${helpers.escape(driveConfig.appId || "")}"
+                  placeholder="103022555921">
               </label>
+
               <label>Nombre de la carpeta principal
-                <input id="inlineDriveFolderName" value="Rendición de Cuentas San Pedro">
+                <input id="inlineDriveFolderName"
+                  value="${helpers.escape(driveConfig.rootFolderName || "Rendición de Cuentas San Pedro")}">
               </label>
+
               <label>ID de carpeta existente
-                <input id="inlineDriveFolderId" placeholder="Opcional">
+                <input id="inlineDriveFolderId"
+                  value="${helpers.escape(driveConfig.rootFolderId || "")}"
+                  placeholder="Puede permanecer vacío">
               </label>
-              <label class="inline-check">
-                <input id="inlineDrivePublic" type="checkbox" checked>
+
+              <label class="inline-check drive-public-check">
+                <input id="inlineDrivePublic" type="checkbox" ${driveConfig.makeFilesPublic !== false ? "checked" : ""}>
                 Publicar archivos para cualquier persona con el enlace
               </label>
 
               <div class="drive-actions-grid">
-                <button type="button" class="inline-mini-button drive-primary-action" id="inlineDriveConnect">Conectar Drive</button>
-                <button type="button" class="inline-mini-button" id="inlineDrivePick">Elegir carpeta</button>
-                <button type="button" class="inline-mini-button" id="inlineDriveCreate">Crear carpeta</button>
-                <button type="button" class="inline-mini-button" id="inlineDriveDisconnect">Desconectar</button>
+                <button type="button" class="inline-mini-button drive-primary-action" id="inlineDriveConnect">
+                  Conectar Drive
+                </button>
+                <button type="button" class="inline-mini-button" id="inlineDrivePick">
+                  Elegir carpeta
+                </button>
+                <button type="button" class="inline-mini-button" id="inlineDriveCreate">
+                  Crear carpeta
+                </button>
+                <button type="button" class="inline-mini-button" id="inlineDriveDisconnect">
+                  Desconectar
+                </button>
               </div>
 
               <div class="drive-upload-progress" id="inlineDriveProgress" hidden>
@@ -319,7 +367,7 @@
               </div>
 
               <p class="drive-panel-note">
-                Los datos estructurados siguen en Firestore. PDF, Excel, imágenes y evidencias se guardan en Drive.
+                Firestore guarda datos, indicadores y enlaces. Google Drive guarda PDF, Excel, imágenes, videos y evidencias.
               </p>
             </div>
           </details>
@@ -506,6 +554,29 @@
     document.querySelectorAll("[data-create-entity]").forEach(button => {
       button.addEventListener("click", () => openNewEntityInspector(button.dataset.createEntity));
     });
+    const driveMenu = get("#inlineDriveMenu");
+
+    function setDrivePanelOpen(open) {
+      if (!driveMenu) return;
+      driveMenu.open = Boolean(open);
+      document.body.classList.toggle("drive-panel-open",Boolean(open));
+      get("#inlineDriveQuick")?.setAttribute("aria-expanded",String(Boolean(open)));
+    }
+
+    get("#inlineDriveQuick")?.addEventListener("click", () => {
+      setDrivePanelOpen(!driveMenu?.open);
+      if (driveMenu?.open) updateDrivePanel();
+    });
+
+    get("#inlineDriveClose")?.addEventListener("click", () => {
+      setDrivePanelOpen(false);
+    });
+
+    driveMenu?.addEventListener("toggle", () => {
+      document.body.classList.toggle("drive-panel-open",driveMenu.open);
+      get("#inlineDriveQuick")?.setAttribute("aria-expanded",String(driveMenu.open));
+    });
+
     function saveDriveConfiguration() {
       if (!window.DrivePortal) return null;
       return window.DrivePortal.configure({
@@ -617,22 +688,31 @@
 
     const label = document.querySelector("#inlineDriveStatus");
     const dot = document.querySelector("#inlineDriveDot");
+    const quickDot = document.querySelector("#inlineDriveQuickDot");
+    const quickLabel = document.querySelector("#inlineDriveQuickLabel");
     const open = document.querySelector("#inlineDriveOpen");
 
     if (!label || !dot) return;
-    dot.classList.remove("is-connected","is-configured");
+
+    [dot,quickDot].filter(Boolean).forEach(item => {
+      item.classList.remove("is-connected","is-configured");
+    });
 
     if (status?.connected) {
-      dot.classList.add("is-connected");
+      [dot,quickDot].filter(Boolean).forEach(item => item.classList.add("is-connected"));
       label.textContent = status.rootFolderName
         ? `Conectado · ${status.rootFolderName}`
-        : "Conectado";
+        : "Google Drive conectado";
+      if (quickLabel) quickLabel.textContent = "Drive conectado";
     } else if (status?.configured) {
-      dot.classList.add("is-configured");
-      label.textContent = "Configurado · conecte para cargar";
+      [dot,quickDot].filter(Boolean).forEach(item => item.classList.add("is-configured"));
+      label.textContent = "Configuración lista · falta autorizar la cuenta";
+      if (quickLabel) quickLabel.textContent = "Conectar Drive";
     } else {
-      label.textContent = "Falta el ID de cliente OAuth";
+      label.textContent = "No se pudo leer drive-config.js";
+      if (quickLabel) quickLabel.textContent = "Configurar Drive";
     }
+
     if (open) open.disabled = !Boolean(status?.rootFolderId || config.rootFolderId);
   }
 
@@ -888,6 +968,9 @@
 
   function deactivate(showMessage = true) {
     active = false;
+    document.body.classList.remove("drive-panel-open");
+    const driveMenu = document.querySelector("#inlineDriveMenu");
+    if (driveMenu) driveMenu.open = false;
     document.body.classList.remove("admin-inline-active","admin-inspector-open");
     closeInspector();
     undecorate();
