@@ -315,7 +315,7 @@
               <span aria-hidden="true">🔊</span><span>Escuchar</span>
             </button>
             <button class="header-search" id="headerSearch" type="button" aria-label="Abrir búsqueda general"><span aria-hidden="true">⌕</span></button>
-            <button class="admin-entry${state.admin ? " is-active" : ""}" id="adminEntry" type="button">${state.admin ? "Editar página" : "Administrador"}</button>
+            <button class="admin-entry${state.admin ? " is-active" : ""}" id="adminEntry" type="button">${state.admin ? "Editar página" : "Ingresar"}</button>
           </div>
         </div>
       </header>
@@ -397,19 +397,97 @@
         <div class="search-list" id="globalSearchList"></div>
       </dialog>
 
-      <dialog class="dialog" id="loginDialog">
-        <button class="dialog-close" data-close-dialog="loginDialog">×</button>
-        <span class="section-kicker">ACCESO ADMINISTRATIVO</span>
-        <h2>Activar edición directa</h2>
-        <p class="dialog-note">Al iniciar sesión se habilitarán controles de edición directamente sobre la página.</p>
-        <form class="dialog-form firebase-login-form" id="adminLoginForm">
-          <label>Correo del administrador<input name="identity" type="text" autocomplete="username" placeholder="correo@dominio.gov.co" required></label>
-          <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-          <button class="button button-primary">Ingresar con Firebase</button>
-          <button class="button button-secondary" type="button" id="googleAdminLogin">Continuar con Google</button>
-          <small id="firebaseLoginStatus">Conectando con Firebase…</small>
-          <details class="local-login-help"><summary>Acceso local temporal</summary><p>Mientras crea el usuario en Firebase puede usar el usuario local anterior. Los cambios locales no se compartirán con otros visitantes.</p></details>
+      <dialog class="dialog auth-dialog" id="loginDialog">
+        <button class="dialog-close" data-close-dialog="loginDialog" aria-label="Cerrar">×</button>
+        <span class="section-kicker">CUENTA CIUDADANA</span>
+        <h2>Ingresar al portal</h2>
+        <p class="dialog-note">La ciudadanía puede crear una cuenta gratuita. Las cuentas nuevas se registran automáticamente con el rol de invitado.</p>
+
+        <div class="auth-view-tabs" role="tablist" aria-label="Acceso al portal">
+          <button type="button" class="active" data-auth-view="login" role="tab" aria-selected="true">Iniciar sesión</button>
+          <button type="button" data-auth-view="register" role="tab" aria-selected="false">Crear cuenta</button>
+        </div>
+
+        <section class="auth-view-panel active" data-auth-panel="login">
+          <form class="dialog-form firebase-login-form" id="adminLoginForm">
+            <label>Correo electrónico
+              <input name="identity" type="email" autocomplete="email" placeholder="correo@ejemplo.com" required>
+            </label>
+            <label>Contraseña
+              <input name="password" type="password" autocomplete="current-password" required>
+            </label>
+            <button class="button button-primary">Ingresar</button>
+            <button class="button button-secondary" type="button" id="googleAdminLogin">Continuar con Google</button>
+            <button class="auth-text-button" type="button" id="forgotPasswordButton">Olvidé mi contraseña</button>
+            <small id="firebaseLoginStatus" class="auth-status" aria-live="polite">Conectando con Firebase…</small>
+            <details class="local-login-help">
+              <summary>Acceso local de emergencia</summary>
+              <p>Solo para mantenimiento temporal. No sincroniza información entre dispositivos.</p>
+            </details>
+          </form>
+        </section>
+
+        <section class="auth-view-panel" data-auth-panel="register" hidden>
+          <form class="dialog-form registration-form" id="publicRegistrationForm">
+            <label>Nombre completo
+              <input name="displayName" autocomplete="name" minlength="3" maxlength="120" required>
+            </label>
+            <label>Correo electrónico
+              <input name="email" type="email" autocomplete="email" required>
+            </label>
+            <div class="auth-two-columns">
+              <label>Contraseña
+                <input name="password" type="password" autocomplete="new-password" minlength="8" required>
+              </label>
+              <label>Confirmar contraseña
+                <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+              </label>
+            </div>
+            <label>Barrio, corregimiento o sector
+              <input name="neighborhood" maxlength="120" placeholder="Opcional">
+            </label>
+            <label class="auth-consent">
+              <input name="accept" type="checkbox" required>
+              <span>Acepto el tratamiento de mis datos para gestionar mi cuenta y participación en el portal.</span>
+            </label>
+            <button class="button button-primary">Crear cuenta de invitado</button>
+            <button class="button button-secondary" type="button" id="googleRegistration">Registrarme con Google</button>
+            <small class="auth-status" id="registrationStatus" aria-live="polite">Recibirá un correo para verificar su dirección.</small>
+          </form>
+        </section>
+      </dialog>
+
+      <dialog class="dialog account-dialog" id="accountDialog">
+        <button class="dialog-close" data-close-dialog="accountDialog" aria-label="Cerrar">×</button>
+        <div class="account-header">
+          <span class="account-avatar" id="accountAvatar">U</span>
+          <div>
+            <span class="section-kicker">MI CUENTA</span>
+            <h2 id="accountDisplayName">Usuario</h2>
+            <p id="accountEmail">correo@ejemplo.com</p>
+          </div>
+        </div>
+
+        <div class="account-status-grid">
+          <div><small>Rol</small><strong id="accountRole">Invitado</strong></div>
+          <div><small>Correo</small><strong id="accountVerification">Pendiente</strong></div>
+          <div><small>Perfil</small><strong id="accountProfileSource">Firebase</strong></div>
+        </div>
+
+        <form class="dialog-form account-profile-form" id="accountProfileForm">
+          <label>Nombre visible<input name="displayName" maxlength="120"></label>
+          <label>Teléfono<input name="phone" maxlength="40" placeholder="Opcional"></label>
+          <label>Barrio, corregimiento o sector<input name="neighborhood" maxlength="120" placeholder="Opcional"></label>
+          <button class="button button-primary">Guardar perfil</button>
         </form>
+
+        <div class="account-actions">
+          <button class="button button-secondary" type="button" id="resendVerificationButton">Reenviar verificación</button>
+          <button class="button button-secondary" type="button" id="accountManageUsers" hidden>Gestionar usuarios</button>
+          <button class="button button-danger" type="button" id="accountSignout">Cerrar sesión</button>
+        </div>
+
+        <p class="account-diagnostic" id="firebaseAccountDiagnostic" aria-live="polite"></p>
       </dialog>
 
       <dialog class="admin-panel" id="adminPanel">
@@ -630,6 +708,104 @@
     openDialog("ideaAdminDialog");
   }
 
+  function roleLabel(role) {
+    return window.FirebasePortal?.roleLabel?.(role) || {
+      super_admin:"Superadministrador",
+      admin:"Administrador",
+      editor:"Editor",
+      guest:"Invitado"
+    }[role] || "Invitado";
+  }
+
+  function setAuthView(view) {
+    document.querySelectorAll("[data-auth-view]").forEach(button => {
+      const active = button.dataset.authView === view;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-selected",String(active));
+    });
+    document.querySelectorAll("[data-auth-panel]").forEach(panel => {
+      const active = panel.dataset.authPanel === view;
+      panel.classList.toggle("active",active);
+      panel.hidden = !active;
+    });
+  }
+
+  function updateAccountDialog(detail = {}) {
+    const user = detail.user;
+    const profile = detail.profile || {};
+    if (!user) return;
+
+    const displayName =
+      profile.displayName
+      || user.displayName
+      || "Usuario del portal";
+    const email = user.email || profile.email || "";
+    const role = detail.role || profile.role || "guest";
+
+    const avatar = document.querySelector("#accountAvatar");
+    const name = document.querySelector("#accountDisplayName");
+    const emailNode = document.querySelector("#accountEmail");
+    const roleNode = document.querySelector("#accountRole");
+    const verification = document.querySelector("#accountVerification");
+    const source = document.querySelector("#accountProfileSource");
+    const diagnostic = document.querySelector("#firebaseAccountDiagnostic");
+    const profileForm = document.querySelector("#accountProfileForm");
+    const resend = document.querySelector("#resendVerificationButton");
+    const manage = document.querySelector("#accountManageUsers");
+
+    if (avatar) avatar.textContent = displayName.trim().charAt(0).toUpperCase() || "U";
+    if (name) name.textContent = displayName;
+    if (emailNode) emailNode.textContent = email;
+    if (roleNode) {
+      roleNode.textContent = roleLabel(role);
+      roleNode.dataset.role = role;
+    }
+    if (verification) {
+      verification.textContent = detail.emailVerified ? "Verificado" : "Pendiente";
+      verification.classList.toggle("is-verified",Boolean(detail.emailVerified));
+    }
+    if (source) {
+      source.textContent = {
+        uid:"UID",
+        email_legacy:"Perfil por correo",
+        migrated_to_uid:"Migrado a UID",
+        created_guest:"Creado automáticamente"
+      }[detail.profileSource] || "Firebase";
+    }
+    if (profileForm) {
+      profileForm.elements.displayName.value = displayName;
+      profileForm.elements.phone.value = profile.phone || "";
+      profileForm.elements.neighborhood.value = profile.neighborhood || "";
+    }
+    if (resend) resend.hidden = Boolean(detail.emailVerified);
+    if (manage) manage.hidden = !Boolean(detail.isSuperAdmin);
+    if (diagnostic) {
+      diagnostic.textContent = detail.profileError
+        ? `No se pudo validar el perfil: ${detail.profileError}`
+        : detail.isSuperAdmin
+          ? "Cuenta reconocida correctamente como superadministrador."
+          : "Su cuenta puede participar como invitado. El superadministrador puede modificar el rol desde Gestión de usuarios.";
+      diagnostic.classList.toggle("is-error",Boolean(detail.profileError));
+    }
+  }
+
+  async function performFirebaseSignout() {
+    await window.FirebasePortal?.signOut?.().catch(() => {});
+    state.admin = false;
+    sessionStorage.removeItem(KEYS.admin);
+    sessionStorage.removeItem("sp_admin_mode");
+    closeDialog("adminPanel");
+    closeDialog("accountDialog");
+    window.InlineAdmin?.deactivate?.(false);
+
+    const button = document.querySelector("#adminEntry");
+    if (button) {
+      button.textContent = "Ingresar";
+      button.classList.remove("is-active");
+    }
+    helpers.toast("Sesión cerrada.");
+  }
+
   function bindGlobalEvents() {
     document.addEventListener("click", event => {
       const close = event.target.closest("[data-close-dialog]");
@@ -707,9 +883,23 @@
     document.querySelector("#adminEntry")?.addEventListener("click", () => {
       if (state.admin) {
         window.InlineAdmin?.activate();
+        return;
+      }
+      const firebaseStatus = window.FirebasePortal?.getStatus?.();
+      if (firebaseStatus?.user) {
+        updateAccountDialog({
+          ...firebaseStatus,
+          roleLabel:roleLabel(firebaseStatus.role)
+        });
+        openDialog("accountDialog");
       } else {
+        setAuthView("login");
         openDialog("loginDialog");
       }
+    });
+
+    document.querySelectorAll("[data-auth-view]").forEach(button => {
+      button.addEventListener("click", () => setAuthView(button.dataset.authView));
     });
 
     document.querySelector("#adminLoginForm")?.addEventListener("submit", async event => {
@@ -717,53 +907,142 @@
       const form = new FormData(event.target);
       const identity = String(form.get("identity") || "").trim();
       const password = String(form.get("password") || "");
+      const status = document.querySelector("#firebaseLoginStatus");
 
       if (identity === "admin" && password === "SanPedro2026*") {
         state.admin = true;
-        sessionStorage.setItem(KEYS.admin, "1");
-        sessionStorage.setItem("sp_admin_mode", "local");
+        sessionStorage.setItem(KEYS.admin,"1");
+        sessionStorage.setItem("sp_admin_mode","local");
         event.target.reset();
         closeDialog("loginDialog");
+
         const button = document.querySelector("#adminEntry");
-        if (button) { button.textContent = "Editar página"; button.classList.add("is-active"); }
+        if (button) {
+          button.textContent = "Editar página";
+          button.classList.add("is-active");
+        }
         window.InlineAdmin?.activate();
-        helpers.toast("Modo administrativo local activado. Firebase no sincronizará hasta iniciar con una cuenta autorizada.");
+        helpers.toast("Modo administrativo local activado. Los cambios no se compartirán hasta iniciar con Firebase.");
         return;
       }
 
       try {
-        const result = await window.FirebasePortal?.signInEmail?.(identity, password);
+        if (status) status.textContent = "Validando cuenta…";
+        const result = await window.FirebasePortal?.signInEmail?.(identity,password);
         if (!result) throw new Error("Firebase todavía no está disponible.");
         event.target.reset();
         closeDialog("loginDialog");
       } catch (error) {
-        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message || "No fue posible iniciar sesión.");
+        const message =
+          window.FirebasePortal?.friendlyError?.(error)
+          || error.message
+          || "No fue posible iniciar sesión.";
+        if (status) status.textContent = message;
+        helpers.toast(message);
       }
     });
 
-    document.querySelector("#googleAdminLogin")?.addEventListener("click", async () => {
+    document.querySelector("#publicRegistrationForm")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      const password = String(form.get("password") || "");
+      const confirmation = String(form.get("passwordConfirm") || "");
+      const status = document.querySelector("#registrationStatus");
+
+      if (password !== confirmation) {
+        const message = "Las contraseñas no coinciden.";
+        if (status) status.textContent = message;
+        helpers.toast(message);
+        return;
+      }
+
+      try {
+        if (status) status.textContent = "Creando cuenta…";
+        await window.FirebasePortal?.registerEmail?.({
+          displayName:form.get("displayName"),
+          email:form.get("email"),
+          password,
+          neighborhood:form.get("neighborhood")
+        });
+        event.target.reset();
+        closeDialog("loginDialog");
+        const firebaseStatus = window.FirebasePortal?.getStatus?.();
+        updateAccountDialog(firebaseStatus || {});
+        openDialog("accountDialog");
+        helpers.toast("Cuenta creada como invitado. Revise su correo para verificarla.");
+      } catch (error) {
+        const message =
+          window.FirebasePortal?.friendlyError?.(error)
+          || error.message
+          || "No fue posible crear la cuenta.";
+        if (status) status.textContent = message;
+        helpers.toast(message);
+      }
+    });
+
+    async function googleAccess() {
       try {
         await window.FirebasePortal?.signInGoogle?.();
         closeDialog("loginDialog");
       } catch (error) {
-        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message || "No fue posible iniciar con Google.");
+        helpers.toast(
+          window.FirebasePortal?.friendlyError?.(error)
+          || error.message
+          || "No fue posible continuar con Google."
+        );
+      }
+    }
+
+    document.querySelector("#googleAdminLogin")?.addEventListener("click",googleAccess);
+    document.querySelector("#googleRegistration")?.addEventListener("click",googleAccess);
+
+    document.querySelector("#forgotPasswordButton")?.addEventListener("click", async () => {
+      const email =
+        document.querySelector("#adminLoginForm")?.elements.identity?.value
+        || prompt("Correo de la cuenta:");
+      if (!email) return;
+
+      try {
+        await window.FirebasePortal?.sendPasswordReset?.(email);
+        helpers.toast("Se envió el enlace para restablecer la contraseña.");
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message);
       }
     });
 
-    document.querySelector("#adminSignout")?.addEventListener("click", async () => {
-      await window.FirebasePortal?.signOut?.().catch(() => {});
-      state.admin = false;
-      sessionStorage.removeItem(KEYS.admin);
-      sessionStorage.removeItem("sp_admin_mode");
-      closeDialog("adminPanel");
-      window.InlineAdmin?.deactivate();
-      const button = document.querySelector("#adminEntry");
-      if (button) {
-        button.textContent = "Administrador";
-        button.classList.remove("is-active");
+    document.querySelector("#accountProfileForm")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const data = new FormData(event.target);
+      try {
+        await window.FirebasePortal?.updateOwnProfile?.({
+          displayName:data.get("displayName"),
+          phone:data.get("phone"),
+          neighborhood:data.get("neighborhood")
+        });
+        helpers.toast("Perfil actualizado.");
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message);
       }
-      helpers.toast("Sesión cerrada.");
     });
+
+    document.querySelector("#resendVerificationButton")?.addEventListener("click", async () => {
+      try {
+        await window.FirebasePortal?.resendVerification?.();
+        helpers.toast("Correo de verificación enviado.");
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message);
+      }
+    });
+
+    document.querySelector("#accountManageUsers")?.addEventListener("click", () => {
+      closeDialog("accountDialog");
+      window.InlineAdmin?.activate?.();
+      window.InlineAdmin?.openUsers?.();
+    });
+
+    document.querySelector("#accountSignout")?.addEventListener("click",performFirebaseSignout);
+
+    document.querySelector("#adminSignout")?.addEventListener("click",performFirebaseSignout);
 
     document.querySelector("#applyAdminColors")?.addEventListener("click", () => {
       state.settings.primary = document.querySelector("#adminPrimary").value;
@@ -1313,31 +1592,67 @@
   function bindFirebaseEvents() {
     window.addEventListener("firebase:ready", event => {
       const status = document.querySelector("#firebaseLoginStatus");
-      if (status) status.textContent = event.detail?.connected ? "Firebase conectado." : "Firebase disponible sin conexión de red.";
+      if (!status) return;
+      status.textContent = event.detail?.connected
+        ? "Firebase conectado."
+        : event.detail?.error || "Firebase disponible sin conexión de red.";
     });
 
     window.addEventListener("firebase:auth", event => {
       const detail = event.detail || {};
-      const localMode = sessionStorage.getItem("sp_admin_mode") === "local";
+      const localMode =
+        sessionStorage.getItem("sp_admin_mode") === "local";
+
       if (!detail.user && localMode) return;
-      state.admin = Boolean(detail.canWrite);
-      if (state.admin) {
-        sessionStorage.setItem(KEYS.admin, "1");
-        sessionStorage.setItem("sp_admin_mode", "firebase");
-        const button = document.querySelector("#adminEntry");
-        if (button) { button.textContent = "Editar página"; button.classList.add("is-active"); }
-        window.InlineAdmin?.activate();
-        helpers.toast(`Sesión Firebase iniciada${detail.role ? ` · ${detail.role}` : ""}.`);
+
+      updateAccountDialog(detail);
+
+      const button = document.querySelector("#adminEntry");
+
+      if (detail.user && detail.canWrite) {
+        state.admin = true;
+        sessionStorage.setItem(KEYS.admin,"1");
+        sessionStorage.setItem("sp_admin_mode","firebase");
+
+        if (button) {
+          button.textContent = "Editar página";
+          button.classList.add("is-active");
+        }
+
+        window.InlineAdmin?.activate?.();
+
+        if (detail.reason !== "initial") {
+          helpers.toast(
+            `Sesión iniciada · ${detail.roleLabel || roleLabel(detail.role)}.`
+          );
+        }
       } else if (detail.user) {
+        state.admin = false;
         sessionStorage.removeItem(KEYS.admin);
         sessionStorage.removeItem("sp_admin_mode");
         window.InlineAdmin?.deactivate?.(false);
-        const button = document.querySelector("#adminEntry");
-        if (button) { button.textContent = "Administrador"; button.classList.remove("is-active"); }
-        helpers.toast("La cuenta inició sesión, pero no tiene rol de edición.");
+
+        if (button) {
+          button.textContent = "Mi cuenta";
+          button.classList.remove("is-active");
+        }
+
+        if (detail.profileError) {
+          helpers.toast(
+            "La cuenta inició sesión, pero Firestore no permitió leer el rol. Publique las reglas V9."
+          );
+        } else if (detail.reason === "registration") {
+          helpers.toast("Cuenta creada con rol de invitado.");
+        }
       } else {
+        state.admin = false;
         sessionStorage.removeItem(KEYS.admin);
         sessionStorage.removeItem("sp_admin_mode");
+
+        if (button) {
+          button.textContent = "Ingresar";
+          button.classList.remove("is-active");
+        }
       }
     });
 

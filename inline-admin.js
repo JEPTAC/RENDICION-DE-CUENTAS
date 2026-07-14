@@ -325,6 +325,7 @@
           </details>
 
           <button type="button" class="inline-toolbar-button firebase-sync-button" id="inlineFirebaseSync"><span class="firebase-sync-dot"></span> Firestore</button>
+          <button type="button" class="inline-toolbar-button users-admin-button" id="inlineManageUsers" hidden>Usuarios</button>
           <button type="button" class="inline-toolbar-button" id="inlineNewBlock">＋ Nuevo bloque</button>
           <button type="button" class="inline-toolbar-button" id="inlineVisitorView">Vista visitante</button>
           <button type="button" class="inline-toolbar-button is-danger" id="inlineLogout">Cerrar sesión</button>
@@ -580,6 +581,8 @@
         updateDrivePanel();
       });
     });
+
+    get("#inlineManageUsers")?.addEventListener("click",openUsersInspector);
 
     get("#inlineFirebaseSync")?.addEventListener("click", async () => {
       try {
@@ -1341,6 +1344,180 @@
     });
   }
 
+  function updateUserManagementButton() {
+    const button = document.querySelector("#inlineManageUsers");
+    if (!button) return;
+    const status = window.FirebasePortal?.getStatus?.();
+    button.hidden = !Boolean(status?.isSuperAdmin);
+  }
+
+  function userRoleOptions(selected) {
+    return [
+      ["guest","Invitado"],
+      ["editor","Editor"],
+      ["admin","Administrador"],
+      ["super_admin","Superadministrador"]
+    ].map(([value,label]) => `
+      <option value="${value}" ${selected === value ? "selected" : ""}>${label}</option>
+    `).join("");
+  }
+
+  function userDate(value) {
+    if (!value) return "Sin registro";
+    try {
+      return new Date(value).toLocaleString("es-CO",{
+        day:"2-digit",
+        month:"short",
+        year:"numeric",
+        hour:"2-digit",
+        minute:"2-digit"
+      });
+    } catch {
+      return "Sin registro";
+    }
+  }
+
+  async function openUsersInspector() {
+    const status = window.FirebasePortal?.getStatus?.();
+    if (!status?.isSuperAdmin) {
+      helpers.toast("Solo el superadministrador puede gestionar usuarios.");
+      return;
+    }
+
+    openInspector(
+      "Gestión de usuarios",
+      "Roles, acceso y cuentas ciudadanas",
+      `<div class="users-loading"><span></span><strong>Cargando usuarios…</strong></div>`
+    );
+
+    try {
+      const users = await window.FirebasePortal.listUserProfiles();
+      const currentUid = status.user?.uid || "";
+      const currentEmail = status.user?.email || "";
+
+      document.querySelector("#inlineInspectorContent").innerHTML = `
+        <div class="users-admin-summary">
+          <div><strong>${users.length}</strong><small>Perfiles registrados</small></div>
+          <div><strong>${users.filter(user => user.active).length}</strong><small>Cuentas activas</small></div>
+          <div><strong>${users.filter(user => user.role !== "guest").length}</strong><small>Equipo administrativo</small></div>
+        </div>
+
+        <label class="users-search-field">
+          Buscar usuario
+          <input id="usersAdminSearch" placeholder="Nombre, correo o rol">
+        </label>
+
+        <p class="users-admin-note">
+          Las cuentas nuevas se crean como <strong>Invitado</strong>. Desde aquí puede promoverlas a editor o administrador. Por seguridad no puede desactivar ni degradar su propia cuenta.
+        </p>
+
+        <div class="users-admin-list" id="usersAdminList">
+          ${users.length ? users.map(user => {
+            const isCurrent =
+              user.uid === currentUid
+              || user.email === currentEmail
+              || user.docId === currentUid
+              || user.docId === currentEmail;
+
+            return `
+              <article class="user-admin-card"
+                data-user-card
+                data-search="${helpers.escape(`${user.displayName} ${user.email} ${user.roleLabel}`.toLowerCase())}">
+                <div class="user-admin-card__head">
+                  <span class="user-admin-avatar">${helpers.escape((user.displayName || "U").charAt(0).toUpperCase())}</span>
+                  <div>
+                    <strong>${helpers.escape(user.displayName)}</strong>
+                    <small>${helpers.escape(user.email || user.uid || user.docId)}</small>
+                  </div>
+                  ${isCurrent ? '<b class="current-user-badge">Su cuenta</b>' : ""}
+                </div>
+
+                <div class="user-admin-meta">
+                  <span>${user.emailVerified ? "Correo verificado" : "Correo pendiente"}</span>
+                  <span>${user.active ? "Cuenta activa" : "Cuenta desactivada"}</span>
+                  <span>Último acceso: ${helpers.escape(userDate(user.lastLoginAt))}</span>
+                </div>
+
+                <div class="user-admin-controls">
+                  <label>Rol
+                    <select data-user-role ${isCurrent ? "disabled" : ""}>
+                      ${userRoleOptions(user.role)}
+                    </select>
+                  </label>
+                  <label class="user-active-control">
+                    <input type="checkbox" data-user-active ${user.active ? "checked" : ""} ${isCurrent ? "disabled" : ""}>
+                    <span>Permitir acceso</span>
+                  </label>
+                  <button type="button"
+                    class="button button-primary"
+                    data-save-user
+                    ${isCurrent ? "disabled" : ""}
+                    data-doc-id="${helpers.escape(user.docId)}"
+                    data-uid="${helpers.escape(user.uid || "")}"
+                    data-email="${helpers.escape(user.email || "")}"
+                    data-name="${helpers.escape(user.displayName || "")}">
+                    Guardar cambios
+                  </button>
+                </div>
+              </article>`;
+          }).join("") : `
+            <div class="users-empty-state">
+              <strong>No hay perfiles registrados.</strong>
+              <p>Los usuarios aparecerán después de crear una cuenta o iniciar sesión por primera vez.</p>
+            </div>`
+          }
+        </div>
+      `;
+
+      document.querySelector("#usersAdminSearch")?.addEventListener("input",event => {
+        const query = event.target.value.trim().toLowerCase();
+        document.querySelectorAll("[data-user-card]").forEach(card => {
+          card.hidden = query && !card.dataset.search.includes(query);
+        });
+      });
+
+      document.querySelectorAll("[data-save-user]").forEach(button => {
+        button.addEventListener("click",async () => {
+          const card = button.closest("[data-user-card]");
+          const role = card.querySelector("[data-user-role]").value;
+          const active = card.querySelector("[data-user-active]").checked;
+
+          button.disabled = true;
+          button.textContent = "Guardando…";
+
+          try {
+            await window.FirebasePortal.updateUserAccess(
+              {
+                docId:button.dataset.docId,
+                uid:button.dataset.uid,
+                email:button.dataset.email,
+                displayName:button.dataset.name
+              },
+              {role,active}
+            );
+            helpers.toast("Acceso del usuario actualizado.");
+            await openUsersInspector();
+          } catch (error) {
+            helpers.toast(
+              window.FirebasePortal?.friendlyError?.(error)
+              || error.message
+            );
+            button.disabled = false;
+            button.textContent = "Guardar cambios";
+          }
+        });
+      });
+    } catch (error) {
+      document.querySelector("#inlineInspectorContent").innerHTML = `
+        <div class="users-empty-state is-error">
+          <strong>No fue posible consultar los usuarios.</strong>
+          <p>${helpers.escape(window.FirebasePortal?.friendlyError?.(error) || error.message)}</p>
+          <button type="button" class="button button-primary" id="retryUsersList">Reintentar</button>
+        </div>`;
+      document.querySelector("#retryUsersList")?.addEventListener("click",openUsersInspector);
+    }
+  }
+
   function openNewEntityInspector(type) {
     if (type === "year") {
       const nextYear = Math.max(...state.years.map(item => Number(item.year)), new Date().getFullYear()) + 1;
@@ -1609,7 +1786,14 @@
     window.addEventListener("drive:config", updateDrivePanel);
     window.addEventListener("drive:upload", event => updateDriveProgress(event.detail));
     window.addEventListener("drive:warning", event => helpers.toast(event.detail?.message || "Revise los permisos del archivo en Drive."));
+    window.addEventListener("firebase:auth",updateUserManagementButton);
+    window.addEventListener("firebase:users",() => {
+      if (document.querySelector("#inlineInspectorTitle")?.textContent === "Gestión de usuarios") {
+        openUsersInspector();
+      }
+    });
 
+    updateUserManagementButton();
     applySavedContent();
     applySectionOrder();
     applySectionStyles();
@@ -1627,5 +1811,12 @@
     });
   }
 
-  window.InlineAdmin = { init, activate, deactivate, decorate, openEntityEditor:openEntityInspector };
+  window.InlineAdmin = {
+    init,
+    activate,
+    deactivate,
+    decorate,
+    openEntityEditor:openEntityInspector,
+    openUsers:openUsersInspector
+  };
 })();
