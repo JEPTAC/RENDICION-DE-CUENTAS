@@ -250,7 +250,7 @@
           <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
             <a class="${active("home")}" href="index.html">Inicio</a>
             <div class="nav-dropdown">
-              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span class="nav-menu-icon" aria-hidden="true"><i></i><i></i><i></i></span></button>
+              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span aria-hidden="true">⌄</span></button>
               <div class="nav-dropdown__menu">
                 ${years.map(y => `<a href="${helpers.yearUrl(y.year)}"><b>${y.year}</b><span>${helpers.escape(y.status)}</span></a>`).join("")}
                 <a href="vigencias.html"><b>Archivo histórico</b><span>Ver todas las ediciones</span></a>
@@ -280,13 +280,19 @@
 
       <aside class="reader-panel" id="readerPanel" role="region" aria-label="Narrador de texto" aria-hidden="true">
         <div class="reader-panel__head">
-          <div><strong>Narrador de texto</strong><small>Lectura en español</small></div>
+          <div><strong>Narrador de texto</strong><small>Español latino · preferencia Colombia</small></div>
           <button type="button" id="readerClose" aria-label="Cerrar narrador">×</button>
         </div>
         <label class="reader-field">Contenido que desea escuchar
           <select id="readerScope">
             <option value="page">Página completa</option>
           </select>
+        </label>
+        <label class="reader-field">Voz latinoamericana
+          <select id="readerVoice" aria-describedby="readerVoiceHelp">
+            <option value="">Buscando voces disponibles…</option>
+          </select>
+          <small id="readerVoiceHelp">Se prioriza Colombia y después otras variantes latinoamericanas.</small>
         </label>
         <label class="reader-field">Velocidad
           <input id="readerRate" type="range" min="0.7" max="1.4" step="0.1" value="1">
@@ -787,6 +793,7 @@
     const pause = document.querySelector("#readerPause");
     const stop = document.querySelector("#readerStop");
     const scope = document.querySelector("#readerScope");
+    const voiceSelect = document.querySelector("#readerVoice");
     const rate = document.querySelector("#readerRate");
     const status = document.querySelector("#readerStatus");
 
@@ -868,10 +875,145 @@
       return result;
     }
 
-    function spanishVoice() {
-      const voices = speechSynthesis.getVoices();
-      return voices.find(voice => /^es-CO/i.test(voice.lang))
-        || voices.find(voice => /^es-/i.test(voice.lang))
+    const LATIN_SPANISH_PRIORITY = [
+      "es-CO", "es-MX", "es-US", "es-AR", "es-CL", "es-PE",
+      "es-VE", "es-EC", "es-UY", "es-BO", "es-PY", "es-CR",
+      "es-PA", "es-GT", "es-HN", "es-SV", "es-NI", "es-DO",
+      "es-PR", "es-CU", "es-419"
+    ];
+
+    const REGION_NAMES = {
+      "es-CO":"Colombia",
+      "es-MX":"México",
+      "es-US":"Estados Unidos · español latino",
+      "es-AR":"Argentina",
+      "es-CL":"Chile",
+      "es-PE":"Perú",
+      "es-VE":"Venezuela",
+      "es-EC":"Ecuador",
+      "es-UY":"Uruguay",
+      "es-BO":"Bolivia",
+      "es-PY":"Paraguay",
+      "es-CR":"Costa Rica",
+      "es-PA":"Panamá",
+      "es-GT":"Guatemala",
+      "es-HN":"Honduras",
+      "es-SV":"El Salvador",
+      "es-NI":"Nicaragua",
+      "es-DO":"República Dominicana",
+      "es-PR":"Puerto Rico",
+      "es-CU":"Cuba",
+      "es-419":"Latinoamérica",
+      "es-ES":"España"
+    };
+
+    function normalizedLang(lang) {
+      const raw = String(lang || "").replace("_", "-");
+      const parts = raw.split("-");
+      if (parts.length < 2) return raw.toLowerCase();
+      return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}`;
+    }
+
+    function priorityIndex(voice) {
+      const normalized = normalizedLang(voice.lang);
+      const index = LATIN_SPANISH_PRIORITY.indexOf(normalized);
+      return index === -1 ? 999 : index;
+    }
+
+    function isLatinSpanishVoice(voice) {
+      return LATIN_SPANISH_PRIORITY.includes(normalizedLang(voice.lang));
+    }
+
+    function availableSpanishVoices() {
+      return speechSynthesis.getVoices()
+        .filter(voice => /^es(?:-|$)/i.test(voice.lang || ""))
+        .sort((a, b) => {
+          const latinDifference = Number(!isLatinSpanishVoice(a)) - Number(!isLatinSpanishVoice(b));
+          if (latinDifference) return latinDifference;
+          const priorityDifference = priorityIndex(a) - priorityIndex(b);
+          if (priorityDifference) return priorityDifference;
+          return a.name.localeCompare(b.name, "es");
+        });
+    }
+
+    function voiceOptionLabel(voice) {
+      const lang = normalizedLang(voice.lang);
+      const region = REGION_NAMES[lang] || lang || "Español";
+      const quality = voice.localService ? "voz del dispositivo" : "voz del navegador";
+      return `${region} — ${voice.name} · ${quality}`;
+    }
+
+    function populateVoices() {
+      if (!voiceSelect || !supported) return;
+
+      const previous = voiceSelect.value || localStorage.getItem("sp_reader_latin_voice") || "";
+      const voices = availableSpanishVoices();
+      const latinVoices = voices.filter(isLatinSpanishVoice);
+      const otherSpanishVoices = voices.filter(voice => !isLatinSpanishVoice(voice));
+
+      voiceSelect.innerHTML = "";
+
+      if (!voices.length) {
+        const automatic = document.createElement("option");
+        automatic.value = "";
+        automatic.textContent = "Español latino automático";
+        voiceSelect.appendChild(automatic);
+        setStatus("El navegador usará la mejor voz en español disponible.");
+        return;
+      }
+
+      if (latinVoices.length) {
+        const latinGroup = document.createElement("optgroup");
+        latinGroup.label = "Español latinoamericano";
+        latinVoices.forEach(voice => {
+          const option = document.createElement("option");
+          option.value = voice.voiceURI;
+          option.textContent = voiceOptionLabel(voice);
+          latinGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(latinGroup);
+      }
+
+      if (otherSpanishVoices.length) {
+        const alternativeGroup = document.createElement("optgroup");
+        alternativeGroup.label = latinVoices.length ? "Otras voces en español" : "Voces en español disponibles";
+        otherSpanishVoices.forEach(voice => {
+          const option = document.createElement("option");
+          option.value = voice.voiceURI;
+          option.textContent = voiceOptionLabel(voice);
+          alternativeGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(alternativeGroup);
+      }
+
+      const availableValues = [...voiceSelect.options].map(option => option.value);
+      if (previous && availableValues.includes(previous)) {
+        voiceSelect.value = previous;
+      } else {
+        const colombian = latinVoices.find(voice => normalizedLang(voice.lang) === "es-CO");
+        const preferred = colombian || latinVoices[0] || voices[0];
+        if (preferred) voiceSelect.value = preferred.voiceURI;
+      }
+
+      const selected = selectedVoice();
+      if (selected) {
+        const lang = normalizedLang(selected.lang);
+        const region = REGION_NAMES[lang] || lang;
+        setStatus(
+          isLatinSpanishVoice(selected)
+            ? `Voz latinoamericana seleccionada: ${region}.`
+            : `No se encontró una voz latinoamericana; se usará ${region} como alternativa.`
+        );
+      }
+    }
+
+    function selectedVoice() {
+      const voices = availableSpanishVoices();
+      const selectedUri = voiceSelect?.value;
+      return voices.find(voice => voice.voiceURI === selectedUri)
+        || voices.find(voice => normalizedLang(voice.lang) === "es-CO")
+        || voices.find(isLatinSpanishVoice)
+        || voices[0]
         || null;
     }
 
@@ -884,10 +1026,10 @@
       }
 
       currentUtterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
-      currentUtterance.lang = "es-CO";
+      const voice = selectedVoice();
+      currentUtterance.lang = voice ? normalizedLang(voice.lang) : "es-CO";
       currentUtterance.rate = Number(rate.value || 1);
       currentUtterance.pitch = 1;
-      const voice = spanishVoice();
       if (voice) currentUtterance.voice = voice;
 
       currentUtterance.onstart = () => {
@@ -979,6 +1121,30 @@
     play.addEventListener("click", startReading);
     pause.addEventListener("click", togglePause);
     stop.addEventListener("click", stopReading);
+
+    voiceSelect?.addEventListener("change", () => {
+      localStorage.setItem("sp_reader_latin_voice", voiceSelect.value);
+      const voice = selectedVoice();
+      if (!voice) {
+        setStatus("Se utilizará la voz automática en español latino.");
+        return;
+      }
+      const lang = normalizedLang(voice.lang);
+      const region = REGION_NAMES[lang] || lang;
+      setStatus(
+        isLatinSpanishVoice(voice)
+          ? `Voz seleccionada: ${region}.`
+          : `Voz alternativa seleccionada: ${region}.`
+      );
+    });
+
+    if (supported) {
+      populateVoices();
+      speechSynthesis.addEventListener?.("voiceschanged", populateVoices);
+      window.setTimeout(populateVoices, 250);
+      window.setTimeout(populateVoices, 1000);
+    }
+
     window.addEventListener("beforeunload", stopReading);
 
     if (!supported) {

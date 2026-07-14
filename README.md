@@ -89,3 +89,16 @@ Después:
   - pausa, continuación y detención;
   - preferencia por voces en español de Colombia.
 - Respeto por la configuración de movimiento reducido del dispositivo.
+
+
+## Narrador V5.2 — Español latino
+
+El narrador ahora:
+
+- prioriza `es-CO` para Colombia;
+- después busca México, español latino de Estados Unidos, Argentina, Chile, Perú y otras regiones latinoamericanas;
+- permite elegir manualmente la voz;
+- recuerda la voz elegida en el navegador;
+- deja el español de España únicamente como alternativa cuando el dispositivo no ofrece voces latinoamericanas.
+
+La disponibilidad y calidad concreta de las voces depende del navegador y de las voces instaladas en el dispositivo.
