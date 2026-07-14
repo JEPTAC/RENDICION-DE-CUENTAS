@@ -1,24 +1,41 @@
-# Portal Histórico de Rendición de Cuentas — Versión 2
+# Portal de Rendición de Cuentas — San Pedro V3
 
-Landing page estática, responsive y preparada para GitHub Pages.
+Versión estática avanzada para publicar en GitHub Pages.
 
-## Principales mejoras
+## Credenciales administrativas de demostración
 
-- Tipografía Century Gothic y alternativas compatibles.
-- Diseño editorial tipo periódico digital.
-- Portada animada.
-- Ventana de bienvenida.
-- Buscador general con resultados.
-- Pop-ups de vigencias, indicadores, historias y recursos.
-- Comparador entre dos vigencias.
-- Creación de nuevas vigencias.
-- Registro de nuevos recursos documentales.
-- Filtros por año, formato, estado y palabra clave.
+- Usuario: `admin`
+- Contraseña: `SanPedro2026*`
+
+Estas credenciales están incluidas únicamente para probar el diseño. Al tratarse de una página estática, **no proporcionan seguridad real**.
+
+## Funciones incluidas
+
+- Identidad visual de San Pedro con los tres logos suministrados.
+- Tres temas configurables:
+  - Municipal.
+  - San Pedro vivo.
+  - Institucional morado.
+- Cambio de colores mediante selectores.
+- Cambio de fuente, escala general y redondeado.
+- Visibilidad y reordenamiento de módulos.
+- Creación y eliminación de módulos personalizados.
+- Creación de vigencias futuras.
+- Registro de recursos.
+- Repositorio por formatos con ventanas emergentes.
+- Laboratorio de Ideas Ciudadanas.
+- Estados de ideas:
+  - Recibida.
+  - En análisis.
+  - Se tendrá en cuenta.
+  - Resuelta.
+- Respuesta institucional administrable.
+- Apoyo ciudadano a propuestas.
 - Seguimiento de compromisos.
-- Preguntas frecuentes.
-- Herramientas de accesibilidad.
-- Exportación de configuración en JSON.
-- Diseño adaptable a celulares, tabletas y computadores.
+- Buscador general.
+- Accesibilidad.
+- Respaldo JSON.
+- Diseño responsive.
 
 ## Publicación en GitHub Pages
 
@@ -26,43 +43,25 @@ Suba a la raíz del repositorio:
 
 - `index.html`
 - `styles.css`
-- `script.js`
+- `app.js`
 - `README.md`
+- `FIREBASE_FUTURE.md`
+- la carpeta `assets`
 
-Después configure:
+Configure GitHub Pages:
 
 `Settings → Pages → Deploy from a branch → main → / (root)`
 
-## Importante sobre la administración
+## Limitación de la versión estática
 
-GitHub Pages publica archivos estáticos. En esta versión:
+Todos los cambios administrativos se guardan en `localStorage`.
 
-- Las vigencias y recursos creados desde “Gestionar portal” se guardan mediante `localStorage`.
-- Los cambios solo aparecen en el navegador donde fueron realizados.
-- No modifican automáticamente los archivos del repositorio.
-- No son visibles para otros usuarios.
+Por tanto:
 
-Para convertir el portal en un sistema administrable real y multiusuario, debe conectarse a una base de datos como Supabase. La estructura recomendada incluye:
+- Permanecen en el navegador donde se realizaron.
+- No se comparten con otros visitantes.
+- No modifican los archivos del repositorio.
+- Pueden borrarse al limpiar los datos del navegador.
+- El inicio de sesión puede inspeccionarse desde el código fuente.
 
-- `rendicion_years`
-- `rendicion_resources`
-- `rendicion_news`
-- `rendicion_commitments`
-- `rendicion_questions`
-- `rendicion_settings`
-
-También se recomienda autenticación y roles:
-
-- `super_admin`
-- `admin`
-- `editor`
-- `visitor`
-
-## Personalización pendiente
-
-- Reemplazar el nombre genérico de la entidad.
-- Agregar logo oficial.
-- Actualizar datos de contacto.
-- Cargar cifras reales.
-- Reemplazar enlaces `#` por documentos reales.
-- Conectar formularios y panel administrativo.
+La siguiente fase debe reemplazar esta administración local por Firebase.
