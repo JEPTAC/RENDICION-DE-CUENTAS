@@ -1,5 +1,5 @@
 (() => {
-  const FIREBASE_VERSION = "12.16.0";
+  const FIREBASE_VERSION = "12.15.0";
   const firebaseConfig = {
     apiKey: "AIzaSyD02YaIMxLO2IPAJYZdPY2cWUvpkZDRo2U",
     authDomain: "rendicion-de-cuentas-6aceb.firebaseapp.com",
@@ -88,19 +88,34 @@
       "auth/popup-closed-by-user":"La ventana de acceso se cerró antes de completar el proceso.",
       "auth/unauthorized-domain":"Debe autorizar el dominio de GitHub Pages en Firebase Authentication.",
       "permission-denied":"Las reglas de Firestore no permiten esta operación. Publique las reglas incluidas en el paquete.",
-      "failed-precondition":"Firestore todavía no se encuentra configurado correctamente."
+      "failed-precondition":"Firestore todavía no se encuentra configurado correctamente.",
+      "firebase/cdn-load-failed":"No fue posible cargar el SDK oficial de Firebase. Recargue sin caché y revise que la red permita www.gstatic.com."
     };
     return messages[code] || error?.message || "Ocurrió un error al comunicarse con Firebase.";
   }
 
   async function loadModules() {
-    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
-    const [app, auth, firestore] = await Promise.all([
-      import(`${base}/firebase-app.js`),
-      import(`${base}/firebase-auth.js`),
-      import(`${base}/firebase-firestore.js`)
-    ]);
-    return {app,auth,firestore};
+    /*
+     * Firebase documenta actualmente la distribución ESM de navegador
+     * mediante el CDN de gstatic. Se mantienen URLs literales para que
+     * GitHub Pages y el navegador resuelvan correctamente los módulos.
+     */
+    try {
+      const [app, auth, firestore] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js"),
+        import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js")
+      ]);
+      return {app,auth,firestore};
+    } catch (error) {
+      const wrapped = new Error(
+        "No fue posible cargar Firebase desde el CDN oficial. " +
+        "Recargue la página sin caché y verifique que el navegador o la red no bloqueen gstatic.com."
+      );
+      wrapped.code = "firebase/cdn-load-failed";
+      wrapped.cause = error;
+      throw wrapped;
+    }
   }
 
   function authDetail(extra = {}) {
