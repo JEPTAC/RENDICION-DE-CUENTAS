@@ -250,7 +250,7 @@
           <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
             <a class="${active("home")}" href="index.html">Inicio</a>
             <div class="nav-dropdown">
-              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span aria-hidden="true">⌄</span></button>
+              <button class="${active("year")}" type="button" aria-haspopup="true" aria-expanded="false">Vigencias <span class="nav-menu-icon" aria-hidden="true"><i></i><i></i><i></i></span></button>
               <div class="nav-dropdown__menu">
                 ${years.map(y => `<a href="${helpers.yearUrl(y.year)}"><b>${y.year}</b><span>${helpers.escape(y.status)}</span></a>`).join("")}
                 <a href="vigencias.html"><b>Archivo histórico</b><span>Ver todas las ediciones</span></a>
