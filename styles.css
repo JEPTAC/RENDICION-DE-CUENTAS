@@ -1792,3 +1792,173 @@ body[data-animation-mode="none"] *{
 .header-brand__divider.is-hidden{
   display:none;
 }
+
+
+/* V6.1 — Responsive definitivo de Lo más destacado */
+
+/*
+ * Todas las columnas pueden reducirse realmente por debajo del ancho
+ * intrínseco del texto. Esto evita que títulos, metadatos y enlaces
+ * empujen o desborden la tarjeta.
+ */
+.editorial-deals{
+  grid-template-columns:
+    minmax(300px,1.08fr)
+    repeat(3,minmax(185px,.72fr));
+  align-items:stretch;
+}
+
+.editorial-deals > *,
+.editorial-feature,
+.deal-card,
+.deal-card__visual,
+.deal-card > div:last-child,
+.deal-card > div:last-child > *{
+  min-width:0;
+  max-width:100%;
+}
+
+.editorial-feature{
+  min-height:330px;
+}
+
+.editorial-feature > div{
+  width:100%;
+  max-width:310px;
+}
+
+.editorial-feature h3,
+.editorial-feature p,
+.deal-card small,
+.deal-card h3,
+.deal-card p,
+.deal-card a{
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  hyphens:auto;
+}
+
+.editorial-feature h3{
+  font-size:clamp(1.35rem,2.05vw,1.72rem);
+  line-height:1.08;
+}
+
+.editorial-feature p{
+  line-height:1.55;
+}
+
+.deal-card{
+  width:100%;
+  overflow:hidden;
+}
+
+.deal-card__visual{
+  width:100%;
+  flex:0 0 145px;
+  overflow:hidden;
+}
+
+.deal-card > div:last-child{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  padding:16px;
+  overflow:hidden;
+}
+
+.deal-card small{
+  display:block;
+  line-height:1.35;
+}
+
+.deal-card h3{
+  margin:0;
+  font-size:clamp(.69rem,.86vw,.79rem);
+  line-height:1.38;
+}
+
+.deal-card p{
+  margin:0 0 5px;
+  line-height:1.52;
+}
+
+.deal-card a{
+  width:fit-content;
+  display:inline-flex;
+  align-items:center;
+  margin-top:auto;
+  line-height:1.35;
+  white-space:normal;
+}
+
+/* Pantallas intermedias: el panel editorial ocupa todo el ancho y
+   las tarjetas se distribuyen en una cuadrícula de dos columnas. */
+@media(max-width:1180px){
+  .editorial-deals{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .editorial-feature{
+    grid-column:1 / -1;
+    min-height:275px;
+  }
+
+  .editorial-feature > div{
+    max-width:560px;
+  }
+}
+
+/* En tabletas angostas se conserva una sola columna para evitar
+   cualquier compresión forzada del contenido. */
+@media(max-width:720px){
+  .editorial-deals{
+    grid-template-columns:minmax(0,1fr);
+  }
+
+  .editorial-feature{
+    grid-column:auto;
+    min-height:300px;
+  }
+
+  .deal-card{
+    display:grid;
+    grid-template-columns:minmax(125px,35%) minmax(0,1fr);
+    min-height:205px;
+  }
+
+  .deal-card__visual{
+    height:100%;
+    min-height:205px;
+    flex-basis:auto;
+  }
+}
+
+/* En celulares pequeños se apilan también la imagen y el contenido
+   para mantener una lectura cómoda. */
+@media(max-width:480px){
+  .editorial-feature{
+    min-height:320px;
+    padding:22px;
+  }
+
+  .editorial-feature > div{
+    max-width:100%;
+  }
+
+  .deal-card{
+    display:flex;
+    min-height:0;
+  }
+
+  .deal-card__visual{
+    height:165px;
+    min-height:165px;
+    flex:0 0 165px;
+  }
+
+  .deal-card > div:last-child{
+    padding:16px;
+  }
+}
