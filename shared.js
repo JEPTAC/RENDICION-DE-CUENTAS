@@ -1675,7 +1675,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=9.4-drive-firestore`;
+      const versioned = `${base}?v=9.6-redeseno`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }

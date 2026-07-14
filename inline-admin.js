@@ -297,7 +297,7 @@
 
               <header class="drive-panel-heading">
                 <div class="drive-panel-title">
-                  <span class="drive-panel-logo" aria-hidden="true">▲</span>
+                  <span class="drive-panel-logo" aria-hidden="true"><i></i><b></b><u></u></span>
                   <div>
                     <strong id="drivePanelTitle">Google Drive del portal</strong>
                     <small>Archivos, evidencias y documentos institucionales</small>

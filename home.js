@@ -34,9 +34,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const editorialResources = state.resources.filter(r => r.featured).slice(0,3);
   document.querySelector("#editorialCards").innerHTML = editorialResources.map((item,index) => `
-    <article class="deal-card reveal visible" data-admin-entity="resource" data-entity-id="${item.id}">
-      <div class="deal-card__visual deal-${index}${item.image ? " has-cover-image" : ""}" ${item.image ? `style="background-image:linear-gradient(rgba(7,46,105,.18),rgba(7,46,105,.25)),url('${item.image}')"` : ""}><span>${helpers.typeIcon(item.type)}</span></div>
-      <div><small>${item.year} · ${helpers.typeLabel(item.type)}</small><h3>${helpers.escape(item.title)}</h3><p>${helpers.escape(item.meta)}</p><a href="recursos.html?q=${encodeURIComponent(item.title)}">Ver detalles →</a></div>
+    <article class="deal-card deal-card--${helpers.escape(item.type)} reveal visible"
+      data-admin-entity="resource"
+      data-entity-id="${item.id}">
+      <div class="deal-card__visual deal-${index}${item.image ? " has-cover-image" : ""}"
+        ${item.image ? `style="background-image:linear-gradient(rgba(7,46,105,.16),rgba(7,46,105,.28)),url('${item.image}')"` : ""}>
+        <span class="document-format" aria-label="Formato ${helpers.escape(helpers.typeLabel(item.type))}">
+          ${helpers.typeIcon(item.type)}
+        </span>
+      </div>
+      <div class="deal-card__content">
+        <small class="deal-card__meta">
+          <b>${item.year}</b>
+          <span>${helpers.escape(helpers.typeLabel(item.type))}</span>
+        </small>
+        <h3>${helpers.escape(item.title)}</h3>
+        <p>${helpers.escape(item.meta)}</p>
+        <a class="deal-card__action"
+          href="recursos.html?q=${encodeURIComponent(item.title)}">
+          <span>Abrir recurso</span>
+          <b aria-hidden="true">↗</b>
+        </a>
+      </div>
     </article>`).join("");
 
   const ideas = state.ideas.slice(0,3);
