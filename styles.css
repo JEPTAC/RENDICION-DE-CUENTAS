@@ -2012,3 +2012,140 @@ body[data-animation-mode="none"] *{
 @media(max-width:480px){.executive-kpi{grid-template-columns:48px 1fr;padding:15px}.executive-kpi__icon{width:46px;height:46px}.executive-kpi strong{font-size:1.15rem}.chart-frame--large{height:520px}.chart-frame--execution{height:820px}.responsive-table td{grid-template-columns:1fr}.responsive-table td::before{margin-bottom:2px}}
 
 .chart-data-details{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.chart-data-details summary{cursor:pointer;color:var(--primary);font-size:.52rem;font-weight:700}.chart-data-details>div{display:grid;gap:5px;margin-top:9px}.chart-data-details>div>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:7px 9px;border-radius:8px;background:var(--page);font-size:.49rem}.chart-data-details strong{color:var(--primary)}
+
+
+/* =========================================================
+   V8 — Google Drive API
+   ========================================================= */
+
+.drive-admin-panel{
+  width:340px;
+}
+
+.drive-panel-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:9px;
+  border-bottom:1px solid var(--line);
+}
+
+.drive-panel-heading>div{
+  display:grid;
+}
+
+.drive-panel-heading strong{
+  color:var(--ink);
+  font-size:.65rem;
+}
+
+.drive-panel-heading small{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.48rem;
+}
+
+.drive-icon-button{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#f4f7fc;
+  color:var(--primary);
+  cursor:pointer;
+}
+
+.drive-icon-button:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+.drive-status-dot{
+  width:9px;
+  height:9px;
+  flex:0 0 9px;
+  border-radius:50%;
+  background:#d14a57;
+  box-shadow:0 0 0 4px rgba(209,74,87,.12);
+}
+
+.drive-status-dot.is-configured{
+  background:#e6a419;
+  box-shadow:0 0 0 4px rgba(230,164,25,.13);
+}
+
+.drive-status-dot.is-connected{
+  background:#22aa5f;
+  box-shadow:0 0 0 4px rgba(34,170,95,.14);
+}
+
+.drive-actions-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.drive-primary-action{
+  border-color:var(--primary);
+  background:var(--primary);
+  color:#fff;
+}
+
+.drive-upload-progress{
+  display:grid;
+  gap:6px;
+  padding:10px;
+  border-radius:10px;
+  background:#f3f7fc;
+}
+
+.drive-upload-progress[hidden]{
+  display:none;
+}
+
+.drive-upload-progress>span{
+  color:var(--muted);
+  font-size:.5rem;
+}
+
+.drive-upload-progress>i{
+  display:block;
+  height:8px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#dce5f1;
+}
+
+.drive-upload-progress u{
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#1b8f4f,#34c66f);
+  text-decoration:none;
+  transition:width 160ms linear;
+}
+
+.drive-panel-note{
+  margin:0;
+  padding:8px;
+  border-left:3px solid #34a853;
+  background:#f4fbf6;
+  color:#536276!important;
+  font-size:.48rem!important;
+}
+
+@media(max-width:900px){
+  .drive-admin-panel{
+    width:auto;
+  }
+}
+
+@media(max-width:480px){
+  .drive-actions-grid{
+    grid-template-columns:1fr;
+  }
+}

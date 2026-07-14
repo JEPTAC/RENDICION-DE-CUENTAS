@@ -884,6 +884,36 @@
   }
 
 
+  function loadDriveService() {
+    if (document.querySelector('script[data-drive-portal]')) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+      const configScript = document.createElement("script");
+      configScript.src = "drive-config.js";
+      configScript.dataset.driveConfig = "true";
+
+      configScript.onload = () => {
+        const serviceScript = document.createElement("script");
+        serviceScript.src = "drive-service.js";
+        serviceScript.dataset.drivePortal = "true";
+        serviceScript.onload = () => {
+          window.DrivePortal?.init?.().finally(resolve);
+        };
+        serviceScript.onerror = () => {
+          helpers.toast("No fue posible cargar Google Drive.");
+          reject(new Error("No fue posible cargar drive-service.js."));
+        };
+        document.head.appendChild(serviceScript);
+      };
+
+      configScript.onerror = () => {
+        helpers.toast("No fue posible cargar la configuración de Google Drive.");
+        reject(new Error("No fue posible cargar drive-config.js."));
+      };
+      document.head.appendChild(configScript);
+    });
+  }
+
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
@@ -1334,7 +1364,7 @@
     bindFirebaseEvents();
     initReader();
     loadFirebaseService();
-    loadInlineAdministration();
+    loadDriveService().finally(loadInlineAdministration);
     syncAdmin();
     initReveal();
 

@@ -1,71 +1,65 @@
-# Activación de Firebase — Rendición de Cuentas V7
+# Firebase + Google Drive — Rendición de Cuentas V8
 
-## 1. Reemplazar y agregar archivos
+## Función de cada servicio
 
-Suba todos los archivos de este paquete a la raíz del repositorio de GitHub.
+### Firebase Authentication
+Controla el inicio de sesión y los roles administrativos.
 
-## 2. Activar Authentication
+### Cloud Firestore
+Guarda:
 
-En Firebase Console:
+- vigencias;
+- indicadores y dashboards;
+- recursos y enlaces;
+- ideas ciudadanas;
+- compromisos;
+- solicitudes y respuestas;
+- configuración visual;
+- contenido editable;
+- auditoría.
 
-1. Authentication.
-2. Sign-in method.
-3. Active **Correo electrónico/contraseña**.
-4. Opcional: active **Google**.
-5. En Settings → Authorized domains agregue el dominio de GitHub Pages.
+### Google Drive
+Guarda:
 
-## 3. Crear el primer administrador
+- PDF;
+- Excel y CSV;
+- presentaciones;
+- imágenes;
+- actas;
+- evidencias;
+- videos y otros anexos.
 
-1. Authentication → Users → Add user.
-2. Copie el UID del usuario creado.
-3. Firestore Database → Data.
-4. Cree la colección `users`.
-5. Cree un documento cuyo ID sea exactamente el UID.
-6. Agregue los campos:
+Firebase Storage ya no se utiliza.
 
-```json
-{
-  "displayName": "Administrador principal",
-  "email": "correo-del-administrador",
-  "role": "super_admin",
-  "active": true
-}
-```
-
-## 4. Publicar reglas
-
-Reemplace las reglas actuales de Firestore por el contenido de `firestore.rules`.
-
-En Storage, publique el contenido de `storage.rules`.
-
-También puede desplegarlas con Firebase CLI:
+## Publicar reglas de Firestore
 
 ```bash
 npm install -g firebase-tools
 firebase login
 firebase use rendicion-de-cuentas-6aceb
-firebase deploy --only firestore:rules,storage
+firebase deploy --only firestore:rules
 ```
 
-## 5. Cargar la información inicial
+`firebase.json` fue actualizado para desplegar únicamente las reglas de Firestore.
 
-1. Abra el portal publicado.
-2. Inicie sesión con el usuario Firebase autorizado.
-3. Active la edición directa.
-4. Pulse el botón **Firebase** de la barra administrativa.
-5. Confirme el mensaje de sincronización.
+## Authentication
 
-Esto crea `portal/main`, `ideas/*` y `auditLogs/*`.
+1. Active Correo electrónico/contraseña.
+2. Opcionalmente active Google.
+3. Autorice el dominio de GitHub Pages.
+4. Cree el documento `users/UID` con rol `super_admin`, `admin` o `editor`.
 
-## Estructura inicial
+Ejemplo:
 
-- `portal/main`: vigencias, recursos, dashboards, compromisos, solicitudes, apariencia y contenido.
-- `ideas/{ideaId}`: ideas ciudadanas.
-- `users/{uid}`: roles y estado de usuarios.
-- `auditLogs/{id}`: registro de sincronizaciones administrativas.
-- Storage `public/images/`: banners, logos e imágenes.
-- Storage `public/documents/`: PDF, hojas de cálculo, presentaciones y evidencias.
+```json
+{
+  "displayName": "Administrador principal",
+  "email": "administrador@sanpedro-valle.gov.co",
+  "role": "super_admin",
+  "active": true
+}
+```
 
-## Nota de seguridad
+## Nota
 
-La configuración pública de Firebase identifica el proyecto, pero no concede permisos por sí sola. El control real está en Authentication y Security Rules. No publique contraseñas ni cuentas administrativas dentro del código.
+El archivo `storage.rules` de versiones anteriores puede permanecer en el repositorio, pero ya no es utilizado por `firebase.json` ni por el código del portal.

@@ -119,20 +119,59 @@
   }
 
   async function persistImage(dataUrl,category="content") {
-    if (window.FirebasePortal?.canWrite?.()) {
-      try { return await window.FirebasePortal.uploadDataUrl(dataUrl,`public/images/${category}`); }
-      catch (error) { helpers.toast(window.FirebasePortal.friendlyError(error)); }
+    if (!window.FirebasePortal?.canWrite?.()) {
+      helpers.toast("Debe iniciar sesión con un administrador autorizado.");
+      return dataUrl;
     }
-    return dataUrl;
+
+    if (!window.DrivePortal?.isConfigured?.()) {
+      helpers.toast("Configure Google Drive para publicar imágenes. Se conservará temporalmente en este navegador.");
+      return dataUrl;
+    }
+
+    try {
+      return await window.DrivePortal.uploadDataUrl(
+        dataUrl,
+        `public/images/${category}`,
+        {
+          category,
+          year:currentYearContext(),
+          makePublic:true
+        }
+      );
+    } catch (error) {
+      helpers.toast(window.DrivePortal?.friendlyError?.(error) || error.message);
+      return dataUrl;
+    }
   }
 
   async function persistDocument(file,category="documents") {
     if (!file) return "";
     if (!window.FirebasePortal?.canWrite?.()) {
-      helpers.toast("Para subir documentos debe iniciar sesión con un administrador de Firebase.");
+      helpers.toast("Debe iniciar sesión con un administrador autorizado.");
       return "";
     }
-    return window.FirebasePortal.uploadFile(file,`public/documents/${category}`);
+    if (!window.DrivePortal?.isConfigured?.()) {
+      helpers.toast("Configure Google Drive antes de subir documentos.");
+      return "";
+    }
+    return window.DrivePortal.uploadFile(
+      file,
+      `public/documents/${category}`,
+      {
+        category,
+        year:currentYearContext(),
+        makePublic:true
+      }
+    );
+  }
+
+  function currentYearContext() {
+    const bodyYear = Number(document.body.dataset.year || 0);
+    if (bodyYear) return bodyYear;
+    const queryYear = Number(new URLSearchParams(location.search).get("year") || 0);
+    if (queryYear) return queryYear;
+    return new Date().getFullYear();
   }
 
   function toolbarTemplate() {
@@ -239,7 +278,53 @@
             </div>
           </details>
 
-          <button type="button" class="inline-toolbar-button firebase-sync-button" id="inlineFirebaseSync"><span class="firebase-sync-dot"></span> Firebase</button>
+          <details class="inline-admin-menu drive-admin-menu">
+            <summary><span class="drive-status-dot" id="inlineDriveDot"></span> Google Drive</summary>
+            <div class="inline-admin-menu__panel drive-admin-panel">
+              <div class="drive-panel-heading">
+                <div><strong>Archivos del portal</strong><small id="inlineDriveStatus">Sin configurar</small></div>
+                <button type="button" id="inlineDriveOpen" class="drive-icon-button" aria-label="Abrir carpeta de Google Drive">↗</button>
+              </div>
+
+              <label>ID de cliente OAuth
+                <input id="inlineDriveClientId" autocomplete="off" placeholder="000000000000-....apps.googleusercontent.com">
+              </label>
+              <label>API key
+                <input id="inlineDriveApiKey" autocomplete="off" placeholder="AIza...">
+              </label>
+              <label>Número del proyecto
+                <input id="inlineDriveAppId" inputmode="numeric" placeholder="509564686428">
+              </label>
+              <label>Nombre de la carpeta principal
+                <input id="inlineDriveFolderName" value="Rendición de Cuentas San Pedro">
+              </label>
+              <label>ID de carpeta existente
+                <input id="inlineDriveFolderId" placeholder="Opcional">
+              </label>
+              <label class="inline-check">
+                <input id="inlineDrivePublic" type="checkbox" checked>
+                Publicar archivos para cualquier persona con el enlace
+              </label>
+
+              <div class="drive-actions-grid">
+                <button type="button" class="inline-mini-button drive-primary-action" id="inlineDriveConnect">Conectar Drive</button>
+                <button type="button" class="inline-mini-button" id="inlineDrivePick">Elegir carpeta</button>
+                <button type="button" class="inline-mini-button" id="inlineDriveCreate">Crear carpeta</button>
+                <button type="button" class="inline-mini-button" id="inlineDriveDisconnect">Desconectar</button>
+              </div>
+
+              <div class="drive-upload-progress" id="inlineDriveProgress" hidden>
+                <span id="inlineDriveProgressLabel">Preparando archivo…</span>
+                <i><u id="inlineDriveProgressBar"></u></i>
+              </div>
+
+              <p class="drive-panel-note">
+                Los datos estructurados siguen en Firestore. PDF, Excel, imágenes y evidencias se guardan en Drive.
+              </p>
+            </div>
+          </details>
+
+          <button type="button" class="inline-toolbar-button firebase-sync-button" id="inlineFirebaseSync"><span class="firebase-sync-dot"></span> Firestore</button>
           <button type="button" class="inline-toolbar-button" id="inlineNewBlock">＋ Nuevo bloque</button>
           <button type="button" class="inline-toolbar-button" id="inlineVisitorView">Vista visitante</button>
           <button type="button" class="inline-toolbar-button is-danger" id="inlineLogout">Cerrar sesión</button>
@@ -275,6 +360,7 @@
     else document.body.prepend(holder);
 
     bindToolbar();
+    updateDrivePanel();
   }
 
   function bindToolbar() {
@@ -419,6 +505,82 @@
     document.querySelectorAll("[data-create-entity]").forEach(button => {
       button.addEventListener("click", () => openNewEntityInspector(button.dataset.createEntity));
     });
+    function saveDriveConfiguration() {
+      if (!window.DrivePortal) return null;
+      return window.DrivePortal.configure({
+        clientId:get("#inlineDriveClientId")?.value.trim() || "",
+        apiKey:get("#inlineDriveApiKey")?.value.trim() || "",
+        appId:get("#inlineDriveAppId")?.value.trim() || "",
+        rootFolderName:get("#inlineDriveFolderName")?.value.trim() || "Rendición de Cuentas San Pedro",
+        rootFolderId:get("#inlineDriveFolderId")?.value.trim() || "",
+        makeFilesPublic:Boolean(get("#inlineDrivePublic")?.checked)
+      });
+    }
+
+    get("#inlineDriveConnect")?.addEventListener("click", async () => {
+      try {
+        saveDriveConfiguration();
+        await window.DrivePortal.connect();
+        const info = await window.DrivePortal.testConnection();
+        await window.DrivePortal.ensureRootFolder({fallbackCreate:true});
+        updateDrivePanel();
+        helpers.toast(`Google Drive conectado${info?.user?.displayName ? `: ${info.user.displayName}` : ""}.`);
+      } catch (error) {
+        helpers.toast(window.DrivePortal?.friendlyError?.(error) || error.message);
+      }
+    });
+
+    get("#inlineDrivePick")?.addEventListener("click", async () => {
+      try {
+        saveDriveConfiguration();
+        const folder = await window.DrivePortal.chooseFolder();
+        if (folder) {
+          get("#inlineDriveFolderId").value = folder.id;
+          get("#inlineDriveFolderName").value = folder.name;
+          updateDrivePanel();
+          helpers.toast(`Carpeta seleccionada: ${folder.name}.`);
+        }
+      } catch (error) {
+        helpers.toast(window.DrivePortal?.friendlyError?.(error) || error.message);
+      }
+    });
+
+    get("#inlineDriveCreate")?.addEventListener("click", async () => {
+      try {
+        saveDriveConfiguration();
+        await window.DrivePortal.connect();
+        const folder = await window.DrivePortal.createNewRootFolder();
+        get("#inlineDriveFolderId").value = folder.id;
+        get("#inlineDriveFolderName").value = folder.name;
+        updateDrivePanel();
+        helpers.toast(`Carpeta creada: ${folder.name}.`);
+      } catch (error) {
+        helpers.toast(window.DrivePortal?.friendlyError?.(error) || error.message);
+      }
+    });
+
+    get("#inlineDriveDisconnect")?.addEventListener("click", async () => {
+      try {
+        await window.DrivePortal?.disconnect?.();
+        updateDrivePanel();
+        helpers.toast("Google Drive desconectado.");
+      } catch (error) {
+        helpers.toast(window.DrivePortal?.friendlyError?.(error) || error.message);
+      }
+    });
+
+    get("#inlineDriveOpen")?.addEventListener("click", () => {
+      try { window.DrivePortal?.openRootFolder?.(); }
+      catch (error) { helpers.toast(error.message); }
+    });
+
+    ["#inlineDriveClientId","#inlineDriveApiKey","#inlineDriveAppId","#inlineDriveFolderName","#inlineDriveFolderId","#inlineDrivePublic"].forEach(selector => {
+      get(selector)?.addEventListener("change", () => {
+        saveDriveConfiguration();
+        updateDrivePanel();
+      });
+    });
+
     get("#inlineFirebaseSync")?.addEventListener("click", async () => {
       try {
         await window.FirebasePortal?.pushAll?.({action:"manual_sync"});
@@ -430,6 +592,71 @@
     get("#inlineVisitorView")?.addEventListener("click", () => deactivate(false));
     get("#inlineLogout")?.addEventListener("click", logout);
     get("#inlineInspectorClose")?.addEventListener("click", closeInspector);
+  }
+
+  function updateDrivePanel() {
+    const status = window.DrivePortal?.getStatus?.();
+    const config = window.DrivePortal?.getConfig?.() || {};
+
+    const clientInput = document.querySelector("#inlineDriveClientId");
+    const keyInput = document.querySelector("#inlineDriveApiKey");
+    const appInput = document.querySelector("#inlineDriveAppId");
+    const folderNameInput = document.querySelector("#inlineDriveFolderName");
+    const folderIdInput = document.querySelector("#inlineDriveFolderId");
+    const publicInput = document.querySelector("#inlineDrivePublic");
+
+    if (clientInput && !clientInput.value) clientInput.value = config.clientId || "";
+    if (keyInput && !keyInput.value) keyInput.value = config.apiKey || "";
+    if (appInput && !appInput.value) appInput.value = config.appId || "";
+    if (folderNameInput) folderNameInput.value = config.rootFolderName || "Rendición de Cuentas San Pedro";
+    if (folderIdInput) folderIdInput.value = config.rootFolderId || status?.rootFolderId || "";
+    if (publicInput) publicInput.checked = config.makeFilesPublic !== false;
+
+    const label = document.querySelector("#inlineDriveStatus");
+    const dot = document.querySelector("#inlineDriveDot");
+    const open = document.querySelector("#inlineDriveOpen");
+
+    if (!label || !dot) return;
+    dot.classList.remove("is-connected","is-configured");
+
+    if (status?.connected) {
+      dot.classList.add("is-connected");
+      label.textContent = status.rootFolderName
+        ? `Conectado · ${status.rootFolderName}`
+        : "Conectado";
+    } else if (status?.configured) {
+      dot.classList.add("is-configured");
+      label.textContent = "Configurado · conecte para cargar";
+    } else {
+      label.textContent = "Falta el ID de cliente OAuth";
+    }
+    if (open) open.disabled = !Boolean(status?.rootFolderId || config.rootFolderId);
+  }
+
+  function updateDriveProgress(detail = {}) {
+    const holder = document.querySelector("#inlineDriveProgress");
+    const label = document.querySelector("#inlineDriveProgressLabel");
+    const bar = document.querySelector("#inlineDriveProgressBar");
+    if (!holder || !label || !bar) return;
+
+    if (detail.status === "preparing") {
+      holder.hidden = false;
+      label.textContent = `Preparando ${detail.name || "archivo"}…`;
+      bar.style.width = "4%";
+      return;
+    }
+    if (detail.status === "uploading") {
+      holder.hidden = false;
+      label.textContent = `Subiendo ${detail.name || "archivo"} · ${detail.progress || 0}%`;
+      bar.style.width = `${detail.progress || 0}%`;
+      return;
+    }
+    if (detail.status === "complete") {
+      holder.hidden = false;
+      label.textContent = "Archivo guardado en Google Drive.";
+      bar.style.width = "100%";
+      setTimeout(() => { holder.hidden = true; }, 2200);
+    }
   }
 
   function bannerElement() {
@@ -1376,6 +1603,13 @@
   }
 
   function init() {
+    window.addEventListener("drive:ready", updateDrivePanel);
+    window.addEventListener("drive:auth", updateDrivePanel);
+    window.addEventListener("drive:folder", updateDrivePanel);
+    window.addEventListener("drive:config", updateDrivePanel);
+    window.addEventListener("drive:upload", event => updateDriveProgress(event.detail));
+    window.addEventListener("drive:warning", event => helpers.toast(event.detail?.message || "Revise los permisos del archivo en Drive."));
+
     applySavedContent();
     applySectionOrder();
     applySectionStyles();

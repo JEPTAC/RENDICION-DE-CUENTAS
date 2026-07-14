@@ -13,7 +13,7 @@
   const runtime = {
     initialized:false, ready:false, connected:navigator.onLine,
     user:null, role:null, canWrite:false, syncing:false, lastError:null,
-    app:null, auth:null, db:null, storage:null, modules:null, syncTimer:null, initPromise:null
+    app:null, auth:null, db:null, modules:null, syncTimer:null, initPromise:null
   };
 
   const emit = (name, detail = {}) => window.dispatchEvent(new CustomEvent(name, {detail}));
@@ -27,22 +27,19 @@
       "auth/wrong-password":"La contraseña no es correcta.",
       "auth/popup-closed-by-user":"La ventana de acceso se cerró antes de completar el proceso.",
       "auth/unauthorized-domain":"Debe autorizar el dominio de GitHub Pages en Firebase Authentication.",
-      "permission-denied":"Las reglas de Firebase no permiten esta operación.",
-      "storage/unauthorized":"La cuenta no tiene permiso para cargar archivos.",
-      "storage/quota-exceeded":"Se agotó la cuota de almacenamiento de Firebase."
+      "permission-denied":"Las reglas de Firebase no permiten esta operación."
     };
     return messages[code] || error?.message || "Ocurrió un error al comunicarse con Firebase.";
   }
 
   async function loadModules() {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
-    const [app, auth, firestore, storage] = await Promise.all([
+    const [app, auth, firestore] = await Promise.all([
       import(`${base}/firebase-app.js`),
       import(`${base}/firebase-auth.js`),
-      import(`${base}/firebase-firestore.js`),
-      import(`${base}/firebase-storage.js`)
+      import(`${base}/firebase-firestore.js`)
     ]);
-    return {app,auth,firestore,storage};
+    return {app,auth,firestore};
   }
 
   async function init() {
@@ -55,7 +52,6 @@
       runtime.app = runtime.modules.app.initializeApp(firebaseConfig);
       runtime.auth = runtime.modules.auth.getAuth(runtime.app);
       runtime.db = runtime.modules.firestore.getFirestore(runtime.app);
-      runtime.storage = runtime.modules.storage.getStorage(runtime.app);
       await runtime.modules.auth.setPersistence(runtime.auth, runtime.modules.auth.browserLocalPersistence);
 
       runtime.modules.auth.onAuthStateChanged(runtime.auth, handleAuthState);
@@ -237,21 +233,22 @@
     return payload;
   }
 
-  async function uploadFile(file,path) {
+  async function uploadFile(file,path,options = {}) {
     if (!runtime.ready) await init();
-    if (!runtime.canWrite) throw Object.assign(new Error("No tiene permiso para subir archivos."),{code:"storage/unauthorized"});
-    const safeName = String(file.name || "archivo").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-zA-Z0-9._-]+/g,"-");
-    const fullPath = `${path.replace(/\/$/,"")}/${Date.now()}-${safeName}`;
-    const fileRef = runtime.modules.storage.ref(runtime.storage,fullPath);
-    await runtime.modules.storage.uploadBytes(fileRef,file,{contentType:file.type || "application/octet-stream"});
-    return runtime.modules.storage.getDownloadURL(fileRef);
+    if (!runtime.canWrite) {
+      throw Object.assign(new Error("La cuenta no tiene permiso administrativo para subir archivos."),{code:"permission-denied"});
+    }
+    if (!window.DrivePortal) throw new Error("Google Drive todavía no se encuentra disponible.");
+    return window.DrivePortal.uploadFile(file,path,options);
   }
 
-  async function uploadDataUrl(dataUrl,path) {
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
-    const extension = blob.type.includes("png") ? "png" : "jpg";
-    return uploadFile(new File([blob],`imagen.${extension}`,{type:blob.type}),path);
+  async function uploadDataUrl(dataUrl,path,options = {}) {
+    if (!runtime.ready) await init();
+    if (!runtime.canWrite) {
+      throw Object.assign(new Error("La cuenta no tiene permiso administrativo para subir imágenes."),{code:"permission-denied"});
+    }
+    if (!window.DrivePortal) throw new Error("Google Drive todavía no se encuentra disponible.");
+    return window.DrivePortal.uploadDataUrl(dataUrl,path,options);
   }
 
   window.addEventListener("online",() => {runtime.connected=true;emit("firebase:connection",{connected:true});hydrateFromCloud();});
