@@ -46,21 +46,27 @@ document.addEventListener("DOMContentLoaded", () => {
   if (requested) setTimeout(() => openIdea(requested), 150);
 
   document.querySelector("#openIdeaForm").addEventListener("click", () => openDialog("newIdeaDialog"));
-  document.querySelector("#newIdeaForm").addEventListener("submit", event => {
+  document.querySelector("#newIdeaForm").addEventListener("submit", async event => {
     event.preventDefault();
     const form = new FormData(event.target);
-    state.ideas.unshift({
+    const idea = {
       id:`i${Date.now()}`, title:form.get("title"), author:form.get("author"),
       location:form.get("location"), category:form.get("category"),
       description:form.get("description"), status:"recibida",
       response:"La propuesta fue recibida y está pendiente de revisión institucional.",
       votes:0, created:new Date().toLocaleDateString("es-CO",{day:"numeric",month:"short",year:"numeric"})
-    });
-    helpers.save();
+    };
+    state.ideas.unshift(idea);
+    helpers.save({localOnly:true});
     event.target.reset();
     Portal.closeDialog("newIdeaDialog");
     render();
-    helpers.toast("Idea publicada en el tablero.");
+    try {
+      await window.FirebasePortal?.createPublicIdea?.(idea);
+      helpers.toast("Idea registrada y enviada a Firebase.");
+    } catch (error) {
+      helpers.toast("La idea quedó guardada en este navegador. Firebase aún no permitió el envío.");
+    }
   });
 
   document.addEventListener("keydown", event => {

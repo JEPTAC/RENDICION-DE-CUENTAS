@@ -118,6 +118,23 @@
     });
   }
 
+  async function persistImage(dataUrl,category="content") {
+    if (window.FirebasePortal?.canWrite?.()) {
+      try { return await window.FirebasePortal.uploadDataUrl(dataUrl,`public/images/${category}`); }
+      catch (error) { helpers.toast(window.FirebasePortal.friendlyError(error)); }
+    }
+    return dataUrl;
+  }
+
+  async function persistDocument(file,category="documents") {
+    if (!file) return "";
+    if (!window.FirebasePortal?.canWrite?.()) {
+      helpers.toast("Para subir documentos debe iniciar sesión con un administrador de Firebase.");
+      return "";
+    }
+    return window.FirebasePortal.uploadFile(file,`public/documents/${category}`);
+  }
+
   function toolbarTemplate() {
     const s = state.settings;
     const p = pageData();
@@ -222,6 +239,7 @@
             </div>
           </details>
 
+          <button type="button" class="inline-toolbar-button firebase-sync-button" id="inlineFirebaseSync"><span class="firebase-sync-dot"></span> Firebase</button>
           <button type="button" class="inline-toolbar-button" id="inlineNewBlock">＋ Nuevo bloque</button>
           <button type="button" class="inline-toolbar-button" id="inlineVisitorView">Vista visitante</button>
           <button type="button" class="inline-toolbar-button is-danger" id="inlineLogout">Cerrar sesión</button>
@@ -317,7 +335,7 @@
 
     get("#inlineCrestUpload")?.addEventListener("change", async event => {
       try {
-        state.settings.headerCrest = await compressedImage(event.target.files[0], {maxWidth:600,maxHeight:600,quality:.88});
+        state.settings.headerCrest = await persistImage(await compressedImage(event.target.files[0], {maxWidth:600,maxHeight:600,quality:.88}),"branding/crest");
         const image = document.querySelector(".header-crest");
         if (image) image.src = state.settings.headerCrest;
         persist();
@@ -327,7 +345,7 @@
 
     get("#inlineBrandUpload")?.addEventListener("change", async event => {
       try {
-        state.settings.headerBrand = await compressedImage(event.target.files[0], {maxWidth:1200,maxHeight:600,quality:.9});
+        state.settings.headerBrand = await persistImage(await compressedImage(event.target.files[0], {maxWidth:1200,maxHeight:600,quality:.9}),"branding/brand");
         const image = document.querySelector(".header-tourism-logo");
         if (image) image.src = state.settings.headerBrand;
         persist();
@@ -351,7 +369,7 @@
 
     get("#inlineBannerUpload")?.addEventListener("change", async event => {
       try {
-        pageData().banner.image = await compressedImage(event.target.files[0], {maxWidth:2200,maxHeight:1200,quality:.84});
+        pageData().banner.image = await persistImage(await compressedImage(event.target.files[0], {maxWidth:2200,maxHeight:1200,quality:.84}),`banners/${pageKey()}`);
         applyBanner();
         persist();
       } catch (error) { helpers.toast(error.message); }
@@ -400,6 +418,13 @@
 
     document.querySelectorAll("[data-create-entity]").forEach(button => {
       button.addEventListener("click", () => openNewEntityInspector(button.dataset.createEntity));
+    });
+    get("#inlineFirebaseSync")?.addEventListener("click", async () => {
+      try {
+        await window.FirebasePortal?.pushAll?.({action:"manual_sync"});
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message);
+      }
     });
     get("#inlineNewBlock")?.addEventListener("click", () => openNewBlockInspector());
     get("#inlineVisitorView")?.addEventListener("click", () => deactivate(false));
@@ -572,6 +597,7 @@
       button.className = "admin-card-edit";
       button.dataset.inlineEntity = card.dataset.adminEntity;
       button.dataset.entityId = card.dataset.entityId;
+      button.dataset.entityYear = card.dataset.entityYear || "";
       button.textContent = "Editar";
       card.appendChild(button);
     });
@@ -719,7 +745,7 @@
     document.querySelector("#sectionImage")?.addEventListener("change", async event => {
       try {
         const data = pageData().sections[key] || {};
-        data.backgroundImage = await compressedImage(event.target.files[0], {maxWidth:2200,maxHeight:1300,quality:.83});
+        data.backgroundImage = await persistImage(await compressedImage(event.target.files[0], {maxWidth:2200,maxHeight:1300,quality:.83}),`sections/${pageKey()}`);
         pageData().sections[key] = data;
         applySectionStyles();
         persist();
@@ -806,7 +832,7 @@
 
     document.querySelector("#inlineImageUpload")?.addEventListener("change", async event => {
       try {
-        const src = await compressedImage(event.target.files[0], {maxWidth:1800,maxHeight:1200,quality:.87});
+        const src = await persistImage(await compressedImage(event.target.files[0], {maxWidth:1800,maxHeight:1200,quality:.87}),`content/${pageKey()}`);
         const data = pageData().elements[key] || {};
         data.src = src;
         pageData().elements[key] = data;
@@ -847,15 +873,22 @@
     });
   }
 
-  function entityData(type, id) {
+  function entityData(type, id, year) {
+    const dashboard = state.dashboards?.[String(year)] || state.dashboards?.[year];
     if (type === "year") return state.years.find(item => String(item.year) === String(id));
     if (type === "resource") return state.resources.find(item => item.id === id);
     if (type === "idea") return state.ideas.find(item => item.id === id);
+    if (type === "dashboardKpi") return dashboard?.kpis?.find(item => item.id === id);
+    if (type === "investmentItem") return dashboard?.investment?.find(item => item.id === id);
+    if (type === "reachItem") return dashboard?.populationReach?.find(item => item.id === id);
+    if (type === "executionItem") return dashboard?.execution?.find(item => item.id === id);
+    if (type === "commitment") return state.commitments.find(item => item.id === id);
+    if (type === "citizenRequest") return state.citizenRequests.find(item => item.id === id);
     return null;
   }
 
-  function openEntityInspector(type, id) {
-    const entity = entityData(type, id);
+  function openEntityInspector(type, id, year) {
+    const entity = entityData(type, id, year);
     if (!entity) return;
 
     if (type === "year") {
@@ -901,6 +934,7 @@
           <label>Descripción<textarea name="description" rows="4">${helpers.escape(entity.description)}</textarea></label>
           <label>Detalle<input name="meta" value="${helpers.escape(entity.meta || "")}"></label>
           <label>Enlace<input name="url" value="${helpers.escape(entity.url || "#")}"></label>
+          <label class="inline-file">Subir documento<input name="document" type="file" accept=".pdf,.xlsx,.xls,.csv,.ppt,.pptx,.doc,.docx,video/*"></label>
           <label class="inline-check"><input name="featured" type="checkbox" ${entity.featured?"checked":""}> Recurso destacado</label>
           <label class="inline-file">Imagen del recurso<input name="image" type="file" accept="image/*"></label>
           ${entity.image ? '<button type="button" class="inline-mini-button" id="removeEntityImage">Quitar imagen</button>' : ""}
@@ -925,15 +959,76 @@
         </form>`);
     }
 
+
+    if (type === "dashboardKpi") {
+      openInspector("Editar indicador", entity.label, `<form class="inline-inspector-form" id="entityEditForm">
+        <label>Nombre<input name="label" value="${helpers.escape(entity.label)}"></label>
+        <label>Valor numérico<input name="value" type="number" step="any" value="${entity.value}"></label>
+        <label>Valor visible<input name="display" value="${helpers.escape(entity.display || "")}"></label>
+        <label>Descripción<textarea name="description" rows="4">${helpers.escape(entity.description || "")}</textarea></label>
+        <label>Ícono<input name="icon" value="${helpers.escape(entity.icon || "")}"></label>
+        <label>Color<select name="color">${["blue","teal","orange","pink","purple","green"].map(value=>`<option ${entity.color===value?"selected":""}>${value}</option>`).join("")}</select></label>
+        <button class="button button-primary">Guardar indicador</button></form>`);
+    }
+
+    if (["investmentItem","reachItem","executionItem"].includes(type)) {
+      openInspector("Editar dato de gráfica", entity.label, `<form class="inline-inspector-form" id="entityEditForm">
+        <label>Nombre<input name="label" value="${helpers.escape(entity.label)}"></label>
+        <label>Valor<input name="value" type="number" step="any" value="${entity.value}"></label>
+        ${type==="investmentItem"?`<label>Alcance<textarea name="scope" rows="4">${helpers.escape(entity.scope || "")}</textarea></label>`:""}
+        <button class="button button-primary">Guardar dato</button></form>`);
+    }
+
+    if (type === "commitment") {
+      openInspector("Editar compromiso", entity.title, `<form class="inline-inspector-form" id="entityEditForm">
+        <label>Compromiso<input name="title" value="${helpers.escape(entity.title)}"></label>
+        <label>Responsable<textarea name="responsible" rows="3">${helpers.escape(entity.responsible)}</textarea></label>
+        <label>Alcance<textarea name="scope" rows="5">${helpers.escape(entity.scope)}</textarea></label>
+        <label>Prioridad<select name="priority">${["Alta","Estratégica","Transversal"].map(value=>`<option ${entity.priority===value?"selected":""}>${value}</option>`).join("")}</select></label>
+        <label>Estado<select name="status">${[["pendiente","Pendiente"],["en_progreso","En progreso"],["cumplido","Cumplido"],["bloqueado","Bloqueado"]].map(([value,label])=>`<option value="${value}" ${entity.status===value?"selected":""}>${label}</option>`).join("")}</select></label>
+        <label>Avance <output id="commitmentProgressOutput">${entity.progress || 0}%</output><input name="progress" id="commitmentProgress" type="range" min="0" max="100" value="${entity.progress || 0}"></label>
+        <label>Fecha objetivo<input name="dueDate" type="date" value="${helpers.escape(entity.dueDate || "")}"></label>
+        <label>Enlace de evidencia<input name="evidenceUrl" value="${helpers.escape(entity.evidenceUrl || "")}"></label>
+        <label class="inline-file">Subir evidencia<input name="evidenceFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"></label>
+        <button class="button button-primary">Guardar compromiso</button></form>`);
+      document.querySelector("#commitmentProgress")?.addEventListener("input",event=>document.querySelector("#commitmentProgressOutput").value=`${event.target.value}%`);
+    }
+
+    if (type === "citizenRequest") {
+      openInspector("Editar solicitud ciudadana", entity.request, `<form class="inline-inspector-form" id="entityEditForm">
+        <label>Radicados<textarea name="radicados" rows="3">${helpers.escape(entity.radicados)}</textarea></label>
+        <label>Solicitante<input name="applicant" value="${helpers.escape(entity.applicant)}"></label>
+        <label>Tema<input name="topic" value="${helpers.escape(entity.topic)}"></label>
+        <label>Estado<input name="status" value="${helpers.escape(entity.status)}"></label>
+        <label>Solicitud<textarea name="request" rows="5">${helpers.escape(entity.request)}</textarea></label>
+        <label>Respuesta institucional<textarea name="response" rows="6">${helpers.escape(entity.response || "")}</textarea></label>
+        <label>Referencia y soporte<textarea name="support" rows="4">${helpers.escape(entity.support || "")}</textarea></label>
+        <button class="button button-primary">Guardar solicitud</button></form>`);
+    }
+
     const form = document.querySelector("#entityEditForm");
-    const imageInput = form?.querySelector('input[type="file"]');
+    const imageInput = form?.querySelector('input[name="image"],input[name="cover"]');
+    const documentInput = form?.querySelector('input[name="document"]');
+    const evidenceInput = form?.querySelector('input[name="evidenceFile"]');
     let pendingImage = null;
+    let pendingDocument = null;
+    let pendingEvidence = null;
 
     imageInput?.addEventListener("change", async event => {
       try {
-        pendingImage = await compressedImage(event.target.files[0], {maxWidth:1800,maxHeight:1100,quality:.84});
+        pendingImage = await persistImage(await compressedImage(event.target.files[0], {maxWidth:1800,maxHeight:1100,quality:.84}),`entities/${type}`);
         helpers.toast("Imagen preparada. Guarde los cambios.");
       } catch (error) { helpers.toast(error.message); }
+    });
+
+    documentInput?.addEventListener("change", async event => {
+      try { pendingDocument = await persistDocument(event.target.files[0],`resources/${entity.id}`); helpers.toast("Documento cargado. Guarde los cambios."); }
+      catch (error) { helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message); }
+    });
+
+    evidenceInput?.addEventListener("change", async event => {
+      try { pendingEvidence = await persistDocument(event.target.files[0],`commitments/${entity.id}`); helpers.toast("Evidencia cargada. Guarde los cambios."); }
+      catch (error) { helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message); }
     });
 
     document.querySelector("#removeEntityImage")?.addEventListener("click", () => {
@@ -999,6 +1094,20 @@
         entity.votes = Number(data.get("votes"));
       }
 
+      if (type === "dashboardKpi") {
+        entity.label=data.get("label"); entity.value=Number(data.get("value")); entity.display=data.get("display"); entity.description=data.get("description"); entity.icon=data.get("icon"); entity.color=data.get("color");
+      }
+      if (["investmentItem","reachItem","executionItem"].includes(type)) {
+        entity.label=data.get("label"); entity.value=Number(data.get("value")); if(type==="investmentItem") entity.scope=data.get("scope");
+      }
+      if (type === "commitment") {
+        entity.title=data.get("title"); entity.responsible=data.get("responsible"); entity.scope=data.get("scope"); entity.priority=data.get("priority"); entity.status=data.get("status"); entity.progress=Number(data.get("progress")); entity.dueDate=data.get("dueDate"); entity.evidenceUrl=pendingEvidence || data.get("evidenceUrl"); entity.updatedAt=new Date().toISOString();
+      }
+      if (type === "citizenRequest") {
+        entity.radicados=data.get("radicados"); entity.applicant=data.get("applicant"); entity.topic=data.get("topic"); entity.status=data.get("status"); entity.request=data.get("request"); entity.response=data.get("response"); entity.support=data.get("support");
+      }
+      if (type === "resource" && pendingDocument) entity.url=pendingDocument;
+
       helpers.save();
       helpers.toast("Cambios guardados.");
       setTimeout(() => location.reload(), 350);
@@ -1029,6 +1138,7 @@
           <label>Descripción<textarea name="description" rows="4" required></textarea></label>
           <label>Detalle<input name="meta" placeholder="Ejemplo: 24 páginas · 3 MB"></label>
           <label>Enlace<input name="url" value="#"></label>
+          <label class="inline-file">Subir documento<input name="document" type="file" accept=".pdf,.xlsx,.xls,.csv,.ppt,.pptx,.doc,.docx,video/*"></label>
           <label class="inline-check"><input name="featured" type="checkbox"> Mostrar como destacado</label>
           <label class="inline-file">Imagen del recurso<input name="image" type="file" accept="image/*"></label>
           <button class="button button-primary">Crear recurso</button>
@@ -1051,16 +1161,23 @@
 
     const form = document.querySelector("#newEntityForm");
     if (!form) return;
-    const imageInput = form.querySelector('input[type="file"]');
+    const imageInput = form.querySelector('input[name="image"],input[name="cover"]');
+    const documentInput = form.querySelector('input[name="document"]');
     let preparedImage = "";
+    let preparedDocument = "";
 
     imageInput?.addEventListener("change", async event => {
       try {
-        preparedImage = await compressedImage(event.target.files[0], {maxWidth:1800,maxHeight:1100,quality:.84});
+        preparedImage = await persistImage(await compressedImage(event.target.files[0], {maxWidth:1800,maxHeight:1100,quality:.84}),`entities/${type}`);
         helpers.toast("Imagen preparada.");
       } catch (error) { helpers.toast(error.message); }
     });
 
+
+    documentInput?.addEventListener("change", async event => {
+      try { preparedDocument = await persistDocument(event.target.files[0],`resources/new`); helpers.toast("Documento cargado."); }
+      catch (error) { helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message); }
+    });
     form.addEventListener("submit", event => {
       event.preventDefault();
       const data = new FormData(event.target);
@@ -1095,7 +1212,7 @@
           type:data.get("type"),
           description:data.get("description"),
           meta:data.get("meta") || "Recurso digital",
-          url:data.get("url") || "#",
+          url:preparedDocument || data.get("url") || "#",
           featured:data.get("featured") === "on",
           image:preparedImage
         });
@@ -1190,7 +1307,7 @@
 
         if (sectionButton) openSectionInspector(sectionButton.closest("section"));
         if (moveButton) moveSection(moveButton.closest("section"), moveButton.dataset.inlineMove);
-        if (entityButton) openEntityInspector(entityButton.dataset.inlineEntity, entityButton.dataset.entityId);
+        if (entityButton) openEntityInspector(entityButton.dataset.inlineEntity, entityButton.dataset.entityId, entityButton.dataset.entityYear);
       }
     }, true);
 
@@ -1232,7 +1349,7 @@
       if (entityButton) {
         event.preventDefault();
         event.stopPropagation();
-        openEntityInspector(entityButton.dataset.inlineEntity, entityButton.dataset.entityId);
+        openEntityInspector(entityButton.dataset.inlineEntity, entityButton.dataset.entityId, entityButton.dataset.entityYear);
         return;
       }
 
@@ -1276,5 +1393,5 @@
     });
   }
 
-  window.InlineAdmin = { init, activate, deactivate, decorate };
+  window.InlineAdmin = { init, activate, deactivate, decorate, openEntityEditor:openEntityInspector };
 })();

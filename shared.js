@@ -6,6 +6,9 @@
     settings: "sp_v6_settings",
     content: "sp_v6_content",
     pageSettings: "sp_v6_page_settings",
+    dashboards: "sp_v7_dashboards",
+    commitments: "sp_v7_commitments",
+    citizenRequests: "sp_v7_citizen_requests",
     admin: "sp_v6_admin"
   };
 
@@ -101,6 +104,12 @@
     }
   ];
 
+  const DEFAULT_DASHBOARDS = {"2025":{"year":2025,"technical":{"eventName":"Audiencia Pública de Rendición de Cuentas","entity":"Alcaldía Municipal de San Pedro, Valle del Cauca","presides":"Diego Fernando Mendoza Tascón","territory":"Municipio de San Pedro, Valle del Cauca","elaborationDate":"Mayo de 2026","source":"Audiencia pública, intervenciones por dependencia y matriz ciudadana de solicitudes","documentStatus":"Entregable final"},"kpis":[{"id":"kpi-investment","label":"Inversión base analizada","value":13435321251,"format":"currency","display":"$13.435.321.251","description":"Suma de los rubros principales reportados.","icon":"$","color":"blue"},{"id":"kpi-ita","label":"Índice ITA","value":92,"format":"score","display":"92/100","description":"Transparencia y acceso a la información.","icon":"ITA","color":"teal"},{"id":"kpi-business","label":"Emprendimientos beneficiados","value":66,"format":"number","display":"66","description":"Beneficiados por San Pedro Impulsa 2025.","icon":"↗","color":"orange"},{"id":"kpi-victims","label":"Víctimas atendidas","value":3000,"format":"number","display":"3.000","description":"Personas impactadas mediante jornadas y ayudas.","icon":"♥","color":"pink"},{"id":"kpi-older","label":"Adultos mayores beneficiados","value":550,"format":"number","display":"550","description":"Beneficiarios de programas sociales.","icon":"+","color":"purple"},{"id":"kpi-health","label":"Salud pública","value":4293,"format":"number","display":"4.293","description":"Personas beneficiadas en actividades urbanas y rurales.","icon":"✚","color":"green"}],"investment":[{"id":"inv-planning","label":"Planeación e Infraestructura","value":7772469282,"scope":"Servicios públicos, saneamiento, alumbrado, vías, maquinaria y subsidios."},{"id":"inv-government","label":"Gobierno y Convivencia","value":1698864332,"scope":"Víctimas, tránsito, seguridad, sistema penitenciario, JAC, Comisaría y gestión del riesgo."},{"id":"inv-education","label":"Educación, Cultura y Deporte","value":1593000000,"scope":"Cultura, deporte, recreación, educación, PAE, transporte y escenarios."},{"id":"inv-welfare","label":"Bienestar Social","value":618577054,"scope":"Adultos mayores, género, LGBTIQ+, etnias, niñez, adolescencia y familia."},{"id":"inv-agriculture","label":"Agricultura y Medio Ambiente","value":588722397,"scope":"Campo, bienestar animal, mercados campesinos, huertas y recurso hídrico."},{"id":"inv-finance","label":"Hacienda","value":501938794,"scope":"Modernización financiera, saneamiento fiscal, recaudo y refinanciación."},{"id":"inv-health","label":"Salud pública - proyecto PIC","value":501246394,"scope":"Promoción, prevención, vigilancia epidemiológica y acciones urbanas y rurales."},{"id":"inv-general","label":"Secretaría General","value":160502998,"scope":"Turismo, emprendimiento, empleo, transparencia, canales digitales y PQR."}],"populationReach":[{"id":"reach-water","label":"Gestión del recurso hídrico","value":18128},{"id":"reach-insurance","label":"Aseguramiento en salud","value":8353},{"id":"reach-culture","label":"Cultura","value":8000},{"id":"reach-public-health","label":"Salud pública","value":4293},{"id":"reach-victims","label":"Víctimas del conflicto","value":3000},{"id":"reach-family","label":"Niñez y familia","value":2583},{"id":"reach-education","label":"Educación","value":2000},{"id":"reach-markets","label":"Mercados campesinos","value":590},{"id":"reach-older","label":"Adultos mayores","value":550},{"id":"reach-women","label":"Mujeres","value":300}],"execution":[{"id":"exe-transparency","label":"Secretaría General - transparencia","value":100},{"id":"exe-employment","label":"Secretaría General - empleo","value":100},{"id":"exe-tourism","label":"Secretaría General - turismo","value":100},{"id":"exe-family","label":"Bienestar - NNA y familia","value":100},{"id":"exe-gender","label":"Bienestar - género","value":100},{"id":"exe-lgbtiq","label":"Bienestar - LGBTIQ+","value":100},{"id":"exe-territorial","label":"Planeación - gestión territorial","value":100},{"id":"exe-finance-system","label":"Hacienda - sistema financiero","value":100},{"id":"exe-fiscal","label":"Hacienda - saneamiento fiscal","value":99.91},{"id":"exe-risk","label":"Gobierno - gestión del riesgo","value":99},{"id":"exe-jac","label":"Gobierno - JAC","value":99},{"id":"exe-older","label":"Bienestar - adultos mayores","value":97.5},{"id":"exe-transit","label":"Gobierno - tránsito","value":96},{"id":"exe-victims","label":"Gobierno - víctimas","value":96},{"id":"exe-education","label":"Educación","value":92},{"id":"exe-culture","label":"Cultura","value":82},{"id":"exe-prison","label":"Gobierno - sistema penitenciario","value":80},{"id":"exe-sports","label":"Deporte y recreación","value":38}],"methodology":[{"id":"method-1","title":"Apertura institucional","description":"Contextualización de la responsabilidad pública de informar la gestión."},{"id":"method-2","title":"Pregunta orientadora","description":"Balance general, retos territoriales y mensaje del alcalde."},{"id":"method-3","title":"Informes por dependencia","description":"Proyectos, inversión, ejecución, beneficiarios y resultados."},{"id":"method-4","title":"Intervenciones complementarias","description":"Fuentes de financiación, impactos, dificultades y prioridades."},{"id":"method-5","title":"Síntesis de resultados","description":"Logros, avances sectoriales y relación con el Plan de Desarrollo."},{"id":"method-6","title":"Compromisos y seguimiento","description":"Retos 2026 en vías, acueductos, emprendimiento, transparencia y control social."}],"focusAreas":["Transparencia y control social","Planeación y sostenibilidad financiera","Inversión social y enfoque diferencial","Infraestructura y servicios esenciales","Participación ciudadana y seguimiento institucional"],"institutionalResults":[{"id":"result-finance","department":"Hacienda","actions":"Modernización financiera, saneamiento fiscal, recaudo y refinanciación.","result":"Mayor recaudo, reducción de tasa y estabilidad fiscal.","value":"$501.938.794"},{"id":"result-planning","department":"Planeación e Infraestructura","actions":"Servicios públicos, saneamiento, vías, alumbrado, residuos y subsidios.","result":"Mejoramiento de condiciones urbanas y rurales.","value":"$7.772.469.282"},{"id":"result-welfare","department":"Bienestar Social","actions":"Adultos mayores, género, LGBTIQ+, etnias, NNA y familia.","result":"Inclusión y protección social.","value":"$618.577.054"},{"id":"result-education","department":"Educación, Cultura y Deporte","actions":"PAE, transporte, gratuidad, cultura, deporte y escenarios.","result":"Permanencia escolar, identidad cultural y recreación.","value":"Más de $1.500 millones"},{"id":"result-agriculture","department":"Agricultura y Ambiente","actions":"Campo, bienestar animal, mercados, huertas y recurso hídrico.","result":"Fortalecimiento rural y sostenibilidad ambiental.","value":"$588.722.397"},{"id":"result-government","department":"Gobierno y Convivencia","actions":"Víctimas, tránsito, sistema penitenciario, JAC, comisaría y riesgo.","result":"Seguridad, participación y atención a emergencias.","value":"$1.698.864.332"},{"id":"result-health","department":"Salud","actions":"PIC, discapacidad, población vulnerable, aseguramiento y EPS/IPS.","result":"Prevención, cobertura y atención territorial.","value":"$501.246.394 PIC"},{"id":"result-general","department":"Secretaría General","actions":"Turismo, emprendimiento, empleo, transparencia, web y PQR.","result":"San Pedro Impulsa, ITA 92/100 y modernización.","value":"$160.502.998"},{"id":"result-social","department":"Gestión Social","actions":"Campañas solidarias, donaciones y apoyo a pacientes y familias.","result":"Articulación comunitaria y privada.","value":"Sin cifra única reportada"}],"keyPoints":["La gestión financiera permitió mejorar la capacidad institucional de inversión mediante recaudo, fiscalización y refinanciación.","La infraestructura y los servicios públicos concentraron la mayor inversión reportada.","La política social se mantuvo como eje estratégico con enfoque diferencial.","Educación, cultura y deporte aportaron a permanencia escolar, identidad cultural y recreación.","El campo, el ambiente y la gestión del riesgo requieren continuidad.","La modernización institucional fortaleció la transparencia y el acceso a la información."]}};
+
+  const DEFAULT_COMMITMENTS = [{"id":"commit-2025-01","year":2025,"title":"Intervención de vías rurales","responsible":"Planeación, Infraestructura, Agricultura y Alcaldía","scope":"Mantenimiento y adecuación de vías afectadas por ola invernal para facilitar movilidad y comercialización campesina.","priority":"Alta","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-02","year":2025,"title":"Continuidad San Pedro Impulsa","responsible":"Secretaría General y aliados institucionales","scope":"Fortalecer capacitación, entrega de insumos y acompañamiento a emprendimientos locales.","priority":"Alta","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-03","year":2025,"title":"Proyecto de doble calzada","responsible":"Alcaldía, Planeación e instancias competentes","scope":"Avanzar en mesas de trabajo, cumplimiento de sentencia y obras con inversión estimada cercana a $8.000 millones.","priority":"Estratégica","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-04","year":2025,"title":"Acueducto en San José","responsible":"Alcaldía y Planeación","scope":"Gestionar proyecto de infraestructura con cifra estimada cercana a $8.000 millones.","priority":"Estratégica","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-05","year":2025,"title":"Vías hacia Todos Santos","responsible":"Alcaldía y Gobernación del Valle del Cauca","scope":"Continuar gestión y articulación para mejorar corredores viales departamentales.","priority":"Alta","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-06","year":2025,"title":"Veeduría y control social","responsible":"Alcaldía, Concejo, Personería y comunidad","scope":"Promover acompañamiento ciudadano e institucional a proyectos y obras públicas.","priority":"Transversal","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-07","year":2025,"title":"Canales digitales y PQR","responsible":"Secretaría General y dependencias competentes","scope":"Mantener ventanilla única, página web, transparencia activa y atención oportuna al ciudadano.","priority":"Transversal","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""}];
+
+  const DEFAULT_CITIZEN_REQUESTS = [{"id":"request-2025-01","year":2025,"radicados":"RC-2026-20260529-YGQT; RC-2026-20260529-1UFX; RC-2026-20260529-1LEK; RC-2026-20260529-16UI; RC-2026-20260529-15IG","applicant":"Feder Usuario","topic":"Educación, cultura y deporte","status":"Pendiente de respuesta específica","support":"No se identificó respuesta específica en el informe consolidado.","request":"Información sobre el recaudo y la inversión realizada en la maratón de perros.","response":""},{"id":"request-2025-02","year":2025,"radicados":"RC-2026-20260529-W3I0","applicant":"Luz Marina Palacio","topic":"Gobierno","status":"Pendiente de respuesta específica","support":"No se identificó respuesta específica en el informe consolidado.","request":"Inquietud sobre las medidas previstas para mejorar el control de ruido en el municipio.","response":""},{"id":"request-2025-03","year":2025,"radicados":"RC-2026-20260529-VQQL; RC-2026-20260529-TMR4; RC-2026-20260529-KCA1; RC-2026-20260529-K1N4; RC-2026-20260529-F1DR; RC-2026-20260529-EFIC; RC-2026-20260529-AQDI; RC-2026-20260529-7S2W; RC-2026-20260529-1UP2; RC-2026-20260529-1TX4; RC-2026-20260529-1BYX; RC-2026-20260529-134D","applicant":"Yeison Andrés Trochez Holguín","topic":"Educación, cultura y deporte","status":"Respondida en vivo durante la Rendición de Cuentas","support":"Video de la Rendición de Cuentas. Referencia interna: sección 5.5.","request":"Reconocimiento ciudadano por el apoyo brindado a las manifestaciones culturales durante 2025, especialmente al sector danza.","response":"La Administración Municipal agradece el reconocimiento ciudadano y deja constancia de que durante 2025 se fortalecieron los procesos de formación artística en música, danza, pintura, teatro y artes plásticas, con alcance comunitario y aporte a la identidad cultural del municipio."},{"id":"request-2025-04","year":2025,"radicados":"RC-2026-20260529-V0UZ","applicant":"Luz Robledo","topic":"Salud","status":"Respuesta general con base en el informe","support":"Referencia interna: sección 5.8, Secretaría de Salud Municipal.","request":"Consulta sobre los planes de gestión de la Secretaría de Salud para mejorar la prestación y el enfoque territorial hacia 2027.","response":"La gestión en salud se orienta a promoción, prevención, vigilancia epidemiológica, discapacidad, población vulnerable, atención al ciudadano y aseguramiento. Como línea de continuidad, se planteó acercar la salud al territorio y fortalecer la articulación con el Hospital Local y la Gobernación."},{"id":"request-2025-05","year":2025,"radicados":"RC-2026-20260529-L1EO","applicant":"Mónica Perdomo","topic":"Alcaldía municipal","status":"Respuesta general con base en el informe","support":"Referencia interna: secciones 7 y 7.1.","request":"Felicitación por la continuidad de experiencias y proyectos exitosos durante el periodo de gobierno.","response":"La Administración Municipal recibe el reconocimiento y reitera su compromiso de dar continuidad a acciones con impacto territorial, incluyendo vías rurales, San Pedro Impulsa, acueductos, doble calzada, canales digitales, PQR y control social."},{"id":"request-2025-06","year":2025,"radicados":"RC-2026-20260529-91X1; RC-2026-20260529-1VHU","applicant":"Luz Marina Palacio","topic":"Educación, cultura y deporte","status":"Respuesta general con base en el informe","support":"Referencia interna: sección 5.5, Oficina de Educación, Cultura y Deporte.","request":"Observación sobre la necesidad de fortalecer el deporte municipal y revisar la proporción de inversión frente al componente cultural.","response":"La observación queda vinculada al seguimiento presupuestal y a la necesidad de fortalecer la oferta deportiva municipal."},{"id":"request-2025-07","year":2025,"radicados":"RC-2026-20260529-1YVJ","applicant":"Rubén Darío Victoria Álvarez","topic":"Educación, cultura y deporte","status":"Pendiente de respuesta específica","support":"El informe menciona mantenimiento general de escenarios deportivos, pero no identifica una respuesta específica para el barrio El Porvenir.","request":"Inquietud por el encerramiento de la cancha múltiple, el mantenimiento de juegos infantiles y máquinas del parque biosaludable del barrio El Porvenir.","response":""},{"id":"request-2025-08","year":2025,"radicados":"RC-2026-20260529-1YAI","applicant":"Eugenia Stella Jaramillo","topic":"Salud","status":"Pendiente de respuesta específica","support":"El informe menciona seguimiento institucional a EPS e IPS, pero no identifica una respuesta específica sobre urgencias del Hospital Local.","request":"Inquietud por quejas ciudadanas sobre la atención en urgencias del Hospital Local.","response":""}];
+
   const DEFAULT_SETTINGS = {
     theme:"blue",
     primary:"#0b4fb3",
@@ -147,6 +156,9 @@
     settings: loadObject(KEYS.settings, DEFAULT_SETTINGS),
     content: loadObject(KEYS.content, {}),
     pageSettings: loadObject(KEYS.pageSettings, {}),
+    dashboards: loadObject(KEYS.dashboards, DEFAULT_DASHBOARDS),
+    commitments: loadArray(KEYS.commitments, DEFAULT_COMMITMENTS),
+    citizenRequests: loadArray(KEYS.citizenRequests, DEFAULT_CITIZEN_REQUESTS),
     admin: sessionStorage.getItem(KEYS.admin) === "1"
   };
 
@@ -188,13 +200,23 @@
     getYear(year) {
       return state.years.find(item => Number(item.year) === Number(year));
     },
-    save() {
+    formatCurrency(value) {
+      return new Intl.NumberFormat("es-CO", {style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(value || 0));
+    },
+    formatNumber(value) {
+      return new Intl.NumberFormat("es-CO", {maximumFractionDigits:2}).format(Number(value || 0));
+    },
+    save(options = {}) {
       localStorage.setItem(KEYS.years, JSON.stringify(state.years));
       localStorage.setItem(KEYS.resources, JSON.stringify(state.resources));
       localStorage.setItem(KEYS.ideas, JSON.stringify(state.ideas));
       localStorage.setItem(KEYS.settings, JSON.stringify(state.settings));
       localStorage.setItem(KEYS.content, JSON.stringify(state.content));
       localStorage.setItem(KEYS.pageSettings, JSON.stringify(state.pageSettings));
+      localStorage.setItem(KEYS.dashboards, JSON.stringify(state.dashboards));
+      localStorage.setItem(KEYS.commitments, JSON.stringify(state.commitments));
+      localStorage.setItem(KEYS.citizenRequests, JSON.stringify(state.citizenRequests));
+      if (!options.localOnly) window.FirebasePortal?.queueSync?.();
     },
     pageKey() {
       const filename = location.pathname.split("/").pop() || "index.html";
@@ -380,11 +402,13 @@
         <span class="section-kicker">ACCESO ADMINISTRATIVO</span>
         <h2>Activar edición directa</h2>
         <p class="dialog-note">Al iniciar sesión se habilitarán controles de edición directamente sobre la página.</p>
-        <form class="dialog-form" id="adminLoginForm">
-          <label>Usuario<input name="username" required></label>
-          <label>Contraseña<input name="password" type="password" required></label>
-          <button class="button button-primary">Ingresar</button>
-          <small>Credenciales de prueba disponibles en el README.</small>
+        <form class="dialog-form firebase-login-form" id="adminLoginForm">
+          <label>Correo del administrador<input name="identity" type="text" autocomplete="username" placeholder="correo@dominio.gov.co" required></label>
+          <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="button button-primary">Ingresar con Firebase</button>
+          <button class="button button-secondary" type="button" id="googleAdminLogin">Continuar con Google</button>
+          <small id="firebaseLoginStatus">Conectando con Firebase…</small>
+          <details class="local-login-help"><summary>Acceso local temporal</summary><p>Mientras crea el usuario en Firebase puede usar el usuario local anterior. Los cambios locales no se compartirán con otros visitantes.</p></details>
         </form>
       </dialog>
 
@@ -520,6 +544,12 @@
     state.ideas
       .filter(i => `${i.title} ${i.description} ${i.category} ${i.location}`.toLowerCase().includes(q))
       .forEach(i => results.push({ title:i.title, meta:`Idea · ${helpers.statusLabel(i.status)}`, href:`ideas.html?id=${i.id}` }));
+    state.commitments
+      .filter(item => `${item.title} ${item.responsible} ${item.scope} ${item.priority}`.toLowerCase().includes(q))
+      .forEach(item => results.push({ title:item.title, meta:`Compromiso ${item.year} · ${item.priority}`, href:`rendicion-${item.year}.html#seguimiento` }));
+    state.citizenRequests
+      .filter(item => `${item.request} ${item.applicant} ${item.topic} ${item.status}`.toLowerCase().includes(q))
+      .forEach(item => results.push({ title:item.request, meta:`Solicitud ${item.year} · ${item.status}`, href:`rendicion-${item.year}.html#solicitudes` }));
 
     list.innerHTML = results.length
       ? results.map(r => `<a class="search-item" href="${r.href}"><span><strong>${helpers.escape(r.title)}</strong><small>${helpers.escape(r.meta)}</small></span><b>→</b></a>`).join("")
@@ -682,30 +712,49 @@
       }
     });
 
-    document.querySelector("#adminLoginForm")?.addEventListener("submit", event => {
+    document.querySelector("#adminLoginForm")?.addEventListener("submit", async event => {
       event.preventDefault();
       const form = new FormData(event.target);
-      if (form.get("username") === "admin" && form.get("password") === "SanPedro2026*") {
+      const identity = String(form.get("identity") || "").trim();
+      const password = String(form.get("password") || "");
+
+      if (identity === "admin" && password === "SanPedro2026*") {
         state.admin = true;
         sessionStorage.setItem(KEYS.admin, "1");
+        sessionStorage.setItem("sp_admin_mode", "local");
         event.target.reset();
         closeDialog("loginDialog");
-        syncAdmin();
         const button = document.querySelector("#adminEntry");
-        if (button) {
-          button.textContent = "Editar página";
-          button.classList.add("is-active");
-        }
+        if (button) { button.textContent = "Editar página"; button.classList.add("is-active"); }
         window.InlineAdmin?.activate();
-        helpers.toast("Edición directa activada.");
-      } else {
-        helpers.toast("Credenciales incorrectas.");
+        helpers.toast("Modo administrativo local activado. Firebase no sincronizará hasta iniciar con una cuenta autorizada.");
+        return;
+      }
+
+      try {
+        const result = await window.FirebasePortal?.signInEmail?.(identity, password);
+        if (!result) throw new Error("Firebase todavía no está disponible.");
+        event.target.reset();
+        closeDialog("loginDialog");
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message || "No fue posible iniciar sesión.");
       }
     });
 
-    document.querySelector("#adminSignout")?.addEventListener("click", () => {
+    document.querySelector("#googleAdminLogin")?.addEventListener("click", async () => {
+      try {
+        await window.FirebasePortal?.signInGoogle?.();
+        closeDialog("loginDialog");
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message || "No fue posible iniciar con Google.");
+      }
+    });
+
+    document.querySelector("#adminSignout")?.addEventListener("click", async () => {
+      await window.FirebasePortal?.signOut?.().catch(() => {});
       state.admin = false;
       sessionStorage.removeItem(KEYS.admin);
+      sessionStorage.removeItem("sp_admin_mode");
       closeDialog("adminPanel");
       window.InlineAdmin?.deactivate();
       const button = document.querySelector("#adminEntry");
@@ -805,6 +854,9 @@
         settings:state.settings,
         content:state.content,
         pageSettings:state.pageSettings,
+        dashboards:state.dashboards,
+        commitments:state.commitments,
+        citizenRequests:state.citizenRequests,
         exportedAt:new Date().toISOString()
       }, null, 2)], { type:"application/json" });
       const url = URL.createObjectURL(blob);
@@ -831,6 +883,16 @@
     });
   }
 
+
+  function loadFirebaseService() {
+    if (document.querySelector('script[data-firebase-portal]')) return;
+    const script = document.createElement("script");
+    script.src = "firebase-service.js";
+    script.dataset.firebasePortal = "true";
+    script.onload = () => window.FirebasePortal?.init?.();
+    script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
+    document.head.appendChild(script);
+  }
 
   function loadInlineAdministration() {
     if (document.querySelector('script[data-inline-admin]')) return;
@@ -1218,6 +1280,42 @@
     }
   }
 
+  function bindFirebaseEvents() {
+    window.addEventListener("firebase:ready", event => {
+      const status = document.querySelector("#firebaseLoginStatus");
+      if (status) status.textContent = event.detail?.connected ? "Firebase conectado." : "Firebase disponible sin conexión de red.";
+    });
+
+    window.addEventListener("firebase:auth", event => {
+      const detail = event.detail || {};
+      const localMode = sessionStorage.getItem("sp_admin_mode") === "local";
+      if (!detail.user && localMode) return;
+      state.admin = Boolean(detail.canWrite);
+      if (state.admin) {
+        sessionStorage.setItem(KEYS.admin, "1");
+        sessionStorage.setItem("sp_admin_mode", "firebase");
+        const button = document.querySelector("#adminEntry");
+        if (button) { button.textContent = "Editar página"; button.classList.add("is-active"); }
+        window.InlineAdmin?.activate();
+        helpers.toast(`Sesión Firebase iniciada${detail.role ? ` · ${detail.role}` : ""}.`);
+      } else if (detail.user) {
+        sessionStorage.removeItem(KEYS.admin);
+        sessionStorage.removeItem("sp_admin_mode");
+        window.InlineAdmin?.deactivate?.(false);
+        const button = document.querySelector("#adminEntry");
+        if (button) { button.textContent = "Administrador"; button.classList.remove("is-active"); }
+        helpers.toast("La cuenta inició sesión, pero no tiene rol de edición.");
+      } else {
+        sessionStorage.removeItem(KEYS.admin);
+        sessionStorage.removeItem("sp_admin_mode");
+      }
+    });
+
+    window.addEventListener("firebase:data", () => {
+      window.dispatchEvent(new CustomEvent("portal:datachange"));
+    });
+  }
+
   function initReveal() {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -1233,7 +1331,9 @@
     renderFooter();
     renderGlobalDialogs();
     bindGlobalEvents();
+    bindFirebaseEvents();
     initReader();
+    loadFirebaseService();
     loadInlineAdministration();
     syncAdmin();
     initReveal();

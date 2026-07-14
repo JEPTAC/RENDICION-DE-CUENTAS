@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
   picker.innerHTML = [...state.years].sort((a,b)=>a.year-b.year).map(y => `<option value="${y.year}" ${y.year===year.year?"selected":""}>${y.year}</option>`).join("");
   picker.addEventListener("change", event => location.href = helpers.yearUrl(Number(event.target.value)));
 
-  const metrics = [
+  const reportDashboard = state.dashboards?.[String(year.year)] || state.dashboards?.[year.year];
+  const metrics = reportDashboard?.kpis?.slice(0,4).map(item => [item.label,item.display || helpers.formatNumber(item.value),item.description]) || [
     ["Cumplimiento del plan", `${year.metrics.plan}%`, "Avance consolidado de las metas estratégicas."],
     ["Proyectos ejecutados", year.metrics.projects, "Iniciativas terminadas o en operación."],
     ["Compromisos atendidos", `${year.metrics.commitments}%`, "Solicitudes con gestión documentada."],
@@ -88,6 +89,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const dashboardScript = document.createElement("script");
+  dashboardScript.src = "dashboard.js";
+  dashboardScript.onload = () => window.RendicionDashboard?.init?.(year.year);
+  dashboardScript.onerror = () => helpers.toast("No fue posible cargar el tablero de indicadores.");
+  document.head.appendChild(dashboardScript);
+
+  window.addEventListener("firebase:data", () => window.RendicionDashboard?.refresh?.(year.year));
   window.dispatchEvent(new CustomEvent("portal:rendered"));
 
   document.querySelector("#yearNewsletter").addEventListener("submit", event => {
