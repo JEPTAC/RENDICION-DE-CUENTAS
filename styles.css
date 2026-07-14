@@ -7523,3 +7523,256 @@ body{
     height:105px;
   }
 }
+
+
+
+
+/* =========================================================
+   V10.1 — Usuario administrativo integrado y sin recortes
+   ========================================================= */
+
+/* Se reserva espacio real para las acciones y el perfil. */
+@media(min-width:1261px){
+  .main-header__inner{
+    grid-template-columns:
+      minmax(300px,.92fr)
+      minmax(520px,1.65fr)
+      minmax(310px,.92fr)!important;
+  }
+
+  .header-actions{
+    min-width:310px;
+  }
+}
+
+/* Bloque del usuario: avatar a la izquierda, nombre y botón a la derecha. */
+.admin-session{
+  min-width:232px!important;
+  max-width:270px;
+  height:auto!important;
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:7px 8px!important;
+  border:1px solid rgba(10,67,143,.11)!important;
+  border-left:1px solid rgba(10,67,143,.11)!important;
+  border-radius:13px!important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.92),
+      rgba(241,248,255,.88)
+    )!important;
+  box-shadow:
+    0 8px 21px rgba(5,43,96,.075),
+    inset 0 1px 0 rgba(255,255,255,.86)!important;
+}
+
+.admin-session__avatar-button{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  align-self:center;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  cursor:pointer;
+}
+
+.admin-session__avatar-button:hover .admin-session__avatar{
+  transform:translateY(-1px) scale(1.035);
+  box-shadow:0 10px 22px rgba(8,98,159,.25)!important;
+}
+
+.admin-session__avatar{
+  width:42px!important;
+  height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  font-size:14px!important;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.admin-session__details{
+  min-width:0;
+  display:grid;
+  grid-template-rows:auto auto;
+  gap:6px;
+}
+
+.admin-session__copy{
+  min-width:0;
+  display:grid!important;
+  gap:2px!important;
+  padding-inline:2px;
+}
+
+.admin-session__copy strong{
+  width:100%;
+  min-width:0;
+  color:#173354!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.admin-session__copy small{
+  width:100%;
+  min-width:0;
+  display:block!important;
+  color:#687b93!important;
+  font-size:10.5px!important;
+  line-height:1.2!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.admin-session__button{
+  width:100%;
+  min-width:0!important;
+  min-height:32px!important;
+  padding:0 12px!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+  line-height:1!important;
+  white-space:nowrap;
+}
+
+/* Evita que las acciones laterales compitan con la navegación. */
+.header-actions{
+  padding-left:13px!important;
+}
+
+.reader-entry{
+  min-width:104px;
+}
+
+.header-search{
+  flex:0 0 40px;
+}
+
+/* Pantallas medianas: conserva nombre y botón, pero reduce el bloque. */
+@media(max-width:1500px) and (min-width:1261px){
+  .main-header__inner{
+    grid-template-columns:
+      minmax(270px,.85fr)
+      minmax(480px,1.6fr)
+      minmax(278px,.88fr)!important;
+  }
+
+  .header-actions{
+    min-width:278px;
+  }
+
+  .admin-session{
+    min-width:205px!important;
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:8px!important;
+  }
+
+  .admin-session__avatar-button{
+    width:40px;
+    height:40px;
+  }
+
+  .admin-session__avatar{
+    width:38px!important;
+    height:38px!important;
+  }
+
+  .admin-session__copy strong{
+    font-size:12px!important;
+  }
+
+  .admin-session__copy small{
+    font-size:10px!important;
+  }
+}
+
+/* Portátiles: el nombre sigue visible; se oculta solo el rol secundario. */
+@media(max-width:1260px) and (min-width:1021px){
+  .admin-session{
+    min-width:176px!important;
+    max-width:190px;
+    grid-template-columns:38px minmax(0,1fr)!important;
+    gap:7px!important;
+    padding:6px!important;
+  }
+
+  .admin-session__avatar-button{
+    width:38px;
+    height:38px;
+  }
+
+  .admin-session__avatar{
+    width:36px!important;
+    height:36px!important;
+  }
+
+  .admin-session__copy small{
+    display:none!important;
+  }
+
+  .admin-session__button{
+    min-height:30px!important;
+    font-size:11px!important;
+  }
+}
+
+/* Tabletas: mantiene una versión compacta y alineada. */
+@media(max-width:1020px) and (min-width:721px){
+  .admin-session{
+    min-width:188px!important;
+    max-width:210px;
+  }
+
+  .admin-session__copy small{
+    display:block!important;
+  }
+}
+
+/* Móvil: avatar y botón, sin una caja desproporcionada. */
+@media(max-width:720px){
+  .admin-session{
+    min-width:126px!important;
+    max-width:142px;
+    grid-template-columns:34px minmax(0,1fr)!important;
+    gap:6px!important;
+    padding:5px!important;
+  }
+
+  .admin-session__avatar-button{
+    width:34px;
+    height:34px;
+  }
+
+  .admin-session__avatar{
+    width:32px!important;
+    height:32px!important;
+    font-size:12px!important;
+  }
+
+  .admin-session__copy strong{
+    font-size:11px!important;
+  }
+
+  .admin-session__copy small{
+    display:none!important;
+  }
+
+  .admin-session__button{
+    min-height:28px!important;
+    padding-inline:7px!important;
+    font-size:10px!important;
+  }
+}

@@ -328,21 +328,24 @@
               ${state.admin ? "" : "hidden"}>
 
               <button type="button"
-                class="admin-session__identity"
+                class="admin-session__avatar-button"
                 id="adminSessionIdentity"
                 aria-label="Abrir información de la cuenta">
                 <span class="admin-session__avatar" id="adminSessionAvatar">A</span>
-                <span class="admin-session__copy">
-                  <strong id="adminSessionName">Administrador</strong>
-                  <small id="adminSessionRole">Sesión administrativa</small>
-                </span>
               </button>
 
-              <button type="button"
-                class="admin-session__button"
-                id="adminConsoleEntry">
-                Administrador
-              </button>
+              <div class="admin-session__details">
+                <div class="admin-session__copy">
+                  <strong id="adminSessionName">Administrador</strong>
+                  <small id="adminSessionRole">Sesión administrativa</small>
+                </div>
+
+                <button type="button"
+                  class="admin-session__button"
+                  id="adminConsoleEntry">
+                  Administrador
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1288,7 +1291,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=10-header";
+    script.src = "firebase-service.js?v=10.1-user-header";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1299,7 +1302,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10-header";
+    script.src = "inline-admin.js?v=10.1-user-header";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -1776,7 +1779,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10-header`;
+      const versioned = `${base}?v=10.1-user-header`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
