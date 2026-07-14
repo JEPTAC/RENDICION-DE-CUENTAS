@@ -2579,3 +2579,625 @@ body[data-animation-mode="none"] *{
     width:max-content;
   }
 }
+
+
+/* V9.2 — Escala automática por pantalla y ventanas administrativas amplias */
+
+:root{
+  /*
+   * La escala configurada por el administrador continúa funcionando.
+   * Este segundo factor adapta automáticamente la interfaz al tamaño
+   * físico de la pantalla sin utilizar zoom.
+   */
+  --viewport-font-factor:1;
+  --admin-inspector-width:clamp(590px,46vw,760px);
+}
+
+html{
+  font-size:calc(16px * var(--font-scale) * var(--viewport-font-factor));
+}
+
+/* =========================
+   ESCALA AUTOMÁTICA DE PC
+   ========================= */
+
+/* Portátiles pequeños de aproximadamente 740–760 px de alto */
+@media (min-width:900px) and (max-height:790px){
+  :root{
+    --viewport-font-factor:.90;
+    --header-base-height:95px!important;
+  }
+
+  .main-header__inner{
+    height:64px!important;
+  }
+
+  .top-utility__inner{
+    height:31px;
+  }
+
+  .primary-nav>a,
+  .nav-dropdown>button{
+    padding-block:19px;
+  }
+
+  .primary-nav>a::after,
+  .nav-dropdown>button::after{
+    bottom:12px;
+  }
+
+  .home-hero,
+  .home-hero__grid{
+    min-height:510px;
+  }
+
+  .home-section{
+    padding-block:44px;
+  }
+
+  .page-hero{
+    padding-block:42px;
+  }
+
+  .inline-admin-toolbar{
+    min-height:52px;
+  }
+
+  .admin-inline-active{
+    --admin-toolbar-height:52px;
+  }
+
+  .inline-admin-menu>summary,
+  .inline-toolbar-button{
+    min-height:35px;
+    padding:7px 10px;
+  }
+}
+
+/* Monitores grandes: más lectura y mejor aprovechamiento visual */
+@media (min-width:1180px) and (min-height:900px){
+  :root{
+    --viewport-font-factor:1.09;
+  }
+
+  .site-shell{
+    width:min(var(--site-width),calc(100% - 48px));
+  }
+
+  .home-section{
+    padding-block:70px;
+  }
+
+  .dialog{
+    padding:clamp(30px,2.4vw,42px);
+  }
+}
+
+@media (min-width:1600px) and (min-height:950px){
+  :root{
+    --viewport-font-factor:1.13;
+    --admin-inspector-width:760px;
+  }
+
+  .site-shell{
+    width:min(max(var(--site-width),1320px),calc(100% - 72px));
+  }
+
+  .home-hero__copy{
+    max-width:760px;
+  }
+
+  .home-hero__copy>p{
+    max-width:680px;
+  }
+}
+
+/* =========================
+   DIÁLOGOS Y POP-UPS
+   ========================= */
+
+.dialog{
+  width:min(920px,calc(100vw - 32px));
+  max-width:none;
+  max-height:calc(100dvh - 24px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  padding:clamp(24px,3vw,40px);
+}
+
+.auth-dialog{
+  width:min(860px,calc(100vw - 32px));
+}
+
+.account-dialog{
+  width:min(940px,calc(100vw - 32px));
+}
+
+.dashboard-detail-dialog{
+  width:min(1120px,calc(100vw - 32px));
+}
+
+#resourcePreviewDialog,
+#ideaDetailDialog,
+#storyDialog,
+#libraryDialog{
+  width:min(1040px,calc(100vw - 32px));
+}
+
+#searchDialog{
+  width:min(820px,calc(100vw - 32px));
+}
+
+.dialog,
+.dialog *,
+.admin-panel,
+.admin-panel *{
+  min-width:0;
+}
+
+.dialog h2{
+  font-size:clamp(1.65rem,2.5vw,2.25rem);
+}
+
+.dialog-note,
+.dialog-form label,
+.dialog-form small,
+.auth-status,
+.account-diagnostic{
+  line-height:1.55;
+}
+
+.dialog-form input,
+.dialog-form select,
+.dialog-form textarea,
+.admin-form input,
+.admin-form select,
+.admin-form textarea{
+  min-height:44px;
+  font-size:max(.62rem,12px);
+}
+
+.dialog-form textarea,
+.admin-form textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+.resource-preview,
+.idea-detail{
+  grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);
+  align-items:start;
+}
+
+.resource-preview__icon{
+  min-height:280px;
+}
+
+.account-profile-form{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.account-profile-form>label:first-child,
+.account-profile-form>.button{
+  grid-column:1 / -1;
+}
+
+.account-actions{
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+}
+
+.account-status-grid{
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+}
+
+.auth-two-columns{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+/* Panel administrativo histórico */
+.admin-panel{
+  width:min(1580px,calc(100vw - 22px));
+  height:min(940px,calc(100dvh - 18px));
+  max-width:none;
+  max-height:none;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.admin-panel__layout{
+  grid-template-columns:clamp(220px,17vw,280px) minmax(0,1fr);
+}
+
+.admin-main{
+  min-width:0;
+  overflow:auto;
+}
+
+/* =========================
+   INSPECTOR DE EDICIÓN
+   ========================= */
+
+.inline-admin-inspector{
+  width:var(--admin-inspector-width);
+  max-width:calc(100vw - 18px);
+}
+
+.inline-inspector-content{
+  container-type:inline-size;
+  padding:clamp(18px,2vw,28px);
+  scrollbar-gutter:stable;
+}
+
+.admin-inspector-open main{
+  margin-right:var(--admin-inspector-width);
+}
+
+.inline-inspector-head{
+  min-height:76px;
+  padding:16px 20px;
+}
+
+.inline-inspector-head strong{
+  font-size:.82rem;
+}
+
+.inline-inspector-head small{
+  font-size:.53rem;
+}
+
+/* Formularios del inspector con columnas flexibles */
+.inline-inspector-form{
+  gap:15px;
+}
+
+.inline-two-columns{
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:11px;
+}
+
+.inline-inspector-form input,
+.inline-inspector-form select,
+.inline-inspector-form textarea{
+  min-height:42px;
+  font-size:max(.58rem,12px);
+}
+
+.inline-inspector-form textarea{
+  min-height:120px;
+}
+
+/* =========================
+   GESTIÓN DE USUARIOS
+   ========================= */
+
+.users-admin-summary{
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;
+}
+
+.users-admin-summary>div{
+  min-height:92px;
+  align-content:center;
+}
+
+.users-admin-list{
+  gap:14px;
+}
+
+.user-admin-card{
+  gap:14px;
+  padding:18px;
+}
+
+.user-admin-card__head{
+  grid-template-columns:48px minmax(0,1fr) auto;
+  gap:12px;
+}
+
+.user-admin-avatar{
+  width:48px;
+  height:48px;
+}
+
+.user-admin-card__head strong{
+  font-size:.69rem;
+}
+
+.user-admin-card__head small{
+  font-size:.52rem;
+}
+
+.user-admin-meta{
+  gap:7px;
+}
+
+.user-admin-meta span{
+  font-size:.48rem;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+
+.user-admin-controls{
+  /*
+   * auto-fit permite que los controles bajen de fila en el momento
+   * exacto en que dejan de caber, sin depender del ancho de la ventana.
+   */
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  align-items:end;
+  gap:11px;
+}
+
+.user-admin-controls label,
+.user-admin-controls select,
+.user-admin-controls button{
+  width:100%;
+}
+
+.user-admin-controls button{
+  min-height:42px;
+  white-space:normal;
+}
+
+.user-active-control{
+  min-height:42px;
+}
+
+.users-search-field input{
+  min-height:44px;
+  font-size:max(.6rem,12px);
+}
+
+/* Tablas y paneles dentro de pop-ups */
+.dialog .responsive-table,
+.inline-inspector-content .responsive-table{
+  max-width:100%;
+  overflow:auto;
+  scrollbar-gutter:stable;
+}
+
+.dialog table,
+.inline-inspector-content table{
+  max-width:100%;
+}
+
+.dialog p,
+.dialog strong,
+.dialog small,
+.dialog label,
+.inline-admin-inspector p,
+.inline-admin-inspector strong,
+.inline-admin-inspector small,
+.inline-admin-inspector label{
+  overflow-wrap:anywhere;
+}
+
+/* =========================
+   TRANSICIÓN A PORTÁTIL
+   ========================= */
+
+@media (max-width:1180px){
+  :root{
+    --admin-inspector-width:min(720px,94vw);
+  }
+
+  .admin-inspector-open main{
+    margin-right:0;
+  }
+
+  .inline-admin-inspector{
+    width:var(--admin-inspector-width);
+    box-shadow:-22px 0 55px rgba(5,35,82,.22);
+  }
+
+  .admin-panel__layout{
+    grid-template-columns:210px minmax(0,1fr);
+  }
+}
+
+/* Portátil pequeño por altura: ventanas más útiles y menos espacio muerto */
+@media (min-width:700px) and (max-height:790px){
+  .dialog{
+    width:min(980px,calc(100vw - 22px));
+    max-height:calc(100dvh - 12px);
+    padding:20px 26px;
+  }
+
+  .auth-dialog{
+    width:min(900px,calc(100vw - 22px));
+  }
+
+  .account-dialog{
+    width:min(980px,calc(100vw - 22px));
+  }
+
+  .dialog h2{
+    margin-block:.25em .45em;
+  }
+
+  .dialog-note{
+    margin-block:8px 12px;
+  }
+
+  .auth-view-tabs{
+    margin-block:10px;
+  }
+
+  .account-header{
+    margin-bottom:11px;
+  }
+
+  .account-status-grid{
+    margin-bottom:10px;
+  }
+
+  .account-actions{
+    margin-top:10px;
+  }
+
+  .inline-admin-inspector{
+    top:var(--header-total-height);
+    height:calc(100dvh - var(--header-total-height));
+  }
+
+  .inline-inspector-head{
+    min-height:62px;
+    padding-block:11px;
+  }
+
+  .inline-inspector-content{
+    padding-block:14px;
+  }
+
+  .user-admin-card{
+    padding:14px;
+  }
+}
+
+/* =========================
+   TABLET Y MÓVIL
+   ========================= */
+
+@media (max-width:820px){
+  .dialog,
+  .auth-dialog,
+  .account-dialog,
+  .dashboard-detail-dialog,
+  #resourcePreviewDialog,
+  #ideaDetailDialog,
+  #storyDialog,
+  #libraryDialog,
+  #searchDialog{
+    width:calc(100vw - 18px);
+    max-height:calc(100dvh - 12px);
+    padding:22px;
+    border-radius:14px;
+  }
+
+  .resource-preview,
+  .idea-detail{
+    grid-template-columns:1fr;
+  }
+
+  .resource-preview__icon{
+    min-height:210px;
+  }
+
+  .account-profile-form,
+  .auth-two-columns{
+    grid-template-columns:1fr;
+  }
+
+  .account-profile-form>label:first-child,
+  .account-profile-form>.button{
+    grid-column:auto;
+  }
+
+  .admin-panel{
+    width:calc(100vw - 10px);
+    height:calc(100dvh - 10px);
+  }
+
+  .admin-panel__layout{
+    grid-template-columns:1fr;
+  }
+
+  .admin-sidebar{
+    max-height:210px;
+    overflow:auto;
+  }
+
+  .inline-admin-inspector{
+    width:min(100vw,720px);
+    max-width:100vw;
+  }
+
+  .user-admin-card__head{
+    grid-template-columns:48px minmax(0,1fr);
+  }
+
+  .current-user-badge{
+    grid-column:1 / -1;
+    width:max-content;
+  }
+}
+
+@media (max-width:560px){
+  :root{
+    --viewport-font-factor:.98;
+  }
+
+  .dialog,
+  .auth-dialog,
+  .account-dialog{
+    width:100vw;
+    max-height:100dvh;
+    margin:0;
+    padding:20px 16px 24px;
+    border-radius:0;
+  }
+
+  .dialog-close{
+    right:8px;
+    top:7px;
+  }
+
+  .account-header{
+    align-items:flex-start;
+  }
+
+  .account-avatar{
+    width:52px;
+    height:52px;
+    flex-basis:52px;
+    border-radius:14px;
+  }
+
+  .account-status-grid,
+  .account-actions,
+  .users-admin-summary{
+    grid-template-columns:1fr;
+  }
+
+  .user-admin-controls{
+    grid-template-columns:1fr;
+  }
+
+  .inline-admin-inspector{
+    top:var(--header-total-height);
+    height:calc(100dvh - var(--header-total-height));
+  }
+
+  .inline-inspector-content{
+    padding:16px;
+  }
+}
+
+/* Contenedor estrecho real, incluso dentro del inspector lateral */
+@container (max-width:620px){
+  .user-admin-controls{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .user-admin-controls>button{
+    grid-column:1 / -1;
+  }
+
+  .inline-two-columns{
+    grid-template-columns:1fr;
+  }
+}
+
+@container (max-width:430px){
+  .user-admin-controls{
+    grid-template-columns:1fr;
+  }
+
+  .user-admin-controls>button{
+    grid-column:auto;
+  }
+
+  .users-admin-summary{
+    grid-template-columns:1fr;
+  }
+}
