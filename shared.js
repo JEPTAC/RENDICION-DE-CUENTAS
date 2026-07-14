@@ -1196,7 +1196,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=9.3-drive-visible";
+    script.src = "firebase-service.js?v=9.4-drive-firestore";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1207,7 +1207,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=9.3-drive-visible";
+    script.src = "inline-admin.js?v=9.4-drive-firestore";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -1670,7 +1670,18 @@
     document.querySelectorAll(".reveal").forEach(item => observer.observe(item));
   }
 
+  function refreshStylesheetVersion() {
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+      const href = link.getAttribute("href") || "";
+      if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
+      const base = href.split("?")[0];
+      const versioned = `${base}?v=9.4-drive-firestore`;
+      if (href !== versioned) link.setAttribute("href",versioned);
+    });
+  }
+
   function init() {
+    refreshStylesheetVersion();
     applySettings();
     renderHeader();
     renderFooter();

@@ -3354,3 +3354,438 @@ html{
     grid-template-columns:1fr;
   }
 }
+
+
+/* V9.4 — Google Drive amplio y Firestore estable */
+
+/* Sustituye el panel estrecho por una ventana administrativa amplia */
+.drive-admin-drawer[open] .drive-admin-panel{
+  top:calc(var(--header-total-height) + 14px)!important;
+  right:auto!important;
+  left:50%!important;
+  width:min(940px,calc(100vw - 46px))!important;
+  max-height:calc(100dvh - var(--header-total-height) - 28px)!important;
+  display:flex!important;
+  flex-direction:column;
+  gap:0!important;
+  overflow:hidden!important;
+  padding:0!important;
+  border:1px solid rgba(11,79,179,.15)!important;
+  border-radius:22px!important;
+  background:#f7f9fc!important;
+  box-shadow:0 34px 90px rgba(3,27,66,.28)!important;
+  transform:translateX(-50%)!important;
+  animation:drive-modal-enter 240ms cubic-bezier(.2,.75,.25,1)!important;
+}
+
+/* Se elimina el desenfoque que hacía ilegible la página */
+.drive-panel-open::before{
+  background:rgba(5,24,54,.10)!important;
+  backdrop-filter:none!important;
+}
+
+@keyframes drive-modal-enter{
+  from{
+    opacity:0;
+    transform:translate(-50%,-10px) scale(.985);
+  }
+  to{
+    opacity:1;
+    transform:translate(-50%,0) scale(1);
+  }
+}
+
+.drive-panel-heading{
+  position:sticky;
+  top:0;
+  z-index:5;
+  min-height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:16px 22px;
+  border-bottom:1px solid #dce5f0;
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(12px);
+}
+
+.drive-panel-title{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+
+.drive-panel-title>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+
+.drive-panel-title strong{
+  color:var(--ink);
+  font-size:.82rem;
+}
+
+.drive-panel-title small{
+  color:var(--muted);
+  font-size:.52rem;
+}
+
+.drive-panel-logo{
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  flex:0 0 44px;
+  border-radius:14px;
+  background:linear-gradient(145deg,#1a73e8,#34a853);
+  color:#fff;
+  font-size:1rem;
+  transform:rotate(180deg);
+  box-shadow:0 10px 24px rgba(26,115,232,.18);
+}
+
+.drive-close-button{
+  width:40px;
+  height:40px;
+  flex:0 0 40px;
+  font-size:1.1rem;
+}
+
+.drive-panel-body{
+  min-height:0;
+  flex:1;
+  display:grid;
+  gap:16px;
+  overflow:auto;
+  padding:22px;
+  scrollbar-gutter:stable;
+}
+
+.drive-connection-card{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:20px;
+  padding:18px;
+  border:1px solid #cfe2d7;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f2fbf5,#fff);
+}
+
+.drive-connection-copy{
+  min-width:0;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+}
+
+.drive-connection-copy>div{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+
+.drive-connection-copy strong{
+  color:#195d3a;
+  font-size:.7rem;
+}
+
+.drive-connection-copy small{
+  color:#527064;
+  font-size:.53rem;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+
+.drive-main-connect{
+  min-height:46px;
+  border:0;
+  border-radius:11px;
+  background:linear-gradient(135deg,#1a73e8,#0b57d0);
+  color:#fff;
+  padding:11px 18px;
+  font-size:.58rem;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 9px 22px rgba(26,115,232,.22);
+  transition:transform 170ms ease,box-shadow 170ms ease;
+}
+
+.drive-main-connect:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(26,115,232,.28);
+}
+
+.drive-panel-section,
+.drive-advanced-settings{
+  border:1px solid #dce5f0;
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden;
+}
+
+.drive-panel-section{
+  padding:18px;
+}
+
+.drive-section-heading>div,
+.drive-advanced-settings>summary{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+}
+
+.drive-section-heading span,
+.drive-advanced-settings>summary>span{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#eaf2fd;
+  color:var(--primary);
+  font-size:.48rem;
+  font-weight:800;
+}
+
+.drive-section-heading strong,
+.drive-advanced-settings>summary strong{
+  display:block;
+  color:var(--ink);
+  font-size:.65rem;
+}
+
+.drive-section-heading small,
+.drive-advanced-settings>summary small{
+  display:block;
+  margin-top:2px;
+  color:var(--muted);
+  font-size:.49rem;
+  line-height:1.4;
+}
+
+.drive-folder-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+  margin-top:16px;
+}
+
+.drive-folder-grid label,
+.drive-fields-grid label{
+  display:grid;
+  gap:6px;
+  min-width:0;
+  color:var(--muted);
+  font-size:.54rem;
+  font-weight:700;
+}
+
+.drive-folder-grid input,
+.drive-fields-grid input{
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  border:1px solid #cdd9e8;
+  border-radius:10px;
+  background:#fbfcfe;
+  color:var(--ink);
+  padding:9px 11px;
+  font-size:max(.57rem,12px);
+}
+
+.drive-folder-grid input:focus,
+.drive-fields-grid input:focus{
+  border-color:var(--primary);
+  outline:3px solid rgba(11,79,179,.10);
+}
+
+.drive-folder-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  margin-top:12px;
+}
+
+.drive-secondary-action{
+  min-height:42px;
+  border:1px solid #cbd8e8;
+  border-radius:10px;
+  background:#f5f8fc;
+  color:var(--primary);
+  padding:9px 11px;
+  font-size:.54rem;
+  font-weight:750;
+  cursor:pointer;
+}
+
+.drive-secondary-action:hover:not(:disabled){
+  border-color:var(--primary);
+  background:#edf4fd;
+}
+
+.drive-secondary-action:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.drive-advanced-settings>summary{
+  min-height:68px;
+  padding:14px 18px;
+  list-style:none;
+  cursor:pointer;
+}
+
+.drive-advanced-settings>summary::-webkit-details-marker{
+  display:none;
+}
+
+.drive-advanced-settings>summary>b{
+  color:var(--primary);
+  font-size:.85rem;
+  transition:transform 180ms ease;
+}
+
+.drive-advanced-settings[open]>summary>b{
+  transform:rotate(45deg);
+}
+
+.drive-fields-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  padding:0 18px 18px;
+  border-top:1px solid #edf1f6;
+}
+
+.drive-fields-grid>label{
+  margin-top:16px;
+}
+
+.drive-field-wide{
+  grid-column:1 / -1;
+}
+
+.drive-public-check{
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-content:center;
+  align-items:center!important;
+  min-height:44px;
+  margin-top:16px!important;
+  padding:10px 12px!important;
+  border:1px solid #d6e1ed;
+  background:#f8fafc!important;
+}
+
+.drive-public-check input{
+  width:auto!important;
+  min-height:auto!important;
+}
+
+.drive-public-check span{
+  color:#43546a;
+  line-height:1.4;
+}
+
+.drive-panel-footer{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:16px;
+}
+
+.drive-panel-note{
+  margin:0!important;
+  padding:12px 14px!important;
+  border:1px solid #dbe6f3!important;
+  border-left:4px solid #34a853!important;
+  border-radius:11px!important;
+  background:#f7fbf8!important;
+  color:#536276!important;
+  font-size:.5rem!important;
+  line-height:1.5;
+}
+
+.drive-panel-note strong{
+  color:#244734;
+}
+
+.drive-disconnect-button{
+  min-height:42px;
+  border:1px solid #e0c6cb;
+  border-radius:10px;
+  background:#fff7f8;
+  color:#a63548;
+  padding:9px 13px;
+  font-size:.52rem;
+  font-weight:750;
+  cursor:pointer;
+}
+
+@media(max-width:760px){
+  .drive-admin-drawer[open] .drive-admin-panel{
+    top:var(--header-total-height)!important;
+    width:100vw!important;
+    max-height:calc(100dvh - var(--header-total-height))!important;
+    border-radius:0!important;
+  }
+
+  .drive-panel-heading,
+  .drive-panel-body{
+    padding-inline:16px;
+  }
+
+  .drive-connection-card{
+    grid-template-columns:1fr;
+  }
+
+  .drive-main-connect{
+    width:100%;
+  }
+
+  .drive-folder-grid,
+  .drive-fields-grid,
+  .drive-folder-actions,
+  .drive-panel-footer{
+    grid-template-columns:1fr;
+  }
+
+  .drive-field-wide{
+    grid-column:auto;
+  }
+
+  .drive-disconnect-button{
+    width:100%;
+  }
+}
+
+@media(min-width:900px) and (max-height:790px){
+  .drive-admin-drawer[open] .drive-admin-panel{
+    top:calc(var(--header-total-height) + 8px)!important;
+    max-height:calc(100dvh - var(--header-total-height) - 16px)!important;
+  }
+
+  .drive-panel-heading{
+    min-height:66px;
+    padding-block:11px;
+  }
+
+  .drive-panel-body{
+    gap:12px;
+    padding:15px 18px 18px;
+  }
+
+  .drive-connection-card,
+  .drive-panel-section{
+    padding:14px;
+  }
+
+  .drive-advanced-settings>summary{
+    min-height:58px;
+  }
+}

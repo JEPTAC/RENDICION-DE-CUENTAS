@@ -143,7 +143,24 @@
         runtime.modules = await loadModules();
         runtime.app = runtime.modules.app.initializeApp(firebaseConfig);
         runtime.auth = runtime.modules.auth.getAuth(runtime.app);
-        runtime.db = runtime.modules.firestore.getFirestore(runtime.app);
+
+        /*
+         * Algunas redes, antivirus y proxies reinician los canales
+         * WebChannel de Firestore. Se fuerza únicamente long polling.
+         * No se combina con experimentalAutoDetectLongPolling.
+         */
+        runtime.db = runtime.modules.firestore.initializeFirestore(
+          runtime.app,
+          {
+            experimentalForceLongPolling:true,
+            experimentalLongPollingOptions:{
+              timeoutSeconds:20
+            },
+            ignoreUndefinedProperties:true
+          }
+        );
+
+        runtime.transport = "forced-long-polling";
         runtime.auth.languageCode = "es";
 
         await runtime.modules.auth.setPersistence(
@@ -762,15 +779,28 @@
     return window.DrivePortal.uploadDataUrl(dataUrl,path,options);
   }
 
-  window.addEventListener("online",() => {
+  window.addEventListener("online",async () => {
     runtime.connected = true;
-    emit("firebase:connection",{connected:true});
+
+    if (runtime.db && runtime.modules?.firestore?.enableNetwork) {
+      await runtime.modules.firestore.enableNetwork(runtime.db).catch(error => {
+        console.warn("[Firebase] No fue posible reactivar la red.",error);
+      });
+    }
+
+    emit("firebase:connection",{
+      connected:true,
+      transport:runtime.transport || "default"
+    });
     hydrateFromCloud();
   });
 
   window.addEventListener("offline",() => {
     runtime.connected = false;
-    emit("firebase:connection",{connected:false});
+    emit("firebase:connection",{
+      connected:false,
+      transport:runtime.transport || "default"
+    });
   });
 
   window.FirebasePortal = {
