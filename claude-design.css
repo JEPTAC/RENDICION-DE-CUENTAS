@@ -3520,3 +3520,168 @@ body.hero-layout-wide.claude-page-home .home-section > .admin-section-edit-butto
 .claude-page-home .editorial-feature a.button *{
   color:#123e7a !important;
 }
+
+
+/* =========================================================
+   V10.37 · Bloque de suscripción con tipografía blanca
+   ========================================================= */
+.claude-page-news .news-subscription-section,
+.claude-page-news .news-subscription-section h1,
+.claude-page-news .news-subscription-section h2,
+.claude-page-news .news-subscription-section h3,
+.claude-page-news .news-subscription-section p,
+.claude-page-news .news-subscription-section small,
+.claude-page-news .news-subscription-section .section-kicker,
+.claude-page-news .news-subscription-section .section-label,
+.claude-page-news .news-subscription-section .eyebrow,
+.claude-page-news .news-subscription-section .subscription-copy,
+.claude-page-news .news-subscription-section .subscription-copy *{
+  color:rgba(255,255,255,.98) !important;
+}
+
+/* Mantener legibilidad dentro del campo de correo */
+.claude-page-news .news-subscription-section input,
+.claude-page-news .news-subscription-section textarea,
+.claude-page-news .news-subscription-section select{
+  color:#1f3558 !important;
+}
+
+.claude-page-news .news-subscription-section input::placeholder,
+.claude-page-news .news-subscription-section textarea::placeholder{
+  color:rgba(31,53,88,.70) !important;
+}
+
+
+/* =========================================================
+   V10.38 · Texto blanco en todos los módulos con fondo azul
+   ========================================================= */
+
+/* Módulos/paneles oscuros o azules que deben llevar tipografía clara */
+.claude-page-home .editorial-feature,
+.claude-page-home .editorial-feature > div,
+.claude-page-news .news-subscription-section,
+.claude-page-news .news-subscription-section > div,
+.claude-page-home .hero-banner-panel,
+.claude-page-home .hero-banner-panel > div,
+.claude-page-home .home-panel--dark,
+.claude-page-home .home-panel--dark > div,
+.claude-page-home .module-panel--dark,
+.claude-page-home .module-panel--dark > div{
+  color:#ffffff !important;
+}
+
+.claude-page-home .editorial-feature :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,li,a:not(.button),label),
+.claude-page-news .news-subscription-section :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,li,a:not(.button),label),
+.claude-page-home .hero-banner-panel :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,li,a:not(.button),label),
+.claude-page-home .home-panel--dark :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,li,a:not(.button),label),
+.claude-page-home .module-panel--dark :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,li,a:not(.button),label){
+  color:#ffffff !important;
+}
+
+/* Copys secundarios levemente suaves, pero siempre blancos */
+.claude-page-home .editorial-feature p,
+.claude-page-home .editorial-feature small,
+.claude-page-news .news-subscription-section p,
+.claude-page-news .news-subscription-section small,
+.claude-page-home .hero-banner-panel p,
+.claude-page-home .hero-banner-panel small,
+.claude-page-home .home-panel--dark p,
+.claude-page-home .home-panel--dark small,
+.claude-page-home .module-panel--dark p,
+.claude-page-home .module-panel--dark small{
+  color:rgba(255,255,255,.92) !important;
+}
+
+/* Etiquetas/acento dentro de paneles azules */
+.claude-page-home .editorial-feature .section-kicker,
+.claude-page-home .editorial-feature .section-label,
+.claude-page-news .news-subscription-section .section-kicker,
+.claude-page-news .news-subscription-section .section-label,
+.claude-page-home .hero-banner-panel .section-kicker,
+.claude-page-home .hero-banner-panel .section-label,
+.claude-page-home .home-panel--dark .section-kicker,
+.claude-page-home .module-panel--dark .section-kicker{
+  color:#ffffff !important;
+  opacity:.96;
+}
+
+/* Preservar legibilidad en campos y botones claros */
+.claude-page-news .news-subscription-section input,
+.claude-page-news .news-subscription-section textarea,
+.claude-page-news .news-subscription-section select{
+  color:#1f3558 !important;
+}
+
+.claude-page-news .news-subscription-section input::placeholder,
+.claude-page-news .news-subscription-section textarea::placeholder{
+  color:rgba(31,53,88,.72) !important;
+}
+
+.claude-page-home .editorial-feature .button,
+.claude-page-home .editorial-feature a.button,
+.claude-page-news .news-subscription-section .button,
+.claude-page-news .news-subscription-section a.button{
+  /* no forzar blanco en botones con fondo claro o primario */
+  text-shadow:none !important;
+}
+
+
+/* =========================================================
+   V10.39 · Corrección real de módulos de suscripción
+   Selectores verificados: .newsletter-bar / .newsletter-box
+   ========================================================= */
+
+/* Inicio y páginas de vigencia */
+.claude-studio .newsletter-bar,
+.claude-studio .newsletter-box,
+.claude-studio .newsletter-box > div{
+  color:#ffffff !important;
+}
+
+.claude-studio .newsletter-box :is(
+  h1,h2,h3,h4,h5,h6,p,b,strong,small,span,label,
+  .section-kicker,.section-label,.eyebrow
+){
+  color:#ffffff !important;
+}
+
+.claude-studio .newsletter-box p,
+.claude-studio .newsletter-box small{
+  color:rgba(255,255,255,.92) !important;
+}
+
+/* Noticias: mismo comportamiento */
+.claude-page-news .news-subscription-section,
+.claude-page-news .news-subscription-section > div,
+.claude-page-news .news-subscription-section :is(
+  h1,h2,h3,h4,h5,h6,p,b,strong,small,span,label,
+  .section-kicker,.section-label,.eyebrow,.subscription-copy
+){
+  color:#ffffff !important;
+}
+
+/* El botón azul debe conservar texto blanco */
+.claude-studio .newsletter-box .button-primary,
+.claude-studio .newsletter-box .button-primary *,
+.claude-page-news .news-subscription-section .button-primary,
+.claude-page-news .news-subscription-section .button-primary *{
+  color:#ffffff !important;
+}
+
+/* El campo de correo conserva fondo claro y texto oscuro */
+.claude-studio .newsletter-box input,
+.claude-studio .newsletter-box textarea,
+.claude-studio .newsletter-box select,
+.claude-page-news .news-subscription-section input,
+.claude-page-news .news-subscription-section textarea,
+.claude-page-news .news-subscription-section select{
+  color:#1f3558 !important;
+  background:#ffffff !important;
+}
+
+.claude-studio .newsletter-box input::placeholder,
+.claude-studio .newsletter-box textarea::placeholder,
+.claude-page-news .news-subscription-section input::placeholder,
+.claude-page-news .news-subscription-section textarea::placeholder{
+  color:rgba(31,53,88,.72) !important;
+}
