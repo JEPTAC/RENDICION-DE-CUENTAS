@@ -38,7 +38,8 @@
     scope:null,
     key:null,
     observer:null,
-    refreshTimer:null
+    refreshTimer:null,
+    refreshIdle:null
   };
 
   const portal = () => window.Portal;
@@ -474,19 +475,48 @@
   }
 
   function suppressLegacyAdmin() {
-    document.querySelectorAll(
+    const selector =
       "#inlineAdminToolbar,.inline-admin-toolbar,.admin-console-shell," +
-      ".inline-admin-inspector,.inline-inspector,#inlineConsoleBackdrop"
-    ).forEach(node => node.remove());
-    document.body.classList.remove("admin-inline-active","admin-inspector-open","admin-console-open","admin-explicit-open");
+      ".inline-admin-inspector,.inline-inspector,#inlineConsoleBackdrop";
+
+    if (document.querySelector(selector)) {
+      document.querySelectorAll(selector).forEach(node => node.remove());
+    }
+
+    if (
+      document.body.classList.contains("admin-inline-active") ||
+      document.body.classList.contains("admin-inspector-open") ||
+      document.body.classList.contains("admin-console-open") ||
+      document.body.classList.contains("admin-explicit-open")
+    ) {
+      document.body.classList.remove(
+        "admin-inline-active",
+        "admin-inspector-open",
+        "admin-console-open",
+        "admin-explicit-open"
+      );
+    }
   }
 
   function scheduleSync() {
     clearTimeout(state.refreshTimer);
-    state.refreshTimer = setTimeout(() => {
+    if (state.refreshIdle && "cancelIdleCallback" in window) {
+      cancelIdleCallback(state.refreshIdle);
+      state.refreshIdle = null;
+    }
+
+    const run = () => {
+      state.refreshTimer = null;
+      state.refreshIdle = null;
       suppressLegacyAdmin();
       decorate();
-    },80);
+    };
+
+    if ("requestIdleCallback" in window) {
+      state.refreshIdle = requestIdleCallback(run,{timeout:260});
+    } else {
+      state.refreshTimer = setTimeout(run,140);
+    }
   }
 
   function sync() {
@@ -515,12 +545,24 @@
     window.addEventListener("portal:datachange",scheduleSync);
     window.addEventListener("pageshow",scheduleSync);
 
+    const ignoredSelector = [
+      ".admin-section-edit-button",
+      ".admin-quick-card-edit",
+      ".context-editor",
+      ".cd-ambient",
+      ".cd-section-rail",
+      ".bs-hero-atmosphere",
+      ".cd-cursor-glow"
+    ].join(",");
+
     state.observer = new MutationObserver(mutations => {
       const relevant = mutations.some(mutation =>
-        [...mutation.addedNodes].some(node =>
-          node instanceof Element &&
-          !node.matches(".admin-section-edit-button,.admin-quick-card-edit,.context-editor,.cd-ambient,.cd-section-rail")
-        )
+        [...mutation.addedNodes].some(node => {
+          if (!(node instanceof Element)) return false;
+          if (node.matches(ignoredSelector)) return false;
+          if (node.closest(ignoredSelector)) return false;
+          return true;
+        })
       );
       if (relevant) scheduleSync();
     });

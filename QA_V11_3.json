@@ -1,0 +1,51 @@
+{
+  "version": "11.3",
+  "name": "Cinematic Motion",
+  "replace_files": [
+    "shared.js",
+    "claude-design.js",
+    "claude-design.css",
+    "admin-popup.js"
+  ],
+  "new_files": [
+    "motion-studio.js"
+  ],
+  "initial_render_fixes": [
+    "claude-design.css se solicita antes de DOMContentLoaded.",
+    "Se eliminó la recarga en caliente de styles.css.",
+    "Se añadió una cubierta visual breve hasta que CSS, DOM y Studio estén listos.",
+    "Las clases de página se aplican tan pronto existe body.",
+    "Se eliminó el segundo observador heredado de revelación de secciones."
+  ],
+  "animations": [
+    "Profundidad ambiental reactiva al cursor y al desplazamiento.",
+    "Revelado con máscara, desenfoque y desplazamiento.",
+    "Entrada cinematográfica del título y banner.",
+    "Movimiento lento de imagen estilo campaña.",
+    "Profundidad reactiva de portadas y medios.",
+    "Botones magnéticos con barrido luminoso.",
+    "Pulso ligero al pulsar controles.",
+    "Líneas progresivas en encabezados de sección.",
+    "Transiciones nativas entre páginas cuando el navegador las soporta."
+  ],
+  "optimization": [
+    "Sin librerías externas.",
+    "Sin WebGL ni Three.js en esta fase.",
+    "requestAnimationFrame para puntero y scroll.",
+    "IntersectionObserver para activar escenas cercanas.",
+    "Animaciones pausadas fuera de pantalla.",
+    "Versión reducida para dispositivos táctiles.",
+    "Respeto de prefers-reduced-motion."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK"
+    },
+    "css_braces": "612/612",
+    "styles_runtime_reload": "eliminada",
+    "motion_library_dependencies": 0
+  }
+}

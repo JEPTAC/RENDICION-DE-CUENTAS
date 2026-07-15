@@ -17,11 +17,23 @@
     mutationObserver:null,
     sectionObserver:null,
     railObserver:null,
-    refreshTimer:null
+    ambientObserver:null,
+    refreshTimer:null,
+    refreshIdle:null,
+    railSignature:"",
+    cursorFrame:0,
+    cardRects:new WeakMap()
   };
 
-  const prefersReducedMotion = () =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotionQuery = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+  const finePointerQuery = window.matchMedia(
+    "(hover:hover) and (pointer:fine)"
+  );
+
+  const prefersReducedMotion = () => reducedMotionQuery.matches;
+  const supportsFinePointer = () => finePointerQuery.matches;
 
   function pageName() {
     const filename = (location.pathname.split("/").pop() || "").toLowerCase();
@@ -195,29 +207,50 @@
     const index = Math.max(siblings.indexOf(card),0);
     card.style.setProperty("--cd-order", String(index));
 
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || !supportsFinePointer()) return;
 
-    let frame = null;
+    let frame = 0;
+    let latestEvent = null;
 
-    card.addEventListener("pointermove", event => {
+    const cacheRect = () => {
+      state.cardRects.set(card,card.getBoundingClientRect());
+    };
+
+    card.addEventListener("pointerenter",cacheRect,{passive:true});
+
+    card.addEventListener("pointermove",event => {
       if (event.pointerType === "touch") return;
-      const rect = card.getBoundingClientRect();
-      const x = Math.max(0,Math.min(1,(event.clientX - rect.left) / rect.width));
-      const y = Math.max(0,Math.min(1,(event.clientY - rect.top) / rect.height));
+      latestEvent = event;
+      if (frame) return;
 
-      cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        card.style.setProperty("--cd-x", `${(x * 100).toFixed(2)}%`);
-        card.style.setProperty("--cd-y", `${(y * 100).toFixed(2)}%`);
-        card.style.setProperty("--cd-rx", `${((.5 - y) * 1.8).toFixed(2)}deg`);
-        card.style.setProperty("--cd-ry", `${((x - .5) * 2.5).toFixed(2)}deg`);
-      });
-    }, {passive:true});
+        frame = 0;
+        const rect = state.cardRects.get(card)
+          || card.getBoundingClientRect();
+        const x = Math.max(
+          0,
+          Math.min(1,(latestEvent.clientX - rect.left) / rect.width)
+        );
+        const y = Math.max(
+          0,
+          Math.min(1,(latestEvent.clientY - rect.top) / rect.height)
+        );
 
-    card.addEventListener("pointerleave", () => {
-      card.style.setProperty("--cd-rx", "0deg");
-      card.style.setProperty("--cd-ry", "0deg");
-    }, {passive:true});
+        card.style.setProperty("--cd-x",`${(x * 100).toFixed(1)}%`);
+        card.style.setProperty("--cd-y",`${(y * 100).toFixed(1)}%`);
+        card.style.setProperty("--cd-rx",`${((.5 - y) * 1.8).toFixed(2)}deg`);
+        card.style.setProperty("--cd-ry",`${((x - .5) * 2.5).toFixed(2)}deg`);
+      });
+    },{passive:true});
+
+    card.addEventListener("pointerleave",() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      latestEvent = null;
+      state.cardRects.delete(card);
+      card.style.setProperty("--cd-rx","0deg");
+      card.style.setProperty("--cd-ry","0deg");
+    },{passive:true});
   }
 
   function directChildrenMatching(parent, selector) {
@@ -292,12 +325,37 @@
     });
   }
 
+  function setupAmbientVisibility(sections) {
+    if (!("IntersectionObserver" in window)) return;
+
+    if (!state.ambientObserver) {
+      state.ambientObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          entry.target.classList.toggle(
+            "cd-ambient-offscreen",
+            !entry.isIntersecting
+          );
+        });
+      },{
+        threshold:0,
+        rootMargin:"180px 0px 180px 0px"
+      });
+    }
+
+    sections.forEach(section => {
+      if (section.dataset.cdAmbientObserved === "1") return;
+      section.dataset.cdAmbientObserved = "1";
+      state.ambientObserver.observe(section);
+    });
+  }
+
   function buildRail(sections) {
     const visibleSections = sections.slice(0,9);
     if (visibleSections.length < 2) {
       document.querySelector(".cd-section-rail")?.remove();
       state.railObserver?.disconnect();
       state.railObserver = null;
+      state.railSignature = "";
       return;
     }
 
@@ -348,7 +406,12 @@
       });
     }
 
+    if (state.railObserver && state.railSignature === signature) {
+      return;
+    }
+
     state.railObserver?.disconnect();
+    state.railSignature = signature;
 
     state.railObserver = new IntersectionObserver(entries => {
       const visible = entries
@@ -376,50 +439,37 @@
   }
 
   function addPageSignature() {
-    const page = pageName();
-    const target = document.querySelector(
-      ".home-hero,.page-hero,.news-page-hero,.ideas-page__head"
-    );
-
-    if (!target || target.querySelector(".cd-page-signature")) return;
-
-    const labels = {
-      home:"Gestión abierta",
-      resources:"Biblioteca pública",
-      news:"Actualidad municipal",
-      ideas:"Participación activa",
-      vigencias:"Archivo institucional",
-      year:"Rendición de Cuentas"
-    };
-
-    const signature = document.createElement("div");
-    signature.className = "cd-page-signature";
-    signature.setAttribute("aria-hidden","true");
-    signature.innerHTML = `
-      <span></span>
-      <strong>${labels[page] || "Portal institucional"}</strong>
-      <i></i>`;
-    target.appendChild(signature);
+    document.querySelector(".cd-page-signature")?.remove();
   }
 
   function addCursorGlow() {
-    if (prefersReducedMotion()) return;
-    if (document.querySelector(".cd-cursor-glow")) return;
+    if (
+      prefersReducedMotion() ||
+      !supportsFinePointer() ||
+      window.innerWidth < 900 ||
+      document.querySelector(".cd-cursor-glow")
+    ) return;
 
     const glow = document.createElement("div");
     glow.className = "cd-cursor-glow";
     glow.setAttribute("aria-hidden","true");
+    glow.style.transform = "translate3d(-500px,-500px,0)";
     document.body.appendChild(glow);
 
-    let frame = null;
-    document.addEventListener("pointermove", event => {
+    let x = -500;
+    let y = -500;
+
+    document.addEventListener("pointermove",event => {
       if (event.pointerType === "touch") return;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        glow.style.setProperty("--cd-pointer-x",`${event.clientX}px`);
-        glow.style.setProperty("--cd-pointer-y",`${event.clientY}px`);
+      x = event.clientX;
+      y = event.clientY;
+      if (state.cursorFrame) return;
+
+      state.cursorFrame = requestAnimationFrame(() => {
+        state.cursorFrame = 0;
+        glow.style.transform = `translate3d(${x}px,${y}px,0)`;
       });
-    }, {passive:true});
+    },{passive:true});
   }
 
 
@@ -455,12 +505,28 @@
     decorateCards();
     normalizeAdminControls();
     setupReveal();
+    setupAmbientVisibility(sections);
     buildRail(sections);
   }
 
   function scheduleRefresh() {
     clearTimeout(state.refreshTimer);
-    state.refreshTimer = window.setTimeout(refresh,80);
+    if (state.refreshIdle && "cancelIdleCallback" in window) {
+      cancelIdleCallback(state.refreshIdle);
+      state.refreshIdle = null;
+    }
+
+    const run = () => {
+      state.refreshTimer = null;
+      state.refreshIdle = null;
+      refresh();
+    };
+
+    if ("requestIdleCallback" in window) {
+      state.refreshIdle = requestIdleCallback(run,{timeout:240});
+    } else {
+      state.refreshTimer = window.setTimeout(run,120);
+    }
   }
 
   function observeDynamicContent() {
@@ -507,6 +573,20 @@
     addCursorGlow();
     refresh();
     observeDynamicContent();
+
+    document.documentElement.classList.add("claude-studio-ready");
+    window.dispatchEvent(new CustomEvent("portal:studio-ready",{
+      detail:{page:pageName()}
+    }));
+
+    const syncVisibility = () => {
+      document.documentElement.classList.toggle(
+        "portal-page-hidden",
+        document.hidden
+      );
+    };
+    syncVisibility();
+    document.addEventListener("visibilitychange",syncVisibility,{passive:true});
   }
 
   window.ClaudeStudio = {init,refresh};

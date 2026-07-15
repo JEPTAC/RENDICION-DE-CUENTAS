@@ -4216,3 +4216,469 @@ body.admin-popup-enabled .admin-quick-card-edit:hover{
   fill:#123e7a !important;
   stroke:#123e7a !important;
 }
+
+
+/* =========================================================
+   V11.2 · Optimización de rendimiento sin perder calidad visual
+   ========================================================= */
+
+/*
+   Las animaciones continúan con la misma calidad cuando están visibles.
+   Fuera del viewport o con la pestaña oculta se pausan para evitar consumo
+   de CPU/GPU innecesario.
+*/
+.cd-section.cd-ambient-offscreen .cd-ambient__orb,
+.cd-section.cd-ambient-offscreen .cd-ambient__line,
+.cd-section.cd-ambient-offscreen .cd-ambient__ribbon,
+.cd-section.cd-ambient-offscreen .cd-ambient__rings,
+.cd-section.cd-ambient-offscreen .cd-ambient__spark,
+.portal-page-hidden .bs-hero-atmosphere__ribbon,
+.portal-page-hidden .bs-hero-atmosphere__orbit,
+.portal-page-hidden .bs-hero-atmosphere__particles,
+.portal-page-hidden .bs-hero-atmosphere__flare,
+.portal-page-hidden .cd-ambient__orb,
+.portal-page-hidden .cd-ambient__line,
+.portal-page-hidden .cd-ambient__ribbon,
+.portal-page-hidden .cd-ambient__rings,
+.portal-page-hidden .cd-ambient__spark{
+  animation-play-state:paused !important;
+}
+
+/* Solo se reservan capas de composición para elementos realmente visibles. */
+.cd-section:not(.cd-ambient-offscreen) .cd-ambient__orb,
+.cd-section:not(.cd-ambient-offscreen) .cd-ambient__line,
+.cd-section:not(.cd-ambient-offscreen) .cd-ambient__ribbon,
+.cd-section:not(.cd-ambient-offscreen) .cd-ambient__rings,
+.cd-section:not(.cd-ambient-offscreen) .cd-ambient__spark,
+.bs-hero-atmosphere__ribbon,
+.bs-hero-atmosphere__orbit,
+.bs-hero-atmosphere__particles,
+.bs-hero-atmosphere__flare{
+  will-change:transform,opacity;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+}
+
+/* Las tarjetas usan aceleración únicamente durante la interacción. */
+.cd-card{
+  backface-visibility:hidden;
+}
+
+.cd-card:hover,
+.cd-card:focus-within{
+  will-change:transform;
+}
+
+/*
+   Render diferido de secciones inferiores. El tamaño intrínseco evita
+   saltos de página mientras el navegador posterga el pintado.
+*/
+main > .cd-section:not(:first-child),
+.site-main > .cd-section:not(:first-child){
+  content-visibility:auto;
+  contain-intrinsic-size:auto 720px;
+}
+
+/* El progreso de lectura se anima por transform y no por width. */
+.reading-progress{
+  width:100% !important;
+  transform-origin:left center;
+  backface-visibility:hidden;
+}
+
+/* El brillo del cursor se mueve en una capa compuesta independiente. */
+.cd-cursor-glow{
+  left:-130px !important;
+  top:-130px !important;
+  margin:0 !important;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+
+/* Evita repintados innecesarios de capas puramente decorativas. */
+.cd-ambient,
+.bs-hero-atmosphere{
+  contain:paint;
+}
+
+/* El popup administrativo mantiene su calidad, pero limita su área de pintura. */
+.admin-popup-dialog,
+.context-editor{
+  contain:layout paint;
+}
+
+@media (max-width:899px), (hover:none), (pointer:coarse){
+  .cd-cursor-glow{
+    display:none !important;
+  }
+
+  .cd-card{
+    transform:none !important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  main > .cd-section,
+  .site-main > .cd-section{
+    content-visibility:visible;
+    contain-intrinsic-size:none;
+  }
+}
+
+
+/* =========================================================
+   V11.3 · Cinematic Motion
+   Inspiración: narrativa por scroll, profundidad y microinteracción.
+   Sin dependencias externas ni motor WebGL.
+   ========================================================= */
+
+@view-transition{
+  navigation:auto;
+}
+
+::view-transition-old(root){
+  animation:motionPageOut .24s ease both;
+}
+
+::view-transition-new(root){
+  animation:motionPageIn .46s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes motionPageOut{
+  to{opacity:0;filter:blur(3px);transform:scale(.995)}
+}
+
+@keyframes motionPageIn{
+  from{opacity:0;filter:blur(5px);transform:translateY(5px) scale(.995)}
+  to{opacity:1;filter:none;transform:none}
+}
+
+/* Arranque: el diseño definitivo no aparece hasta estar preparado. */
+html.portal-visual-booting .cd-section,
+html.portal-visual-booting .home-hero,
+html.portal-visual-booting .page-hero,
+html.portal-visual-booting .news-page-hero{
+  animation:none!important;
+  transition:none!important;
+}
+
+/* Profundidad ambiental, usando translate para componer con keyframes actuales. */
+.motion-studio-ready .bs-hero-atmosphere__grid{
+  translate:
+    calc(var(--motion-pointer-x,0) * -8px)
+    calc(var(--motion-pointer-y,0) * -5px);
+}
+
+.motion-studio-ready .bs-hero-atmosphere__ribbon--a{
+  translate:
+    calc(var(--motion-pointer-x,0) * -16px)
+    calc(var(--motion-pointer-y,0) * -10px + var(--motion-scroll,0) * 8px);
+}
+
+.motion-studio-ready .bs-hero-atmosphere__ribbon--b{
+  translate:
+    calc(var(--motion-pointer-x,0) * 12px)
+    calc(var(--motion-pointer-y,0) * 8px + var(--motion-scroll,0) * -10px);
+}
+
+.motion-studio-ready .bs-hero-atmosphere__orbit{
+  translate:
+    calc(var(--motion-pointer-x,0) * 20px)
+    calc(var(--motion-pointer-y,0) * 13px + var(--motion-scroll,0) * -12px);
+}
+
+.motion-studio-ready .bs-hero-atmosphere__particles{
+  translate:
+    calc(var(--motion-pointer-x,0) * 27px)
+    calc(var(--motion-pointer-y,0) * 18px);
+}
+
+.motion-studio-ready .bs-hero-atmosphere__flare{
+  translate:
+    calc(var(--motion-pointer-x,0) * -10px)
+    calc(var(--motion-scroll,0) * -16px);
+}
+
+.motion-studio-ready .cd-section.motion-scene-active .cd-ambient__mesh{
+  translate:calc(var(--motion-pointer-x,0) * -5px) 0;
+}
+
+.motion-studio-ready .cd-section.motion-scene-active .cd-ambient__orb--a{
+  translate:
+    calc(var(--motion-pointer-x,0) * 9px)
+    calc(var(--motion-pointer-y,0) * 6px);
+}
+
+.motion-studio-ready .cd-section.motion-scene-active .cd-ambient__orb--b{
+  translate:
+    calc(var(--motion-pointer-x,0) * -7px)
+    calc(var(--motion-pointer-y,0) * -5px);
+}
+
+.motion-studio-ready .cd-section.motion-scene-active .cd-ambient__rings{
+  translate:
+    calc(var(--motion-pointer-x,0) * 11px)
+    calc(var(--motion-pointer-y,0) * 7px);
+}
+
+/* Revelado más elaborado, sin reemplazar el sistema de opacidad existente. */
+.motion-polish{
+  filter:blur(7px);
+  clip-path:inset(0 0 12% 0 round 18px);
+  transition:
+    filter .72s ease calc(min(var(--motion-order,0),7) * 38ms),
+    clip-path .82s cubic-bezier(.2,.8,.2,1)
+      calc(min(var(--motion-order,0),7) * 38ms),
+    translate .82s cubic-bezier(.2,.8,.2,1)
+      calc(min(var(--motion-order,0),7) * 38ms);
+  translate:0 14px;
+}
+
+.motion-polish.motion-in{
+  filter:none;
+  clip-path:inset(0 0 0 0 round 0);
+  translate:0 0;
+}
+
+/* Entrada específica del hero, compacta y cinematográfica. */
+.motion-studio-ready .home-hero__copy h1.motion-in{
+  animation:motionHeroTitle .78s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.motion-studio-ready .home-hero__visual.motion-in{
+  animation:motionHeroVisual .9s cubic-bezier(.2,.8,.2,1) .05s both;
+}
+
+@keyframes motionHeroTitle{
+  from{letter-spacing:-.09em;filter:blur(8px);translate:0 16px}
+  to{letter-spacing:-.055em;filter:none;translate:0 0}
+}
+
+@keyframes motionHeroVisual{
+  from{opacity:.35;filter:blur(10px) saturate(.72);scale:.985}
+  to{opacity:1;filter:none;scale:1}
+}
+
+/* Movimiento lento de fotografía, solo cuando la escena está activa. */
+.motion-scene-active .home-hero__visual img,
+.motion-scene-active .home-hero__visual video,
+.motion-scene-active .hero-banner-slide img{
+  animation:motionCinematicMedia 16s ease-in-out infinite alternate;
+  transform-origin:center;
+}
+
+@keyframes motionCinematicMedia{
+  from{scale:1.008;translate:-.18% 0}
+  to{scale:1.035;translate:.18% -.25%}
+}
+
+/* Profundidad reactiva de imágenes/tarjetas. */
+.motion-media-active img,
+.motion-media-active video,
+.motion-media-active picture,
+.motion-media-active .admin-banner-slide,
+.motion-media-active .hero-banner-slide{
+  translate:
+    calc(var(--media-x,0) * -6px)
+    calc(var(--media-y,0) * -5px);
+  scale:1.025;
+}
+
+.home-hero__visual img,
+.home-hero__visual video,
+.resource-library-card__cover img,
+.news-card__media img,
+.news-feature-card__media img,
+.edition-card__visual img{
+  transition:
+    translate .34s cubic-bezier(.2,.8,.2,1),
+    scale .45s cubic-bezier(.2,.8,.2,1),
+    filter .34s ease;
+  backface-visibility:hidden;
+}
+
+/* Brillo recorrido en tarjetas, similar a campañas interactivas premium. */
+.cd-card::before{
+  transition:
+    opacity .3s ease,
+    background-position .65s cubic-bezier(.2,.8,.2,1)!important;
+  background-size:220% 220%!important;
+  background-position:0% 0%!important;
+}
+
+.cd-card:hover::before,
+.cd-card:focus-within::before{
+  background-position:100% 100%!important;
+}
+
+/* Botones magnéticos y barrido luminoso. */
+.motion-magnetic-active{
+  transition:
+    translate .16s linear,
+    box-shadow .28s ease,
+    background .28s ease!important;
+}
+
+.button,
+button{
+  overflow:hidden;
+  isolation:isolate;
+}
+
+.button::after,
+button:not(.cd-section-rail button)::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:-80%;
+  bottom:-80%;
+  left:-45%;
+  width:28%;
+  pointer-events:none;
+  opacity:0;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.48),
+    transparent
+  );
+  transform:rotate(16deg);
+  transition:left .58s cubic-bezier(.2,.8,.2,1),opacity .2s ease;
+}
+
+.button:hover::after,
+.button:focus-visible::after,
+button:not(.cd-section-rail button):hover::after,
+button:not(.cd-section-rail button):focus-visible::after{
+  left:120%;
+  opacity:.72;
+}
+
+.motion-button-pulse{
+  position:absolute;
+  z-index:0;
+  width:12px;
+  height:12px;
+  margin:-6px;
+  border-radius:50%;
+  pointer-events:none;
+  background:rgba(255,255,255,.46);
+  animation:motionButtonPulse .56s ease-out both;
+}
+
+@keyframes motionButtonPulse{
+  to{opacity:0;scale:18}
+}
+
+/* Línea de lectura visual en encabezados de sección. */
+.home-section__head::after,
+.section-head::after,
+.year-section__head::after,
+.news-section-heading::after,
+.library-section-head::after,
+.ideas-section-head::after{
+  content:"";
+  grid-column:1 / -1;
+  width:100%;
+  height:1px;
+  margin-top:8px;
+  background:linear-gradient(
+    90deg,
+    rgba(18,106,182,.30),
+    rgba(67,195,232,.16),
+    transparent
+  );
+  transform-origin:left;
+  scale:.15 1;
+  opacity:.45;
+  transition:scale .9s cubic-bezier(.2,.8,.2,1),opacity .5s ease;
+}
+
+.motion-in.home-section__head::after,
+.motion-in.section-head::after,
+.motion-in.year-section__head::after,
+.motion-in.news-section-heading::after,
+.motion-in.library-section-head::after,
+.motion-in.ideas-section-head::after{
+  scale:1 1;
+  opacity:1;
+}
+
+/* Las escenas no visibles conservan layout, pero no consumen animación. */
+.cd-section:not(.motion-scene-active) .cd-ambient *,
+.home-hero:not(.motion-scene-active) .bs-hero-atmosphere *{
+  animation-play-state:paused!important;
+}
+
+/* Transiciones suaves y consistentes para navegación y controles. */
+.main-nav a,
+.site-nav a,
+.cd-section-rail button,
+.admin-section-edit-button,
+.admin-quick-card-edit{
+  transition:
+    translate .18s ease,
+    transform .25s cubic-bezier(.2,.8,.2,1),
+    box-shadow .25s ease,
+    background-color .25s ease,
+    color .25s ease!important;
+}
+
+/* Contención de pintura para preservar rendimiento. */
+.home-hero__visual,
+.resource-library-card__cover,
+.news-card__media,
+.news-feature-card__media,
+.edition-card__visual{
+  contain:paint;
+}
+
+/* Preparación visual para futuros módulos 3D sin cargar WebGL ahora. */
+[data-future-3d-stage]{
+  perspective:1200px;
+  transform-style:preserve-3d;
+}
+
+/* Responsive: profundidad completa en escritorio; versión ligera en táctil. */
+@media (max-width:899px), (hover:none), (pointer:coarse){
+  .motion-polish{
+    filter:blur(3px);
+    translate:0 8px;
+  }
+
+  .motion-media-active img,
+  .motion-media-active video,
+  .motion-media-active picture{
+    translate:0 0;
+    scale:1;
+  }
+
+  .motion-scene-active .home-hero__visual img,
+  .motion-scene-active .home-hero__visual video{
+    animation-duration:20s;
+    scale:1.015;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .motion-polish,
+  .motion-polish.motion-in{
+    filter:none!important;
+    clip-path:none!important;
+    translate:0 0!important;
+    transition:none!important;
+    animation:none!important;
+  }
+
+  .motion-scene-active .home-hero__visual img,
+  .motion-scene-active .home-hero__visual video,
+  .motion-scene-active .hero-banner-slide img,
+  .motion-button-pulse{
+    animation:none!important;
+  }
+
+  .button::after,
+  button::after{
+    display:none!important;
+  }
+}

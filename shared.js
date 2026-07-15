@@ -1,5 +1,184 @@
 (() => {
-  const PORTAL_BUILD = "11.0-admin-popup";
+  const PORTAL_BUILD = "11.3-cinematic-motion";
+
+  /*
+   * Arranque visual temprano.
+   * La capa actual se solicita antes de DOMContentLoaded y la página queda
+   * cubierta por una transición liviana hasta que CSS + DOM + Studio están
+   * listos. Así no se alcanza a mostrar la composición antigua deformada.
+   */
+  const visualBoot = (() => {
+    const root = document.documentElement;
+    const cssId = "claudeStudioStyles";
+    const bootStyleId = "portalVisualBootStyle";
+    let cssReady = false;
+    let domReady = document.readyState !== "loading";
+    let studioReady = false;
+    let released = false;
+    let releaseTimer = 0;
+
+    root.classList.add("portal-visual-booting");
+
+    if (!document.getElementById(bootStyleId)) {
+      const style = document.createElement("style");
+      style.id = bootStyleId;
+      style.textContent = `
+        html.portal-visual-booting {
+          background:#eaf4ff;
+        }
+        html.portal-visual-booting body {
+          overflow:hidden!important;
+        }
+        html.portal-visual-booting body > :not(script):not(style) {
+          opacity:0!important;
+        }
+        html.portal-visual-booting::before {
+          content:"SAN PEDRO · RENDICIÓN DE CUENTAS";
+          position:fixed;
+          z-index:2147483646;
+          inset:0;
+          display:grid;
+          place-items:center;
+          padding:24px;
+          color:#0b4e91;
+          font:700 clamp(12px,1.1vw,16px)/1.2 "Century Gothic",Arial,sans-serif;
+          letter-spacing:.17em;
+          text-align:center;
+          background:
+            radial-gradient(circle at 78% 20%,rgba(118,213,255,.32),transparent 24%),
+            linear-gradient(135deg,#f8fcff,#e2f1ff 56%,#cbe7fb);
+          opacity:1;
+          transition:opacity .34s ease,visibility .34s ease;
+        }
+        html.portal-visual-booting::after {
+          content:"";
+          position:fixed;
+          z-index:2147483647;
+          left:50%;
+          top:calc(50% + 34px);
+          width:min(240px,55vw);
+          height:2px;
+          border-radius:999px;
+          background:linear-gradient(90deg,transparent,#258bd5,#43c3e8,transparent);
+          transform:translateX(-50%) scaleX(.22);
+          transform-origin:center;
+          animation:portalVisualBootLine 1.15s cubic-bezier(.2,.8,.2,1) infinite;
+        }
+        html.portal-visual-ready body > :not(script):not(style) {
+          animation:portalVisualInitialReveal .52s cubic-bezier(.2,.8,.2,1) both;
+        }
+        @keyframes portalVisualBootLine {
+          0%,100%{opacity:.35;transform:translateX(-50%) scaleX(.22)}
+          50%{opacity:1;transform:translateX(-50%) scaleX(1)}
+        }
+        @keyframes portalVisualInitialReveal {
+          from{opacity:0;transform:translateY(5px)}
+          to{opacity:1;transform:none}
+        }
+        @media (prefers-reduced-motion:reduce) {
+          html.portal-visual-booting::after{animation:none;transform:translateX(-50%) scaleX(1)}
+          html.portal-visual-ready body > :not(script):not(style){animation:none}
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    let link = document.getElementById(cssId);
+    if (!link) {
+      link = document.createElement("link");
+      link.id = cssId;
+      link.rel = "stylesheet";
+      link.href = `claude-design.css?v=${PORTAL_BUILD}`;
+      document.head.appendChild(link);
+    } else {
+      const base = (link.getAttribute("href") || "claude-design.css")
+        .split("?")[0];
+      const current = `${base}?v=${PORTAL_BUILD}`;
+      if (link.getAttribute("href") !== current) link.href = current;
+    }
+
+    const release = force => {
+      if (released) return;
+      if (!force && !(cssReady && domReady && studioReady)) return;
+      released = true;
+      clearTimeout(releaseTimer);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          root.classList.remove("portal-visual-booting");
+          root.classList.add("portal-visual-ready");
+          window.setTimeout(() => {
+            document.getElementById(bootStyleId)?.remove();
+          },760);
+        });
+      });
+    };
+
+    const markCssReady = () => {
+      cssReady = true;
+      release(false);
+    };
+
+    if (link.sheet) {
+      markCssReady();
+    } else {
+      link.addEventListener("load",markCssReady,{once:true});
+      link.addEventListener("error",() => release(true),{once:true});
+    }
+
+    if (!domReady) {
+      document.addEventListener("DOMContentLoaded",() => {
+        domReady = true;
+        release(false);
+      },{once:true});
+    }
+
+    window.addEventListener("portal:studio-ready",() => {
+      studioReady = true;
+      release(false);
+    },{once:true});
+
+    releaseTimer = window.setTimeout(() => release(true),2200);
+
+    return { link, release };
+  })();
+
+  function applyEarlyPageClass() {
+    const body = document.body;
+    if (!body) return;
+    const currentPage = (
+      location.pathname.split("/").pop() || "index.html"
+    ).toLowerCase();
+
+    body.classList.toggle(
+      "page-home",
+      currentPage === "" || currentPage === "index.html"
+    );
+    body.classList.toggle(
+      "page-news",
+      currentPage === "noticias.html" || currentPage === "noticia.html"
+    );
+    body.classList.toggle("page-ideas",currentPage === "ideas.html");
+    body.classList.toggle("page-resources",currentPage === "recursos.html");
+    body.classList.toggle("page-vigencias",currentPage === "vigencias.html");
+  }
+
+  if (document.body) {
+    applyEarlyPageClass();
+  } else {
+    document.addEventListener(
+      "DOMContentLoaded",
+      applyEarlyPageClass,
+      {once:true}
+    );
+  }
+
+  /*
+   * Las funciones están declaradas en el mismo ámbito y se elevan. Iniciar
+   * la descarga en microtarea evita esperar hasta DOMContentLoaded.
+   */
+  queueMicrotask(() => loadClaudeStudio());
+
   const KEYS = {
     years: "sp_v4_years",
     resources: "sp_v4_resources",
@@ -2105,8 +2284,13 @@ helpers.showClickEffect = showClickEffect;
     document.body.classList.add("ui-polished");
 
     const header = document.querySelector("#siteHeader");
+    let headerFrame = 0;
     const updateHeaderState = () => {
-      header?.classList.toggle("is-scrolled", window.scrollY > 12);
+      if (headerFrame) return;
+      headerFrame = requestAnimationFrame(() => {
+        headerFrame = 0;
+        header?.classList.toggle("is-scrolled", window.scrollY > 12);
+      });
     };
     updateHeaderState();
     window.addEventListener("scroll", updateHeaderState, {passive:true});
@@ -2155,7 +2339,31 @@ helpers.showClickEffect = showClickEffect;
       document.body.classList.toggle("has-open-interface", hasOpenDialog);
     };
 
-    const interfaceObserver = new MutationObserver(syncModalState);
+    let modalSyncFrame = 0;
+    const scheduleModalSync = () => {
+      if (modalSyncFrame) return;
+      modalSyncFrame = requestAnimationFrame(() => {
+        modalSyncFrame = 0;
+        syncModalState();
+      });
+    };
+
+    const interfaceObserver = new MutationObserver(mutations => {
+      const relevant = mutations.some(mutation => {
+        const target = mutation.target;
+        if (!(target instanceof Element)) return mutation.type === "childList";
+        return Boolean(
+          target.matches(
+            "dialog,.publication-modal,#adminPanel,#contextEditorDialog"
+          ) ||
+          target.closest(
+            "dialog,.publication-modal,#adminPanel,#contextEditorDialog"
+          )
+        );
+      });
+      if (relevant) scheduleModalSync();
+    });
+
     interfaceObserver.observe(document.body, {
       subtree:true,
       childList:true,
@@ -2175,39 +2383,19 @@ helpers.showClickEffect = showClickEffect;
   function initStablePortalMotion() {
     document.body.classList.add("stable-portal-design");
 
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    const sections = document.querySelectorAll(
-      "main > section,main > article"
-    );
-
-    sections.forEach(section => {
-      section.classList.add("stable-section");
+    /*
+     * La revelación de secciones queda en un solo motor: ClaudeStudio /
+     * MotionStudio. Se retira el observador heredado que aplicaba una segunda
+     * transformación y podía deformar la composición durante el arranque.
+     */
+    document.querySelectorAll(".stable-section").forEach(section => {
+      section.classList.remove("stable-section","stable-section-visible");
     });
 
-    if (!reduced && "IntersectionObserver" in window) {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("stable-section-visible");
-          observer.unobserve(entry.target);
-        });
-      },{
-        threshold:.06,
-        rootMargin:"0px 0px -5% 0px"
-      });
-
-      sections.forEach(section => observer.observe(section));
-    } else {
-      sections.forEach(section => {
-        section.classList.add("stable-section-visible");
-      });
-    }
-
     document.querySelectorAll(
-      ".dialog-close,.publication-modal__close,.news-editor-modal__close,.admin-popup-close,.context-editor__close"
+      ".dialog-close,.publication-modal__close," +
+      ".news-editor-modal__close,.admin-popup-close," +
+      ".context-editor__close"
     ).forEach(button => {
       button.classList.add("stable-close-button");
       if (!button.getAttribute("aria-label")) {
@@ -2234,42 +2422,68 @@ helpers.showClickEffect = showClickEffect;
   }
 
   function refreshStylesheetVersion() {
-    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-      const href = link.getAttribute("href") || "";
-      if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
-      const base = href.split("?")[0];
-      const versioned = `${base}?v=11.0-admin-popup`;
-      if (href !== versioned) link.setAttribute("href",versioned);
-    });
+    /*
+     * No se cambia styles.css durante la ejecución. Modificar su URL después
+     * del primer pintado obligaba al navegador a descargarlo otra vez y era
+     * la principal fuente del flash entre la versión base y la actual.
+     */
+    return false;
   }
 
 
   function loadClaudeStudio() {
     const cssId = "claudeStudioStyles";
     const scriptId = "claudeStudioScript";
+    const motionId = "motionStudioScript";
 
-    if (!document.getElementById(cssId)) {
-      const link = document.createElement("link");
+    let link = document.getElementById(cssId) || visualBoot.link;
+    if (!link) {
+      link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
       link.href = `claude-design.css?v=${PORTAL_BUILD}`;
       document.head.appendChild(link);
     }
 
-    if (!document.getElementById(scriptId)) {
+    const loadMotion = () => {
+      if (document.getElementById(motionId)) {
+        window.MotionStudio?.init?.();
+        return;
+      }
+
+      const motion = document.createElement("script");
+      motion.id = motionId;
+      motion.src = `motion-studio.js?v=${PORTAL_BUILD}`;
+      motion.defer = true;
+      motion.onload = () => window.MotionStudio?.init?.();
+      document.head.appendChild(motion);
+    };
+
+    const existingStudio = document.getElementById(scriptId);
+    if (!existingStudio) {
       const script = document.createElement("script");
       script.id = scriptId;
       script.src = `claude-design.js?v=${PORTAL_BUILD}`;
       script.defer = true;
-      script.onload = () => window.ClaudeStudio?.init?.();
+      script.onload = () => {
+        window.ClaudeStudio?.init?.();
+        loadMotion();
+      };
       document.head.appendChild(script);
+    } else if (window.ClaudeStudio?.init) {
+      window.ClaudeStudio.init();
+      loadMotion();
     } else {
-      window.ClaudeStudio?.init?.();
+      existingStudio.addEventListener("load",() => {
+        window.ClaudeStudio?.init?.();
+        loadMotion();
+      },{once:true});
     }
   }
 
   function init() {
     refreshStylesheetVersion();
+    applyEarlyPageClass();
     loadClaudeStudio();
     applySettings();
     renderHeader();
@@ -2288,23 +2502,34 @@ helpers.showClickEffect = showClickEffect;
 
     const progress = document.createElement("div");
     progress.className = "reading-progress";
+    progress.style.transformOrigin = "left center";
+    progress.style.transform = "scaleX(0)";
+    progress.style.willChange = "transform";
     document.body.prepend(progress);
-    window.addEventListener("scroll", () => {
-      const max = document.documentElement.scrollHeight - innerHeight;
-      progress.style.width = `${max > 0 ? scrollY / max * 100 : 0}%`;
-    });
+
+    let progressFrame = 0;
+    const updateReadingProgress = () => {
+      if (progressFrame) return;
+      progressFrame = requestAnimationFrame(() => {
+        progressFrame = 0;
+        const max = document.documentElement.scrollHeight - innerHeight;
+        const ratio = max > 0
+          ? Math.max(0, Math.min(1, scrollY / max))
+          : 0;
+        progress.style.transform = `scaleX(${ratio})`;
+      });
+    };
+
+    updateReadingProgress();
+    window.addEventListener("scroll", updateReadingProgress, {passive:true});
+    window.addEventListener("resize", updateReadingProgress, {passive:true});
   }
 
 
-document.addEventListener("DOMContentLoaded", () => {
-  const currentPage = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  document.body.classList.toggle("page-home", currentPage === "" || currentPage === "index.html");
-  document.body.classList.toggle("page-news", currentPage === "noticias.html" || currentPage === "noticia.html");
-  document.body.classList.toggle("page-ideas", currentPage === "ideas.html");
-  document.body.classList.toggle("page-resources", currentPage === "recursos.html");
-  document.body.classList.toggle("page-vigencias", currentPage === "vigencias.html");
+document.addEventListener("DOMContentLoaded",() => {
+  applyEarlyPageClass();
   initInteractiveFeedback();
-}, {once:true});
+},{once:true});
 
 window.addEventListener("pageshow", () => {
   hideLoading();
