@@ -220,6 +220,47 @@
     }, {passive:true});
   }
 
+  function directChildrenMatching(parent, selector) {
+    return [...parent.children].filter(child => child.matches(selector));
+  }
+
+  function normalizeAdminControls() {
+    document.querySelectorAll(".admin-quick-section").forEach(section => {
+      const buttons = directChildrenMatching(
+        section,
+        ".admin-section-edit-button"
+      );
+      buttons.slice(1).forEach(button => button.remove());
+
+      buttons[0]?.setAttribute("type","button");
+      if (buttons[0] && !buttons[0].getAttribute("aria-label")) {
+        buttons[0].setAttribute("aria-label","Editar esta sección");
+      }
+    });
+
+    document.querySelectorAll("[data-admin-entity]").forEach(entity => {
+      const buttons = directChildrenMatching(
+        entity,
+        ".admin-quick-card-edit"
+      );
+      buttons.slice(1).forEach(button => button.remove());
+
+      buttons[0]?.setAttribute("type","button");
+      if (buttons[0] && !buttons[0].getAttribute("aria-label")) {
+        buttons[0].setAttribute("aria-label","Editar este contenido");
+      }
+    });
+
+    document.querySelectorAll(
+      ".admin-section-edit-button, " +
+      ".admin-quick-card-edit, " +
+      ".dashboard-edit-button"
+    ).forEach(button => {
+      button.setAttribute("type","button");
+      button.style.pointerEvents = "auto";
+    });
+  }
+
   function decorateCards(root = document) {
     root.querySelectorAll(CARD_SELECTOR).forEach(bindCardMotion);
   }
@@ -252,46 +293,62 @@
   }
 
   function buildRail(sections) {
-    document.querySelector(".cd-section-rail")?.remove();
+    const visibleSections = sections.slice(0,9);
+    if (visibleSections.length < 2) {
+      document.querySelector(".cd-section-rail")?.remove();
+      state.railObserver?.disconnect();
+      state.railObserver = null;
+      return;
+    }
 
-    if (sections.length < 2) return;
+    const signature = visibleSections
+      .map(section => section.id)
+      .join("|");
 
-    const rail = document.createElement("nav");
-    rail.className = "cd-section-rail";
-    rail.setAttribute("aria-label", "Navegación de la página");
+    let rail = document.querySelector(".cd-section-rail");
 
-    const title = document.createElement("span");
-    title.className = "cd-section-rail__title";
-    title.textContent = "Recorrido";
-    rail.appendChild(title);
+    if (!rail) {
+      rail = document.createElement("nav");
+      rail.className = "cd-section-rail";
+      rail.setAttribute("aria-label", "Navegación de la página");
+      rail.innerHTML = `
+        <span class="cd-section-rail__title">Recorrido</span>
+        <div class="cd-section-rail__list"></div>`;
+      document.body.appendChild(rail);
+    }
 
-    const list = document.createElement("div");
-    list.className = "cd-section-rail__list";
+    const list = rail.querySelector(".cd-section-rail__list");
 
-    sections.slice(0,9).forEach((section,index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.dataset.target = section.id;
-      button.setAttribute(
-        "aria-label",
-        `Ir a ${sectionTitle(section)}`
-      );
-      button.innerHTML = `
-        <span>${String(index + 1).padStart(2,"0")}</span>
-        <i></i>`;
-      button.addEventListener("click", () => {
-        section.scrollIntoView({
-          behavior:prefersReducedMotion() ? "auto" : "smooth",
-          block:"start"
+    // Solo reconstruye si cambió la estructura real de las secciones.
+    // Esto evita el titileo producido por contenido dinámico.
+    if (rail.dataset.signature !== signature) {
+      rail.dataset.signature = signature;
+      list.replaceChildren();
+
+      visibleSections.forEach((section,index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.target = section.id;
+        button.setAttribute(
+          "aria-label",
+          `Ir a ${sectionTitle(section)}`
+        );
+        button.innerHTML = `
+          <span>${String(index + 1).padStart(2,"0")}</span>
+          <i aria-hidden="true"></i>`;
+
+        button.addEventListener("click", () => {
+          section.scrollIntoView({
+            behavior:prefersReducedMotion() ? "auto" : "smooth",
+            block:"start"
+          });
         });
+
+        list.appendChild(button);
       });
-      list.appendChild(button);
-    });
+    }
 
-    rail.appendChild(list);
-    document.body.appendChild(rail);
-
-    if (state.railObserver) state.railObserver.disconnect();
+    state.railObserver?.disconnect();
 
     state.railObserver = new IntersectionObserver(entries => {
       const visible = entries
@@ -303,14 +360,19 @@
       rail.querySelectorAll("button").forEach(button => {
         const active = button.dataset.target === visible.target.id;
         button.classList.toggle("active",active);
-        button.setAttribute("aria-current",active ? "true" : "false");
+        button.setAttribute(
+          "aria-current",
+          active ? "true" : "false"
+        );
       });
     },{
       threshold:[.12,.35,.65],
       rootMargin:"-18% 0px -60% 0px"
     });
 
-    sections.slice(0,9).forEach(section => state.railObserver.observe(section));
+    visibleSections.forEach(section => {
+      state.railObserver.observe(section);
+    });
   }
 
   function addPageSignature() {
@@ -366,6 +428,7 @@
     addPageSignature();
     const sections = decorateSections();
     decorateCards();
+    normalizeAdminControls();
     setupReveal();
     buildRail(sections);
   }
@@ -378,9 +441,25 @@
   function observeDynamicContent() {
     if (state.mutationObserver) return;
 
+    const ignoredStudioSelector = [
+      ".cd-section-rail",
+      ".cd-ambient",
+      ".bs-hero-atmosphere",
+      ".cd-page-signature",
+      ".cd-cursor-glow"
+    ].join(",");
+
     state.mutationObserver = new MutationObserver(mutations => {
-      if (!mutations.some(mutation => mutation.addedNodes.length)) return;
-      scheduleRefresh();
+      const hasRelevantNode = mutations.some(mutation =>
+        [...mutation.addedNodes].some(node => {
+          if (!(node instanceof Element)) return false;
+          if (node.matches(ignoredStudioSelector)) return false;
+          if (node.closest(ignoredStudioSelector)) return false;
+          return true;
+        })
+      );
+
+      if (hasRelevantNode) scheduleRefresh();
     });
 
     state.mutationObserver.observe(document.body,{

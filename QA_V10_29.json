@@ -1,0 +1,52 @@
+{
+  "version": "10.29",
+  "name": "Editor y banner premium",
+  "base": "10.28 Cierre Premium",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "fixes": [
+    "El botón específico de edición conserva su manejador original.",
+    "La consola administrativa general se abre únicamente como respaldo.",
+    "inline-admin.js puede reintentarse una vez si no carga.",
+    "Botones duplicados de edición son eliminados por entidad o sección.",
+    "Botones de sección y tarjeta utilizan posiciones diferentes.",
+    "La tarjeta Conozca la gestión queda encima del banner.",
+    "El banner usa proporción 1600 × 900 en escritorio.",
+    "El panel Recorrido deja de reconstruirse en cada mutación.",
+    "El estado activo del Recorrido se indica solamente mediante sombra.",
+    "Se reforzó contraste y estructura en Inicio, Vigencias, Recursos, Noticias e Ideas."
+  ],
+  "banner": {
+    "recommended_source_size": "1600 × 900 px",
+    "desktop_ratio": "16:9",
+    "mobile_behavior": "Recorte responsive mediante object-fit: cover"
+  },
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK"
+    },
+    "css_braces": "315/315"
+  },
+  "interaction_checks": {
+    "edit_handler_preserves_original_action": "OK",
+    "admin_console_fallback": "OK",
+    "inline_admin_retry": "OK",
+    "duplicate_edit_buttons_cleanup": "OK",
+    "edit_buttons_pointer_events": "OK",
+    "rail_rebuild_only_when_sections_change": "OK",
+    "rail_decorator_mutations_ignored": "OK",
+    "rail_active_state_shadow_only": "OK"
+  },
+  "layout_checks": {
+    "desktop_banner_ratio": "1600 / 900",
+    "copy_card_over_banner": "OK",
+    "desktop_banner_max_width": "1600 px",
+    "mobile_banner_crop": "object-fit: cover",
+    "ideas_action_z_index": "OK",
+    "year_focus_panel_contrast": "OK"
+  }
+}

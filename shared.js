@@ -1293,33 +1293,39 @@ helpers.toast = function(message) {
     });
 
     document.querySelector("#adminConsoleEntry")?.addEventListener("click", () => {
-      document.body.classList.add('admin-explicit-open');
-
-      if (window.InlineAdmin?.openConsole) {
-        window.InlineAdmin.openConsole("editing");
-        return;
-      }
-
-      loadInlineAdministration();
-      let attempts = 0;
-      const waitForAdmin = window.setInterval(() => {
-        attempts += 1;
-        if (window.InlineAdmin?.openConsole) {
-          window.clearInterval(waitForAdmin);
-          document.body.classList.add('admin-explicit-open');
-          window.InlineAdmin.openConsole("editing");
-        } else if (attempts >= 20) {
-          window.clearInterval(waitForAdmin);
-          document.body.classList.remove('admin-explicit-open');
-          helpers.toast("No fue posible abrir el panel administrativo. Recargue la página e inténtelo nuevamente.");
-        }
-      }, 100);
+      openInlineAdminConsole("editing");
     });
 
     document.addEventListener('click', event => {
       if (event.target.closest('#inlineConsoleClose,#inlineConsoleBackdrop,.admin-console__close')) {
         document.body.classList.remove('admin-explicit-open');
       }
+    });
+
+    document.addEventListener("click", event => {
+      const editButton = event.target.closest(
+        ".admin-section-edit-button, .admin-quick-card-edit, .dashboard-edit-button"
+      );
+      if (!editButton) return;
+
+      // Evita navegación o envío de formularios, pero permite que
+      // el manejador original del editor reciba el evento.
+      event.preventDefault();
+
+      window.setTimeout(() => {
+        const editorOpened = Boolean(
+          document.body.classList.contains("admin-inspector-open") ||
+          document.body.classList.contains("admin-console-open") ||
+          document.querySelector(
+            ".inline-admin-inspector.open, .inline-inspector.open, " +
+            "#inlineAdminToolbar.open, .admin-console-shell.open"
+          )
+        );
+
+        // La consola general es únicamente un respaldo. Si el botón
+        // específico abrió su inspector, no se modifica esa acción.
+        if (!editorOpened) openInlineAdminConsole("editing");
+      }, 140);
     });
 
     document.querySelector("#adminSessionIdentity")?.addEventListener("click", () => {
@@ -1331,7 +1337,7 @@ helpers.toast = function(message) {
         });
         openDialog("accountDialog");
       } else {
-        window.InlineAdmin?.openConsole?.("editing");
+        openInlineAdminConsole("editing");
       }
     });
 
@@ -1648,11 +1654,79 @@ helpers.toast = function(message) {
     document.head.appendChild(script);
   }
 
+  function waitForInlineAdminReady(onReady, onFail) {
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      tries += 1;
+      if (window.InlineAdmin?.openConsole) {
+        window.clearInterval(timer);
+        try {
+          window.InlineAdmin.init?.();
+        } catch (error) {}
+        onReady?.(window.InlineAdmin);
+      } else if (tries >= 40) {
+        window.clearInterval(timer);
+        onFail?.();
+      }
+    }, 120);
+  }
+
+  function openInlineAdminConsole(mode = "editing", retry = 0) {
+    document.body.classList.add("admin-explicit-open");
+
+    const openEditor = admin => {
+      try { admin.activate?.(); } catch (error) {}
+      try { admin.init?.(); } catch (error) {}
+      admin.openConsole?.(mode);
+    };
+
+    if (window.InlineAdmin?.openConsole) {
+      openEditor(window.InlineAdmin);
+      return;
+    }
+
+    loadInlineAdministration();
+
+    waitForInlineAdminReady(
+      openEditor,
+      () => {
+        if (retry < 1) {
+          document.querySelector('script[data-inline-admin]')?.remove();
+          window.setTimeout(
+            () => openInlineAdminConsole(mode, retry + 1),
+            120
+          );
+          return;
+        }
+
+        document.body.classList.remove("admin-explicit-open");
+        helpers.toast(
+          "No fue posible abrir el panel administrativo. " +
+          "Verifique que inline-admin.js esté publicado y recargue la página."
+        );
+      }
+    );
+  }
+
   function loadInlineAdministration() {
-    if (document.querySelector('script[data-inline-admin]')) return;
+    const existingScript = document.querySelector('script[data-inline-admin]');
+    if (existingScript) {
+      if (window.InlineAdmin?.init) {
+        try { window.InlineAdmin.init(); } catch (error) {}
+      } else {
+        existingScript.addEventListener("load", () => {
+          try { window.InlineAdmin?.init?.(); } catch (error) {}
+        }, { once:true });
+
+        existingScript.addEventListener("error", () => {
+          existingScript.remove();
+        }, { once:true });
+      }
+      return;
+    }
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.27-layout-polish";
+    script.src = "inline-admin.js?v=10.29-editor-banner-premium";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -2278,7 +2352,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.27-layout-polish`;
+      const versioned = `${base}?v=10.29-editor-banner-premium`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2292,14 +2366,14 @@ helpers.toast = function(message) {
       const link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
-      link.href = "claude-design.css?v=10.27-layout-polish";
+      link.href = "claude-design.css?v=10.29-editor-banner-premium";
       document.head.appendChild(link);
     }
 
     if (!document.getElementById(scriptId)) {
       const script = document.createElement("script");
       script.id = scriptId;
-      script.src = "claude-design.js?v=10.27-layout-polish";
+      script.src = "claude-design.js?v=10.29-editor-banner-premium";
       script.defer = true;
       script.onload = () => window.ClaudeStudio?.init?.();
       document.head.appendChild(script);
