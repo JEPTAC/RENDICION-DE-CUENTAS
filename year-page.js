@@ -24,45 +24,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const heroScenes = {
     celebration: `
       <div class="page-hero__scene page-hero__scene--celebration" aria-hidden="true">
-        <span class="scene-orb orb-a"></span>
-        <span class="scene-orb orb-b"></span>
-        <span class="scene-firework firework-a"></span>
-        <span class="scene-firework firework-b"></span>
-        <span class="scene-firework firework-c"></span>
-        <span class="scene-spark spark-a"></span>
-        <span class="scene-spark spark-b"></span>
-        <span class="scene-spark spark-c"></span>
-        <span class="scene-confetti confetti-a"></span>
-        <span class="scene-confetti confetti-b"></span>
-        <span class="scene-confetti confetti-c"></span>
-        <span class="scene-ribbon ribbon-a"></span>
-        <span class="scene-ribbon ribbon-b"></span>
+        <div class="hero-illu hero-illu--celebration">
+          <span class="hero-cloud hero-cloud--a"></span>
+          <span class="hero-cloud hero-cloud--b"></span>
+          <span class="hero-sun"></span>
+          <span class="hero-firework hero-firework--a"></span>
+          <span class="hero-firework hero-firework--b"></span>
+          <span class="hero-firework hero-firework--c"></span>
+          <span class="hero-balloon hero-balloon--a"></span>
+          <span class="hero-balloon hero-balloon--b"></span>
+          <span class="hero-balloon hero-balloon--c"></span>
+          <span class="hero-confetti hero-confetti--a"></span>
+          <span class="hero-confetti hero-confetti--b"></span>
+          <span class="hero-confetti hero-confetti--c"></span>
+          <span class="hero-confetti hero-confetti--d"></span>
+          <div class="hero-hill hero-hill--a"></div>
+          <div class="hero-hill hero-hill--b"></div>
+          <div class="hero-stage">
+            <span class="hero-stage__light light-1"></span>
+            <span class="hero-stage__light light-2"></span>
+            <span class="hero-stage__light light-3"></span>
+          </div>
+          <div class="hero-crowd">
+            <span class="hero-crowd__person person-1"></span>
+            <span class="hero-crowd__person person-2"></span>
+            <span class="hero-crowd__person person-3"></span>
+            <span class="hero-crowd__person person-4"></span>
+            <span class="hero-crowd__person person-5"></span>
+          </div>
+        </div>
       </div>`,
     mobility: `
       <div class="page-hero__scene page-hero__scene--mobility" aria-hidden="true">
-        <span class="scene-orb orb-a"></span>
-        <span class="scene-orb orb-b"></span>
-        <div class="scene-road"></div>
-        <div class="scene-route route-a"></div>
-        <div class="scene-route route-b"></div>
-        <div class="scene-vehicle vehicle-truck"></div>
-        <div class="scene-vehicle vehicle-bus"></div>
-        <div class="scene-vehicle vehicle-car"></div>
-        <div class="scene-crate crate-a"></div>
-        <div class="scene-crate crate-b"></div>
+        <div class="hero-illu hero-illu--mobility">
+          <span class="hero-cloud hero-cloud--a"></span>
+          <span class="hero-cloud hero-cloud--b"></span>
+          <span class="hero-sun hero-sun--small"></span>
+          <div class="hero-hill hero-hill--a"></div>
+          <div class="hero-hill hero-hill--b"></div>
+          <div class="hero-road"></div>
+          <div class="hero-route hero-route--a"></div>
+          <div class="hero-route hero-route--b"></div>
+          <div class="hero-package hero-package--a"></div>
+          <div class="hero-package hero-package--b"></div>
+          <div class="hero-vehicle hero-vehicle--truck"><span class="cabin"></span></div>
+          <div class="hero-vehicle hero-vehicle--bus"></div>
+          <div class="hero-vehicle hero-vehicle--car"></div>
+        </div>
       </div>`,
     sports: `
       <div class="page-hero__scene page-hero__scene--sports" aria-hidden="true">
-        <span class="scene-orb orb-a"></span>
-        <span class="scene-orb orb-b"></span>
-        <span class="scene-ball ball-football"></span>
-        <span class="scene-ball ball-basket"></span>
-        <span class="scene-ball ball-volley"></span>
-        <span class="scene-ball ball-skate"></span>
-        <span class="scene-ring ring-a"></span>
-        <span class="scene-ring ring-b"></span>
-        <span class="scene-trail trail-a"></span>
-        <span class="scene-trail trail-b"></span>
+        <div class="hero-illu hero-illu--sports">
+          <span class="hero-cloud hero-cloud--a"></span>
+          <span class="hero-cloud hero-cloud--b"></span>
+          <span class="hero-sun"></span>
+          <div class="hero-stadium"></div>
+          <div class="hero-track"></div>
+          <span class="hero-ball hero-ball--football"></span>
+          <span class="hero-ball hero-ball--basket"></span>
+          <span class="hero-ball hero-ball--volley"></span>
+          <div class="hero-skate"></div>
+          <div class="hero-pennant hero-pennant--a"></div>
+          <div class="hero-pennant hero-pennant--b"></div>
+          <div class="hero-ring hero-ring--a"></div>
+          <div class="hero-ring hero-ring--b"></div>
+        </div>
       </div>`
   };
 

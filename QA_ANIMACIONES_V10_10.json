@@ -1,0 +1,19 @@
+{
+  "version": "10.10",
+  "files": [
+    "styles.css",
+    "year-page.js"
+  ],
+  "improvements": [
+    "hero scenes redesigned with richer cartoon-style illustration",
+    "celebration scene includes fireworks, balloons, stage and crowd",
+    "mobility scene includes road, vehicles, packages and route lines",
+    "sports scene includes stadium, track, balls, skate and motion rings",
+    "animations remain lightweight and responsive"
+  ],
+  "themes": {
+    "2025": "celebration cartoon",
+    "2026": "mobility cartoon",
+    "2027": "sports cartoon"
+  }
+}
