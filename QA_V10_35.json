@@ -1,0 +1,13 @@
+{
+  "version": "10.35",
+  "name": "Uniformidad de anchos en el home",
+  "replace_files": [
+    "claude-design.css"
+  ],
+  "main_changes": [
+    "La tarjeta principal del home ahora usa el mismo ancho visual que la barra exploradora inferior.",
+    "El banner interno queda totalmente alineado dentro de la tarjeta, sin verse más angosto que la sección inferior.",
+    "Las secciones principales del inicio comparten un mismo eje de ancho para reforzar la uniformidad visual.",
+    "Se mantuvo el comportamiento responsive para portátil, tablet y móvil sin romper el orden del contenido."
+  ]
+}
