@@ -422,10 +422,35 @@
     }, {passive:true});
   }
 
+
+
+  function integrateHomeHeroBanner() {
+    if (pageName() !== "home") return;
+
+    const hero = document.querySelector(".home-hero");
+    const copy = hero?.querySelector(".home-hero__copy");
+    const visual = hero?.querySelector(".home-hero__visual");
+    if (!hero || !copy || !visual) return;
+
+    const title = copy.querySelector("h1");
+    const targetSibling = title ? title.nextElementSibling : copy.firstElementChild;
+
+    if (visual.parentElement !== copy || (title && visual.previousElementSibling !== title)) {
+      if (title) {
+        copy.insertBefore(visual, targetSibling);
+      } else {
+        copy.prepend(visual);
+      }
+    }
+
+    hero.classList.add("home-hero--banner-inside");
+  }
+
   function refresh() {
     ensurePageClass();
     addHeroAtmosphere();
     addPageSignature();
+    integrateHomeHeroBanner();
     const sections = decorateSections();
     decorateCards();
     normalizeAdminControls();

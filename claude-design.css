@@ -2796,3 +2796,165 @@ body.hero-layout-wide .home-hero__copy h1{
     font-size:1rem!important;
   }
 }
+
+
+/* =========================================================
+   V10.32 · Banner dentro de la tarjeta del hero
+   ========================================================= */
+.claude-page-home .home-hero,
+body.hero-layout-compact.claude-page-home .home-hero,
+body.hero-layout-balanced.claude-page-home .home-hero,
+body.hero-layout-wide.claude-page-home .home-hero{
+  padding:22px 16px 0 !important;
+}
+
+.claude-page-home .home-hero__grid,
+body.hero-layout-compact .home-hero__grid,
+body.hero-layout-balanced .home-hero__grid,
+body.hero-layout-wide .home-hero__grid{
+  display:block !important;
+  width:min(1200px,100%) !important;
+  max-width:1200px !important;
+  margin:0 auto !important;
+  min-height:auto !important;
+}
+
+.claude-page-home .home-hero__copy,
+.claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+body.hero-layout-compact .home-hero__copy,
+body.hero-layout-balanced .home-hero__copy,
+body.hero-layout-wide .home-hero__copy{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:18px !important;
+  width:100% !important;
+  max-width:1200px !important;
+  min-width:0 !important;
+  margin:0 auto !important;
+  padding:22px 20px 24px !important;
+  border-radius:28px !important;
+  overflow:hidden !important;
+}
+
+.claude-page-home .home-hero__copy h1,
+body.hero-layout-compact .home-hero__copy h1,
+body.hero-layout-balanced .home-hero__copy h1,
+body.hero-layout-wide .home-hero__copy h1{
+  max-width:100% !important;
+  width:100% !important;
+  margin:0 !important;
+  font-size:clamp(3rem,5.6vw,5.35rem) !important;
+  line-height:0.94 !important;
+  letter-spacing:-0.045em !important;
+  text-wrap:balance !important;
+}
+
+.claude-page-home .home-hero__copy > p{
+  max-width:760px !important;
+  margin:0 !important;
+  font-size:clamp(1rem,1.25vw,1.18rem) !important;
+  line-height:1.58 !important;
+}
+
+.claude-page-home .home-hero__visual,
+body.hero-layout-compact .home-hero__visual,
+body.hero-layout-balanced .home-hero__visual,
+body.hero-layout-wide .home-hero__visual{
+  position:relative !important;
+  order:initial !important;
+  align-self:stretch !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-height:300px !important;
+  aspect-ratio:1200 / 300 !important;
+  margin:0 !important;
+  border-radius:24px !important;
+  overflow:hidden !important;
+  box-shadow:0 18px 40px rgba(30, 76, 135, 0.14) !important;
+}
+
+.claude-page-home .home-hero__copy .hero-actions,
+.claude-page-home .home-hero__copy .button-row,
+.claude-page-home .home-hero__copy .cta-row{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:12px !important;
+  margin-top:2px !important;
+}
+
+.claude-page-home .home-hero__copy .hero-meta,
+.claude-page-home .home-hero__copy .hero-chips,
+.claude-page-home .home-hero__copy .hero-footer{
+  width:100% !important;
+}
+
+.claude-page-home .explorer-bar{
+  width:min(1200px,100%) !important;
+  max-width:1200px !important;
+  margin:14px auto 0 !important;
+}
+
+@media (max-width: 900px){
+  .claude-page-home .home-hero__copy,
+  .claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+  body.hero-layout-compact .home-hero__copy,
+  body.hero-layout-balanced .home-hero__copy,
+  body.hero-layout-wide .home-hero__copy{
+    padding:20px 18px 22px !important;
+    gap:16px !important;
+  }
+
+  .claude-page-home .home-hero__copy h1,
+  body.hero-layout-compact .home-hero__copy h1,
+  body.hero-layout-balanced .home-hero__copy h1,
+  body.hero-layout-wide .home-hero__copy h1{
+    font-size:clamp(2.55rem,7.8vw,4.4rem) !important;
+  }
+
+  .claude-page-home .home-hero__visual,
+  body.hero-layout-compact .home-hero__visual,
+  body.hero-layout-balanced .home-hero__visual,
+  body.hero-layout-wide .home-hero__visual{
+    min-height:260px !important;
+    aspect-ratio:16 / 6 !important;
+  }
+}
+
+@media (max-width: 640px){
+  .claude-page-home .home-hero{
+    padding-inline:10px !important;
+  }
+
+  .claude-page-home .home-hero__copy,
+  .claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+  body.hero-layout-compact .home-hero__copy,
+  body.hero-layout-balanced .home-hero__copy,
+  body.hero-layout-wide .home-hero__copy{
+    padding:18px 16px 20px !important;
+    gap:14px !important;
+    border-radius:24px !important;
+  }
+
+  .claude-page-home .home-hero__copy h1,
+  body.hero-layout-compact .home-hero__copy h1,
+  body.hero-layout-balanced .home-hero__copy h1,
+  body.hero-layout-wide .home-hero__copy h1{
+    font-size:clamp(2.1rem,10.8vw,3.15rem) !important;
+    line-height:0.98 !important;
+  }
+
+  .claude-page-home .home-hero__visual,
+  body.hero-layout-compact .home-hero__visual,
+  body.hero-layout-balanced .home-hero__visual,
+  body.hero-layout-wide .home-hero__visual{
+    min-height:220px !important;
+    aspect-ratio:4 / 3 !important;
+    border-radius:22px !important;
+  }
+
+  .claude-page-home .home-hero__copy > p{
+    max-width:none !important;
+    font-size:1rem !important;
+  }
+}

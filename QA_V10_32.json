@@ -1,0 +1,15 @@
+{
+  "version": "10.32",
+  "name": "Banner integrado dentro de la tarjeta del hero",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "main_changes": [
+    "El banner ahora se inserta dentro de la tarjeta principal “Conozca la gestión”.",
+    "El orden queda: título, banner, texto descriptivo y botones.",
+    "La tarjeta mantiene un ancho máximo de 1200 px y evita que el texto se salga.",
+    "Se conserva el responsive para escritorio, tablet y móvil."
+  ]
+}
