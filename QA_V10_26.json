@@ -1,0 +1,37 @@
+{
+  "version": "10.26",
+  "name": "Blue Studio",
+  "base": "10.25",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "typography": {
+    "principal": "Century Gothic",
+    "script_accent": "Solo en el texto enlazado del hero",
+    "georgia_references": 0,
+    "century_gothic_references": 3
+  },
+  "palette": {
+    "primary": "Espectro de azules",
+    "text": "Azul marino oscuro",
+    "secondary": "Cian e índigo",
+    "warm_palette_references": 0
+  },
+  "design_research_applied": [
+    "Sistema visual modular y comprensible.",
+    "Jerarquía tipográfica clara.",
+    "Identidad digital-first.",
+    "Movimiento integrado a la identidad.",
+    "Paleta unificada y componentes consistentes.",
+    "Narrativa visual por secciones."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK"
+    },
+    "css_braces": "154/154"
+  }
+}

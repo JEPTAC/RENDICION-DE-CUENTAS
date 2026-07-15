@@ -32,7 +32,11 @@
 
   function ensurePageClass() {
     const page = pageName();
-    document.body.classList.add("claude-studio", `claude-page-${page}`);
+    document.body.classList.add(
+      "claude-studio",
+      "blue-studio",
+      `claude-page-${page}`
+    );
     document.documentElement.dataset.claudePage = page;
   }
 
@@ -67,16 +71,38 @@
     ].join(","));
   }
 
-  function addAmbient(section, index) {
+  function addHeroAtmosphere() {
+    const hero = document.querySelector(
+      ".home-hero,.page-hero,.news-page-hero"
+    );
+    if (!hero || hero.querySelector(":scope > .bs-hero-atmosphere")) return;
+
+    const atmosphere = document.createElement("div");
+    atmosphere.className = "bs-hero-atmosphere";
+    atmosphere.setAttribute("aria-hidden","true");
+    atmosphere.innerHTML = `
+      <span class="bs-hero-atmosphere__grid"></span>
+      <span class="bs-hero-atmosphere__ribbon bs-hero-atmosphere__ribbon--a"></span>
+      <span class="bs-hero-atmosphere__ribbon bs-hero-atmosphere__ribbon--b"></span>
+      <span class="bs-hero-atmosphere__orbit"></span>
+      <span class="bs-hero-atmosphere__particles"></span>
+      <span class="bs-hero-atmosphere__flare"></span>`;
+    hero.prepend(atmosphere);
+  }
+
+  function addAmbient(section,index) {
     if (section.querySelector(":scope > .cd-ambient")) return;
 
     const ambient = document.createElement("div");
     ambient.className = "cd-ambient";
     ambient.setAttribute("aria-hidden", "true");
     ambient.innerHTML = `
+      <span class="cd-ambient__mesh"></span>
       <span class="cd-ambient__orb cd-ambient__orb--a"></span>
       <span class="cd-ambient__orb cd-ambient__orb--b"></span>
       <span class="cd-ambient__line"></span>
+      <span class="cd-ambient__ribbon"></span>
+      <span class="cd-ambient__rings"></span>
       <span class="cd-ambient__spark"></span>`;
     ambient.style.setProperty("--cd-seed", String(index % 5));
     section.prepend(ambient);
@@ -140,8 +166,9 @@
     card.dataset.cdMotion = "1";
     card.classList.add("cd-card", "cd-reveal");
 
-    const index = [...card.parentElement?.children || []].indexOf(card);
-    card.style.setProperty("--cd-order", String(Math.max(index,0)));
+    const siblings = [...(card.parentElement?.children || [])];
+    const index = Math.max(siblings.indexOf(card),0);
+    card.style.setProperty("--cd-order", String(index));
 
     if (prefersReducedMotion()) return;
 
@@ -157,8 +184,8 @@
       frame = requestAnimationFrame(() => {
         card.style.setProperty("--cd-x", `${(x * 100).toFixed(2)}%`);
         card.style.setProperty("--cd-y", `${(y * 100).toFixed(2)}%`);
-        card.style.setProperty("--cd-rx", `${((.5 - y) * 2.4).toFixed(2)}deg`);
-        card.style.setProperty("--cd-ry", `${((x - .5) * 3.2).toFixed(2)}deg`);
+        card.style.setProperty("--cd-rx", `${((.5 - y) * 1.8).toFixed(2)}deg`);
+        card.style.setProperty("--cd-ry", `${((x - .5) * 2.5).toFixed(2)}deg`);
       });
     }, {passive:true});
 
@@ -188,7 +215,7 @@
           state.sectionObserver.unobserve(entry.target);
         });
       },{
-        threshold:.08,
+        threshold:.07,
         rootMargin:"0px 0px -6% 0px"
       });
     }
@@ -269,18 +296,21 @@
 
     if (!target || target.querySelector(".cd-page-signature")) return;
 
+    const labels = {
+      home:"Gestión abierta",
+      resources:"Biblioteca pública",
+      news:"Actualidad municipal",
+      ideas:"Participación activa",
+      vigencias:"Archivo institucional",
+      year:"Rendición de Cuentas"
+    };
+
     const signature = document.createElement("div");
     signature.className = "cd-page-signature";
     signature.setAttribute("aria-hidden","true");
     signature.innerHTML = `
       <span></span>
-      <strong>${
-        page === "home" ? "Gestión abierta" :
-        page === "resources" ? "Biblioteca pública" :
-        page === "news" ? "Actualidad municipal" :
-        page === "ideas" ? "Participación activa" :
-        "Rendición de Cuentas"
-      }</strong>
+      <strong>${labels[page] || "Portal institucional"}</strong>
       <i></i>`;
     target.appendChild(signature);
   }
@@ -307,6 +337,7 @@
 
   function refresh() {
     ensurePageClass();
+    addHeroAtmosphere();
     addPageSignature();
     const sections = decorateSections();
     decorateCards();
