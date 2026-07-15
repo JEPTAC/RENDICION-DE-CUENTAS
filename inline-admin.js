@@ -9,6 +9,7 @@
   let saveTimer = null;
   let bannerTimer = null;
   let bannerIndex = 0;
+  const publicationUi = { tab:"recent", year:"all", type:"all", view:"grid" };
 
   const pageKey = () => helpers.pageKey();
 
@@ -567,11 +568,11 @@
                 <div class="admin-console-panel__heading">
                   <span>CONTROL EDITORIAL</span>
                   <h2>Publicación</h2>
-                  <p>Defina cuándo y cómo se mostrará esta página.</p>
+                  <p>Gestione los contenidos visibles, organice la vista y abra un formulario completo para publicar nuevos materiales.</p>
                 </div>
 
-                <div class="admin-form-grid">
-                  <label>Estado
+                <div class="admin-form-grid publication-state-grid">
+                  <label>Estado del portal
                     <select id="inlinePublicationStatus">
                       <option value="published" ${p.publication.status==="published"?"selected":""}>Publicado</option>
                       <option value="draft" ${p.publication.status==="draft"?"selected":""}>Borrador</option>
@@ -586,8 +587,59 @@
                   </label>
                 </div>
 
+                <div class="publication-manager-shell">
+                  <div class="publication-manager-toolbar">
+                    <div class="publication-manager-order">
+                      <span class="publication-manager-order__label">Ordenar por:</span>
+                      <div class="publication-manager-tabs" role="tablist" aria-label="Estados de publicación">
+                        <button type="button" class="publication-tab is-active" data-pub-tab="recent">Recientes</button>
+                        <button type="button" class="publication-tab" data-pub-tab="inactive">Inactivos</button>
+                        <button type="button" class="publication-tab" data-pub-tab="featured">Destacados</button>
+                        <button type="button" class="publication-tab" data-pub-tab="hidden">Ocultos</button>
+                      </div>
+                    </div>
+
+                    <div class="publication-manager-side">
+                      <div class="publication-manager-filters">
+                        <label>
+                          <span>Filtrar por fecha</span>
+                          <select id="pubYearFilter"></select>
+                        </label>
+                        <label>
+                          <span>Tipo de contenido</span>
+                          <select id="pubTypeFilter">
+                            <option value="all">Todos los contenidos</option>
+                            <option value="informe">Informes</option>
+                            <option value="presentacion">Presentaciones</option>
+                            <option value="video">Videos</option>
+                            <option value="datos">Datos</option>
+                            <option value="compromiso">Compromisos</option>
+                            <option value="respuesta">Respuestas</option>
+                          </select>
+                        </label>
+                      </div>
+
+                      <div class="publication-manager-view">
+                        <button type="button" class="publication-view-button is-active" id="pubViewGrid" aria-label="Vista en cuadrícula">
+                          <span aria-hidden="true">▦</span>
+                        </button>
+                        <button type="button" class="publication-view-button" id="pubViewList" aria-label="Vista en lista">
+                          <span aria-hidden="true">☰</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="publication-manager-actions">
+                    <button type="button" class="publication-new-button" id="pubNewContent">Nuevo contenido</button>
+                    <div class="publication-manager-summary" id="pubManagerSummary">Preparando gestor editorial…</div>
+                  </div>
+
+                  <div class="publication-manager-list is-grid" id="pubManagerList"></div>
+                </div>
+
                 <div class="admin-console-tip">
-                  La programación funciona localmente mientras el portal continúe publicado como sitio estático.
+                  El formulario de publicación permite cargar imagen, documento, enlace, vigencia, descripción, estado y visibilidad del contenido.
                 </div>
               </section>
 
@@ -760,6 +812,90 @@
           </div>
         </div>
       </aside>
+
+      <div class="publication-modal" id="publicationModal" hidden>
+        <div class="publication-modal__backdrop" id="publicationModalBackdrop"></div>
+        <div class="publication-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="publicationModalTitle">
+          <div class="publication-modal__head">
+            <div>
+              <span class="publication-modal__eyebrow">CENTRO EDITORIAL</span>
+              <h3 id="publicationModalTitle">Nuevo contenido</h3>
+              <p id="publicationModalSubtitle">Complete la información del recurso que se publicará en el portal.</p>
+            </div>
+            <button type="button" class="publication-modal__close" id="publicationModalClose" aria-label="Cerrar formulario">×</button>
+          </div>
+
+          <form class="publication-modal__form" id="publicationForm">
+            <input type="hidden" name="id" value="">
+
+            <div class="publication-modal__grid">
+              <label class="publication-field publication-field--wide">Título principal
+                <input name="title" required placeholder="Ejemplo: Informe de Gestión y Rendición de Cuentas 2025">
+              </label>
+
+              <label class="publication-field">Vigencia
+                <select name="year" id="publicationYearSelect"></select>
+              </label>
+
+              <label class="publication-field">Tipo de contenido
+                <select name="type">
+                  <option value="informe">Informe</option>
+                  <option value="presentacion">Presentación</option>
+                  <option value="video">Video</option>
+                  <option value="datos">Datos</option>
+                  <option value="compromiso">Compromiso</option>
+                  <option value="respuesta">Respuesta</option>
+                </select>
+              </label>
+
+              <label class="publication-field publication-field--wide">Descripción breve
+                <textarea name="description" rows="4" required placeholder="Explique en pocas líneas el contenido, el contexto y el valor del material."></textarea>
+              </label>
+
+              <label class="publication-field">Detalle visible
+                <input name="meta" placeholder="Ejemplo: 42 diapositivas · 9,2 MB">
+              </label>
+
+              <label class="publication-field">Enlace externo o institucional
+                <input name="url" placeholder="https://...">
+              </label>
+
+              <label class="publication-field">Fuente o dependencia responsable
+                <input name="source" placeholder="Secretaría de Planeación">
+              </label>
+
+              <label class="publication-field">Fecha de referencia
+                <input name="publishedAt" type="date">
+              </label>
+
+              <label class="publication-field publication-field--wide">Texto alternativo de la imagen
+                <input name="alt" placeholder="Describa la imagen para accesibilidad">
+              </label>
+
+              <label class="publication-field publication-field--wide publication-upload">Documento o video principal
+                <input name="document" type="file" accept=".pdf,.xlsx,.xls,.csv,.ppt,.pptx,.doc,.docx,video/*">
+                <small id="publicationDocumentHint">Puede subir PDF, Excel, PowerPoint, Word o video.</small>
+              </label>
+
+              <label class="publication-field publication-field--wide publication-upload">Imagen de portada
+                <input name="image" type="file" accept="image/*">
+                <small id="publicationImageHint">Cargue una portada visual para destacar el contenido.</small>
+              </label>
+            </div>
+
+            <div class="publication-modal__toggles">
+              <label class="publication-switch"><input type="checkbox" name="featured"><span>Marcar como destacado</span></label>
+              <label class="publication-switch"><input type="checkbox" name="active" checked><span>Contenido activo</span></label>
+              <label class="publication-switch"><input type="checkbox" name="hidden"><span>Ocultar de la vista pública</span></label>
+            </div>
+
+            <div class="publication-modal__actions">
+              <button type="button" class="publication-secondary-button" id="publicationModalCancel">Cancelar</button>
+              <button type="submit" class="publication-primary-button" id="publicationModalSave">Guardar contenido</button>
+            </div>
+          </form>
+        </div>
+      </div>
     `;
   }
 
@@ -772,6 +908,7 @@
     document.body.appendChild(holder);
 
     bindToolbar();
+    renderPublicationManager();
     updateDrivePanel();
     updateConsoleIdentity();
     updateEditingInterface();
@@ -792,6 +929,17 @@
 
     if (tabName === "drive") updateDrivePanel();
     if (tabName === "users") updateUserManagementButton();
+    if (tabName === "publishing") renderPublicationManager();
+
+    const content = document.querySelector(".admin-console__content");
+    if (content) {
+      content.scrollTo({
+        top:0,
+        behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth"
+      });
+    }
   }
 
   function updateConsoleIdentity() {
@@ -1040,6 +1188,7 @@
     document.querySelectorAll("[data-create-entity]").forEach(button => {
       button.addEventListener("click", () => openNewEntityInspector(button.dataset.createEntity));
     });
+    bindPublicationManager();
     updateBannerPreview();
 
     document.querySelectorAll("[data-console-tab]").forEach(button => {
@@ -1052,6 +1201,10 @@
     get("#inlineConsoleBackdrop")?.addEventListener("click",closeConsole);
 
     document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && document.querySelector("#publicationModal")?.classList.contains("open")) {
+        closePublicationModal();
+        return;
+      }
       if (event.key === "Escape"
         && document.querySelector("#inlineAdminToolbar")?.classList.contains("open")) {
         closeConsole();
@@ -1169,6 +1322,364 @@
     get("#inlineInspectorClose")?.addEventListener("click", closeInspector);
   }
 
+
+
+  function normalizeManagedResource(item = {}) {
+    return {
+      id: item.id || `r${Date.now()}${Math.floor(Math.random()*1000)}`,
+      title: item.title || "Contenido sin título",
+      year: Number(item.year) || currentYearContext() || new Date().getFullYear(),
+      type: item.type || "informe",
+      description: item.description || "",
+      meta: item.meta || "Recurso digital",
+      url: item.url || "#",
+      image: item.image || "",
+      featured: Boolean(item.featured),
+      hidden: Boolean(item.hidden),
+      active: item.active !== false,
+      source: item.source || "",
+      alt: item.alt || "",
+      publishedAt: item.publishedAt || (typeof item.createdAt === "string" && item.createdAt.length >= 10 ? item.createdAt.slice(0,10) : new Date().toISOString().slice(0,10)),
+      createdAt: item.createdAt || new Date().toISOString()
+    };
+  }
+
+  function ensureManagedResources() {
+    state.resources = (state.resources || []).map(normalizeManagedResource);
+    return state.resources;
+  }
+
+  function resourceTypeBadge(type = "") {
+    const map = {
+      informe: "PDF",
+      presentacion: "PPT",
+      video: "VID",
+      datos: "XLS",
+      compromiso: "ACT",
+      respuesta: "DOC"
+    };
+    return map[type] || "DOC";
+  }
+
+  function formatPublicationDate(dateString = "") {
+    if (!dateString) return "Sin fecha";
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString("es-CO", { day:"numeric", month:"short", year:"numeric" });
+  }
+
+  function getManagedResources() {
+    ensureManagedResources();
+    let items = [...state.resources].map(normalizeManagedResource);
+
+    if (publicationUi.tab === "inactive") items = items.filter(item => item.active === false);
+    if (publicationUi.tab === "featured") items = items.filter(item => item.featured);
+    if (publicationUi.tab === "hidden") items = items.filter(item => item.hidden);
+    if (publicationUi.tab === "recent") items = items.filter(item => item.hidden !== true && item.active !== false);
+
+    if (publicationUi.year !== "all") items = items.filter(item => String(item.year) === String(publicationUi.year));
+    if (publicationUi.type !== "all") items = items.filter(item => item.type === publicationUi.type);
+
+    items.sort((a,b) => {
+      const left = new Date(a.publishedAt || a.createdAt || 0).getTime();
+      const right = new Date(b.publishedAt || b.createdAt || 0).getTime();
+      return right - left;
+    });
+
+    return items;
+  }
+
+  function renderPublicationYearFilter() {
+    const select = document.querySelector("#pubYearFilter");
+    const yearSelect = document.querySelector("#publicationYearSelect");
+    if (!select && !yearSelect) return;
+    const years = [...new Set((state.years || []).map(item => Number(item.year)).filter(Boolean))].sort((a,b)=>b-a);
+    if (!years.length) years.push(new Date().getFullYear());
+    const options = ['<option value="all">Todas las fechas</option>']
+      .concat(years.map(year => `<option value="${year}">${year}</option>`))
+      .join("");
+    if (select) {
+      select.innerHTML = options;
+      select.value = publicationUi.year || "all";
+    }
+    if (yearSelect) {
+      yearSelect.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join("");
+    }
+  }
+
+  function renderPublicationManager() {
+    const holder = document.querySelector("#pubManagerList");
+    const summary = document.querySelector("#pubManagerSummary");
+    if (!holder || !summary) return;
+
+    renderPublicationYearFilter();
+    holder.classList.remove("is-refreshed");
+    requestAnimationFrame(() => holder.classList.add("is-refreshed"));
+    const items = getManagedResources();
+
+    document.querySelectorAll("[data-pub-tab]").forEach(button => {
+      button.classList.toggle("is-active", button.dataset.pubTab === publicationUi.tab);
+    });
+    document.querySelector("#pubTypeFilter") && (document.querySelector("#pubTypeFilter").value = publicationUi.type);
+    document.querySelector("#pubYearFilter") && (document.querySelector("#pubYearFilter").value = publicationUi.year);
+    document.querySelector("#pubViewGrid")?.classList.toggle("is-active", publicationUi.view === "grid");
+    document.querySelector("#pubViewList")?.classList.toggle("is-active", publicationUi.view === "list");
+
+    holder.className = `publication-manager-list ${publicationUi.view === "grid" ? "is-grid" : "is-list"}`;
+
+    const tabLabel = {
+      recent: "recientes",
+      inactive: "inactivos",
+      featured: "destacados",
+      hidden: "ocultos"
+    }[publicationUi.tab] || "filtrados";
+
+    summary.innerHTML = `<strong>${items.length}</strong> contenidos ${tabLabel}. Use “Nuevo contenido” para abrir el formulario completo de publicación.`;
+
+    if (!items.length) {
+      holder.innerHTML = `
+        <div class="publication-empty-state">
+          <strong>No hay contenidos para este filtro.</strong>
+          <p>Pruebe otra vista o cree una nueva publicación para el portal institucional.</p>
+          <button type="button" class="publication-new-button" data-pub-create-inline="1">Crear contenido</button>
+        </div>`;
+      return;
+    }
+
+    holder.innerHTML = items.map(item => {
+      const chips = [
+        item.featured ? '<span class="publication-chip is-featured">Destacado</span>' : '',
+        item.hidden ? '<span class="publication-chip is-hidden">Oculto</span>' : '',
+        item.active === false ? '<span class="publication-chip is-inactive">Inactivo</span>' : '<span class="publication-chip is-active">Activo</span>'
+      ].join('');
+      return `
+        <article class="publication-card ${item.featured ? 'is-featured' : ''}">
+          <div class="publication-card__badge ${'type-'+item.type}">${resourceTypeBadge(item.type)}</div>
+          <div class="publication-card__body">
+            <div class="publication-card__meta">${helpers.escape(String(item.year))} · ${helpers.escape(helpers.typeLabel(item.type))} · ${helpers.escape(formatPublicationDate(item.publishedAt))}</div>
+            <h3>${helpers.escape(item.title)}</h3>
+            <p>${helpers.escape(item.description || item.meta || 'Contenido institucional')}</p>
+            <div class="publication-card__chips">${chips}</div>
+          </div>
+          <div class="publication-card__footer">
+            <span class="publication-card__detail">${helpers.escape(item.meta || 'Recurso digital')}</span>
+            <div class="publication-card__actions">
+              <button type="button" class="publication-mini-action" data-pub-edit="${item.id}">Editar</button>
+              <button type="button" class="publication-mini-action" data-pub-featured="${item.id}">${item.featured ? 'Quitar destacado' : 'Destacar'}</button>
+              <button type="button" class="publication-mini-action" data-pub-hidden="${item.id}">${item.hidden ? 'Mostrar' : 'Ocultar'}</button>
+            </div>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  function openPublicationModal(resourceId = "") {
+    ensureManagedResources();
+    const modal = document.querySelector("#publicationModal");
+    const form = document.querySelector("#publicationForm");
+    if (!modal || !form) return;
+
+    const resource = state.resources.find(item => item.id === resourceId);
+    const normalized = normalizeManagedResource(resource || {});
+    renderPublicationYearFilter();
+
+    document.querySelector("#publicationModalTitle").textContent = resource ? "Editar contenido" : "Nuevo contenido";
+    document.querySelector("#publicationModalSubtitle").textContent = resource
+      ? "Actualice texto, archivo, imagen, estado y visibilidad del contenido seleccionado."
+      : "Complete la información editorial que necesita el contenido antes de publicarlo.";
+
+    form.reset();
+    form.elements.id.value = resource ? normalized.id : "";
+    form.elements.title.value = normalized.title && resource ? normalized.title : "";
+    form.elements.year.value = String(normalized.year || new Date().getFullYear());
+    form.elements.type.value = normalized.type || "informe";
+    form.elements.description.value = normalized.description || "";
+    form.elements.meta.value = normalized.meta && resource ? normalized.meta : "";
+    form.elements.url.value = normalized.url && normalized.url !== '#' && resource ? normalized.url : "";
+    form.elements.source.value = normalized.source || "";
+    form.elements.publishedAt.value = normalized.publishedAt || new Date().toISOString().slice(0,10);
+    form.elements.alt.value = normalized.alt || "";
+    form.elements.featured.checked = Boolean(normalized.featured);
+    form.elements.active.checked = normalized.active !== false;
+    form.elements.hidden.checked = Boolean(normalized.hidden);
+    form.elements.document.value = "";
+    form.elements.image.value = "";
+    document.querySelector("#publicationDocumentHint").textContent = normalized.url && resource ? `Archivo o enlace actual configurado.` : "Puede subir PDF, Excel, PowerPoint, Word o video.";
+    document.querySelector("#publicationImageHint").textContent = normalized.image && resource ? "La portada actual se conservará si no sube una nueva imagen." : "Cargue una portada visual para destacar el contenido.";
+
+    modal.hidden = false;
+    requestAnimationFrame(() => {
+      modal.classList.add("open");
+      form.elements.title?.focus();
+    });
+    document.body.classList.add("publication-modal-open");
+  }
+
+  function closePublicationModal() {
+    const modal = document.querySelector("#publicationModal");
+    if (!modal) return;
+    modal.classList.remove("open");
+    document.body.classList.remove("publication-modal-open");
+    setTimeout(() => { modal.hidden = true; }, 180);
+  }
+
+  function persistPortalChanges(message = "Cambios guardados.") {
+    helpers.save?.();
+    persist();
+    renderPublicationManager();
+    helpers.toast(message);
+  }
+
+  function bindPublicationManager() {
+    document.querySelectorAll("[data-pub-tab]").forEach(button => {
+      button.addEventListener("click", () => {
+        publicationUi.tab = button.dataset.pubTab || "recent";
+        renderPublicationManager();
+      });
+    });
+
+    document.querySelector("#pubYearFilter")?.addEventListener("change", event => {
+      publicationUi.year = event.target.value;
+      renderPublicationManager();
+    });
+
+    document.querySelector("#pubTypeFilter")?.addEventListener("change", event => {
+      publicationUi.type = event.target.value;
+      renderPublicationManager();
+    });
+
+    document.querySelector("#pubViewGrid")?.addEventListener("click", () => {
+      publicationUi.view = "grid";
+      renderPublicationManager();
+    });
+    document.querySelector("#pubViewList")?.addEventListener("click", () => {
+      publicationUi.view = "list";
+      renderPublicationManager();
+    });
+
+    document.querySelector("#pubNewContent")?.addEventListener("click", () => openPublicationModal());
+    document.querySelector("#pubManagerList")?.addEventListener("click", event => {
+      const create = event.target.closest("[data-pub-create-inline]");
+      if (create) {
+        openPublicationModal();
+        return;
+      }
+      const edit = event.target.closest("[data-pub-edit]");
+      if (edit) {
+        openPublicationModal(edit.dataset.pubEdit);
+        return;
+      }
+      const toggleFeatured = event.target.closest("[data-pub-featured]");
+      if (toggleFeatured) {
+        const item = ensureManagedResources().find(resource => resource.id === toggleFeatured.dataset.pubFeatured);
+        if (!item) return;
+        item.featured = !item.featured;
+        persistPortalChanges(item.featured ? "Contenido marcado como destacado." : "Se retiró del destacado.");
+        return;
+      }
+      const toggleHidden = event.target.closest("[data-pub-hidden]");
+      if (toggleHidden) {
+        const item = ensureManagedResources().find(resource => resource.id === toggleHidden.dataset.pubHidden);
+        if (!item) return;
+        item.hidden = !item.hidden;
+        persistPortalChanges(item.hidden ? "Contenido ocultado del portal." : "Contenido visible nuevamente.");
+      }
+    });
+
+    document.querySelector("#publicationModalClose")?.addEventListener("click", closePublicationModal);
+    document.querySelector("#publicationModalCancel")?.addEventListener("click", closePublicationModal);
+    document.querySelector("#publicationModalBackdrop")?.addEventListener("click", closePublicationModal);
+
+    document.querySelector("#publicationForm")?.addEventListener("change", event => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "file") return;
+      const file = input.files?.[0];
+      const hintId = input.name === "document"
+        ? "#publicationDocumentHint"
+        : "#publicationImageHint";
+      const hint = document.querySelector(hintId);
+      if (!hint) return;
+
+      if (!file) return;
+      const size = file.size > 1024 * 1024
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.max(1, Math.round(file.size / 1024))} KB`;
+      hint.textContent = `${file.name} · ${size}`;
+      hint.closest(".publication-upload")?.classList.add("has-selected-file");
+    });
+
+    document.querySelector("#publicationForm")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const data = new FormData(form);
+      const saveButton = document.querySelector("#publicationModalSave");
+      const existing = ensureManagedResources().find(item => item.id === data.get("id"));
+      const baseItem = normalizeManagedResource(existing || {});
+
+      saveButton.disabled = true;
+      saveButton.textContent = "Guardando…";
+      form.classList.add("is-saving");
+      form.setAttribute("aria-busy","true");
+      try {
+        let image = baseItem.image || "";
+        let url = baseItem.url || data.get("url") || "#";
+
+        const imageFile = form.elements.image.files[0];
+        if (imageFile) {
+          image = await persistImage(
+            await compressedImage(imageFile, { maxWidth: 1600, maxHeight: 1100, quality: .85 }),
+            `resources/${data.get("year")}`
+          );
+        }
+
+        const documentFile = form.elements.document.files[0];
+        if (documentFile) {
+          url = await persistDocument(documentFile, `resources/${data.get("year")}`) || url;
+        } else if ((data.get("url") || "").trim()) {
+          url = data.get("url").trim();
+        }
+
+        const record = {
+          ...baseItem,
+          title: String(data.get("title") || "").trim(),
+          year: Number(data.get("year")) || new Date().getFullYear(),
+          type: String(data.get("type") || "informe"),
+          description: String(data.get("description") || "").trim(),
+          meta: String(data.get("meta") || "").trim() || "Recurso digital",
+          url: url || "#",
+          source: String(data.get("source") || "").trim(),
+          publishedAt: String(data.get("publishedAt") || "").trim() || new Date().toISOString().slice(0,10),
+          alt: String(data.get("alt") || "").trim(),
+          featured: data.get("featured") === "on",
+          active: data.get("active") === "on",
+          hidden: data.get("hidden") === "on",
+          image,
+          createdAt: existing?.createdAt || new Date().toISOString()
+        };
+
+        if (existing) {
+          Object.assign(existing, record);
+        } else {
+          state.resources.unshift({
+            id: `r${Date.now()}`,
+            ...record
+          });
+        }
+
+        persistPortalChanges(existing ? "Contenido actualizado correctamente." : "Nuevo contenido agregado al portal.");
+        closePublicationModal();
+      } catch (error) {
+        helpers.toast(window.FirebasePortal?.friendlyError?.(error) || error.message);
+      } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "Guardar contenido";
+        form.classList.remove("is-saving");
+        form.removeAttribute("aria-busy");
+      }
+    });
+
+    renderPublicationManager();
+  }
 
   function updateBannerPreview() {
     const holder = document.querySelector("#inlineBannerPreviewStrip");

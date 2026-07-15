@@ -1,0 +1,29 @@
+{
+  "version": "10.4",
+  "javascript": {
+    "shared.js": "OK",
+    "inline-admin.js": "OK"
+  },
+  "css_braces_balanced": true,
+  "files": [
+    "shared.js",
+    "styles.css",
+    "inline-admin.js"
+  ],
+  "areas_reviewed": [
+    "cabecera y navegación",
+    "botones y estados de interacción",
+    "formularios y carga de archivos",
+    "diálogos y pop-ups",
+    "login y cuenta",
+    "narrador y accesibilidad",
+    "toast y buscador",
+    "consola administrativa",
+    "inspector de edición",
+    "gestor y modal de publicaciones",
+    "Google Drive",
+    "gestión de usuarios",
+    "tablas y dashboards",
+    "responsive y reducción de movimiento"
+  ]
+}

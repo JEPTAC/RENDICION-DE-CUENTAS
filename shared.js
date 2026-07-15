@@ -1291,7 +1291,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=10.2-clean-header";
+    script.src = "firebase-service.js?v=10.4-design-system";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1302,7 +1302,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.2-clean-header";
+    script.src = "inline-admin.js?v=10.4-design-system";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -1765,6 +1765,76 @@
     });
   }
 
+
+  function initUiPolish() {
+    document.body.classList.add("ui-polished");
+
+    const header = document.querySelector("#siteHeader");
+    const updateHeaderState = () => {
+      header?.classList.toggle("is-scrolled", window.scrollY > 12);
+    };
+    updateHeaderState();
+    window.addEventListener("scroll", updateHeaderState, {passive:true});
+
+    document.addEventListener("pointerdown", event => {
+      const control = event.target.closest(
+        "button,.button,a[href],summary,[role='button']"
+      );
+      if (!control || control.matches(":disabled,[aria-disabled='true']")) return;
+      control.classList.add("is-pressed");
+      window.setTimeout(() => control.classList.remove("is-pressed"), 180);
+    }, {passive:true});
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Tab") document.body.classList.add("keyboard-navigation");
+    });
+
+    document.addEventListener("pointerdown", () => {
+      document.body.classList.remove("keyboard-navigation");
+    }, {passive:true});
+
+    document.addEventListener("change", event => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "file") return;
+
+      const container = input.closest(
+        ".publication-upload,.admin-upload-field,.inline-file,label"
+      );
+      if (!container) return;
+
+      const files = Array.from(input.files || []);
+      container.classList.toggle("has-selected-file", files.length > 0);
+      container.dataset.fileName = files.length
+        ? files.length === 1
+          ? files[0].name
+          : `${files.length} archivos seleccionados`
+        : "";
+    });
+
+    const syncModalState = () => {
+      const hasOpenDialog = Boolean(
+        document.querySelector(
+          "dialog[open],.publication-modal.open,.admin-console-shell.open,.inline-admin-inspector.open"
+        )
+      );
+      document.body.classList.toggle("has-open-interface", hasOpenDialog);
+    };
+
+    const interfaceObserver = new MutationObserver(syncModalState);
+    interfaceObserver.observe(document.body, {
+      subtree:true,
+      childList:true,
+      attributes:true,
+      attributeFilter:["open","class","hidden"]
+    });
+    syncModalState();
+
+    document.querySelectorAll("dialog").forEach(dialog => {
+      dialog.addEventListener("close", syncModalState);
+      dialog.addEventListener("cancel", syncModalState);
+    });
+  }
+
   function initReveal() {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -1779,7 +1849,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.2-clean-header`;
+      const versioned = `${base}?v=10.4-design-system`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -1790,6 +1860,7 @@
     renderHeader();
     renderFooter();
     renderGlobalDialogs();
+    initUiPolish();
     bindGlobalEvents();
     bindFirebaseEvents();
     initReader();
