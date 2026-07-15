@@ -593,12 +593,13 @@
     const state = portal()?.state;
     if (!state) throw new Error("El estado del portal no está disponible.");
     return {
-      schemaVersion:9,
+      schemaVersion:10.5,
       years:state.years,
       resources:state.resources,
       dashboards:state.dashboards,
       commitments:state.commitments,
       citizenRequests:state.citizenRequests,
+      news:state.news,
       settings:state.settings,
       content:state.content,
       pageSettings:state.pageSettings
@@ -625,7 +626,7 @@
         Number(localStorage.getItem("sp_v9_cloud_version") || 0);
       const state = portal().state;
 
-      ["years","resources","commitments","citizenRequests"].forEach(key => {
+      ["years","resources","commitments","citizenRequests","news"].forEach(key => {
         if (Array.isArray(remote[key])) state[key] = remote[key];
       });
       ["dashboards","settings","content","pageSettings"].forEach(key => {

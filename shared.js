@@ -3,6 +3,7 @@
     years: "sp_v4_years",
     resources: "sp_v4_resources",
     ideas: "sp_v4_ideas",
+    news: "sp_v10_5_news",
     settings: "sp_v6_settings",
     content: "sp_v6_content",
     pageSettings: "sp_v6_page_settings",
@@ -104,6 +105,118 @@
     }
   ];
 
+
+  const DEFAULT_NEWS = [
+    {
+      id:"n1",
+      title:"El portal de Rendición de Cuentas incorpora una sala de noticias y avances",
+      category:"Transparencia",
+      excerpt:"La ciudadanía contará con una sección organizada para consultar novedades, publicaciones, documentos y avances relacionados con la gestión municipal.",
+      body:"El portal especial de Rendición de Cuentas amplía su estructura con una sala de noticias diseñada para presentar información de forma clara, verificable y accesible.\n\nCada publicación podrá incluir una fotografía de portada, dependencia responsable, fecha, etiquetas, documentos relacionados y enlaces de consulta.\n\nLa sección se integra con el buscador general, el narrador de texto y las herramientas de accesibilidad del portal.",
+      publishedAt:"2026-07-15",
+      source:"Portal de Rendición de Cuentas",
+      author:"Alcaldía Municipal de San Pedro",
+      tags:["Transparencia","Información pública","Portal"],
+      image:"",
+      imageAlt:"Vista de la nueva sección de noticias del portal de Rendición de Cuentas",
+      url:"#",
+      featured:true,
+      active:true,
+      hidden:false,
+      createdAt:"2026-07-15T08:00:00"
+    },
+    {
+      id:"n2",
+      title:"Nuevo sistema facilita el seguimiento a indicadores, inversión y compromisos",
+      category:"Resultados",
+      excerpt:"Los tableros permiten comparar datos por vigencia y consultar los soportes asociados a cada resultado.",
+      body:"Los tableros de la plataforma organizan indicadores de cumplimiento, inversión, población beneficiada y compromisos ciudadanos.\n\nLa información se presenta mediante tarjetas, gráficas, tablas accesibles y enlaces a los documentos que respaldan los resultados.\n\nEl objetivo es que cualquier persona pueda comprender el avance de la gestión sin depender de informes extensos.",
+      publishedAt:"2026-07-12",
+      source:"Equipo de Rendición de Cuentas",
+      author:"Alcaldía Municipal de San Pedro",
+      tags:["Indicadores","Resultados","Seguimiento"],
+      image:"",
+      imageAlt:"Representación de indicadores y gráficas de seguimiento institucional",
+      url:"#",
+      featured:true,
+      active:true,
+      hidden:false,
+      createdAt:"2026-07-12T09:00:00"
+    },
+    {
+      id:"n3",
+      title:"La biblioteca digital reúne informes, presentaciones, videos y datos abiertos",
+      category:"Documentos",
+      excerpt:"El centro de recursos consolida los materiales de cada vigencia y permite filtrarlos por formato, año o palabra clave.",
+      body:"La biblioteca digital concentra los documentos principales de la Rendición de Cuentas.\n\nLos administradores pueden publicar archivos directamente desde cada sección, asociarlos a una vigencia y definir si deben aparecer como destacados.\n\nLos archivos se almacenan en Google Drive y los datos estructurados se sincronizan con Firestore.",
+      publishedAt:"2026-07-09",
+      source:"Centro de Recursos",
+      author:"Alcaldía Municipal de San Pedro",
+      tags:["Documentos","Datos abiertos","Google Drive"],
+      image:"",
+      imageAlt:"Biblioteca digital con diferentes formatos documentales",
+      url:"#",
+      featured:false,
+      active:true,
+      hidden:false,
+      createdAt:"2026-07-09T10:30:00"
+    },
+    {
+      id:"n4",
+      title:"Las cuentas ciudadanas permiten participar y consultar respuestas institucionales",
+      category:"Participación",
+      excerpt:"Las personas pueden registrarse como invitadas, verificar su correo y participar en las iniciativas del portal.",
+      body:"El registro ciudadano permite crear una cuenta gratuita con correo y contraseña o mediante una cuenta de Google.\n\nLas cuentas nuevas reciben el rol de invitado. El superadministrador puede consultar los perfiles, activar o desactivar accesos y asignar roles administrativos.\n\nLa autenticación se gestiona con Firebase Authentication y los perfiles se conservan en Firestore.",
+      publishedAt:"2026-07-05",
+      source:"Participación Ciudadana",
+      author:"Alcaldía Municipal de San Pedro",
+      tags:["Participación","Usuarios","Firebase"],
+      image:"",
+      imageAlt:"Personas participando en un portal ciudadano",
+      url:"#",
+      featured:false,
+      active:true,
+      hidden:false,
+      createdAt:"2026-07-05T11:00:00"
+    },
+    {
+      id:"n5",
+      title:"La edición contextual agiliza la publicación de contenidos institucionales",
+      category:"Innovación",
+      excerpt:"Los administradores podrán editar textos, imágenes y tarjetas directamente en cada módulo sin recorrer toda la consola.",
+      body:"La edición contextual incorpora controles discretos que aparecen únicamente para usuarios autorizados.\n\nDesde cada segmento es posible editar la sección, habilitar la edición de textos, crear una nueva publicación o modificar una tarjeta existente.\n\nLa vista visitante permite ocultar temporalmente estos controles para revisar la experiencia pública sin cerrar la sesión.",
+      publishedAt:"2026-07-02",
+      source:"Administración del portal",
+      author:"Alcaldía Municipal de San Pedro",
+      tags:["Innovación","Administración","Edición"],
+      image:"",
+      imageAlt:"Controles de edición contextual sobre una página institucional",
+      url:"#",
+      featured:false,
+      active:true,
+      hidden:false,
+      createdAt:"2026-07-02T14:00:00"
+    },
+    {
+      id:"n6",
+      title:"El narrador de texto y los controles visuales fortalecen la accesibilidad",
+      category:"Accesibilidad",
+      excerpt:"El portal integra lectura en español, ajustes de tamaño, contraste, navegación por teclado y reducción de movimiento.",
+      body:"Las herramientas de accesibilidad permiten escuchar el contenido, ajustar la velocidad de lectura y seleccionar una sección específica.\n\nTambién se incluyen controles de tamaño de texto, contraste, foco visible para teclado y respeto por la preferencia de reducción de movimiento del dispositivo.\n\nLas imágenes y publicaciones cuentan con campos para registrar texto alternativo.",
+      publishedAt:"2026-06-28",
+      source:"Accesibilidad Digital",
+      author:"Alcaldía Municipal de San Pedro",
+      tags:["Accesibilidad","Narración","Inclusión"],
+      image:"",
+      imageAlt:"Herramientas de accesibilidad y narración de texto",
+      url:"#",
+      featured:false,
+      active:true,
+      hidden:false,
+      createdAt:"2026-06-28T08:45:00"
+    }
+  ];
+
   const DEFAULT_DASHBOARDS = {"2025":{"year":2025,"technical":{"eventName":"Audiencia Pública de Rendición de Cuentas","entity":"Alcaldía Municipal de San Pedro, Valle del Cauca","presides":"Diego Fernando Mendoza Tascón","territory":"Municipio de San Pedro, Valle del Cauca","elaborationDate":"Mayo de 2026","source":"Audiencia pública, intervenciones por dependencia y matriz ciudadana de solicitudes","documentStatus":"Entregable final"},"kpis":[{"id":"kpi-investment","label":"Inversión base analizada","value":13435321251,"format":"currency","display":"$13.435.321.251","description":"Suma de los rubros principales reportados.","icon":"$","color":"blue"},{"id":"kpi-ita","label":"Índice ITA","value":92,"format":"score","display":"92/100","description":"Transparencia y acceso a la información.","icon":"ITA","color":"teal"},{"id":"kpi-business","label":"Emprendimientos beneficiados","value":66,"format":"number","display":"66","description":"Beneficiados por San Pedro Impulsa 2025.","icon":"↗","color":"orange"},{"id":"kpi-victims","label":"Víctimas atendidas","value":3000,"format":"number","display":"3.000","description":"Personas impactadas mediante jornadas y ayudas.","icon":"♥","color":"pink"},{"id":"kpi-older","label":"Adultos mayores beneficiados","value":550,"format":"number","display":"550","description":"Beneficiarios de programas sociales.","icon":"+","color":"purple"},{"id":"kpi-health","label":"Salud pública","value":4293,"format":"number","display":"4.293","description":"Personas beneficiadas en actividades urbanas y rurales.","icon":"✚","color":"green"}],"investment":[{"id":"inv-planning","label":"Planeación e Infraestructura","value":7772469282,"scope":"Servicios públicos, saneamiento, alumbrado, vías, maquinaria y subsidios."},{"id":"inv-government","label":"Gobierno y Convivencia","value":1698864332,"scope":"Víctimas, tránsito, seguridad, sistema penitenciario, JAC, Comisaría y gestión del riesgo."},{"id":"inv-education","label":"Educación, Cultura y Deporte","value":1593000000,"scope":"Cultura, deporte, recreación, educación, PAE, transporte y escenarios."},{"id":"inv-welfare","label":"Bienestar Social","value":618577054,"scope":"Adultos mayores, género, LGBTIQ+, etnias, niñez, adolescencia y familia."},{"id":"inv-agriculture","label":"Agricultura y Medio Ambiente","value":588722397,"scope":"Campo, bienestar animal, mercados campesinos, huertas y recurso hídrico."},{"id":"inv-finance","label":"Hacienda","value":501938794,"scope":"Modernización financiera, saneamiento fiscal, recaudo y refinanciación."},{"id":"inv-health","label":"Salud pública - proyecto PIC","value":501246394,"scope":"Promoción, prevención, vigilancia epidemiológica y acciones urbanas y rurales."},{"id":"inv-general","label":"Secretaría General","value":160502998,"scope":"Turismo, emprendimiento, empleo, transparencia, canales digitales y PQR."}],"populationReach":[{"id":"reach-water","label":"Gestión del recurso hídrico","value":18128},{"id":"reach-insurance","label":"Aseguramiento en salud","value":8353},{"id":"reach-culture","label":"Cultura","value":8000},{"id":"reach-public-health","label":"Salud pública","value":4293},{"id":"reach-victims","label":"Víctimas del conflicto","value":3000},{"id":"reach-family","label":"Niñez y familia","value":2583},{"id":"reach-education","label":"Educación","value":2000},{"id":"reach-markets","label":"Mercados campesinos","value":590},{"id":"reach-older","label":"Adultos mayores","value":550},{"id":"reach-women","label":"Mujeres","value":300}],"execution":[{"id":"exe-transparency","label":"Secretaría General - transparencia","value":100},{"id":"exe-employment","label":"Secretaría General - empleo","value":100},{"id":"exe-tourism","label":"Secretaría General - turismo","value":100},{"id":"exe-family","label":"Bienestar - NNA y familia","value":100},{"id":"exe-gender","label":"Bienestar - género","value":100},{"id":"exe-lgbtiq","label":"Bienestar - LGBTIQ+","value":100},{"id":"exe-territorial","label":"Planeación - gestión territorial","value":100},{"id":"exe-finance-system","label":"Hacienda - sistema financiero","value":100},{"id":"exe-fiscal","label":"Hacienda - saneamiento fiscal","value":99.91},{"id":"exe-risk","label":"Gobierno - gestión del riesgo","value":99},{"id":"exe-jac","label":"Gobierno - JAC","value":99},{"id":"exe-older","label":"Bienestar - adultos mayores","value":97.5},{"id":"exe-transit","label":"Gobierno - tránsito","value":96},{"id":"exe-victims","label":"Gobierno - víctimas","value":96},{"id":"exe-education","label":"Educación","value":92},{"id":"exe-culture","label":"Cultura","value":82},{"id":"exe-prison","label":"Gobierno - sistema penitenciario","value":80},{"id":"exe-sports","label":"Deporte y recreación","value":38}],"methodology":[{"id":"method-1","title":"Apertura institucional","description":"Contextualización de la responsabilidad pública de informar la gestión."},{"id":"method-2","title":"Pregunta orientadora","description":"Balance general, retos territoriales y mensaje del alcalde."},{"id":"method-3","title":"Informes por dependencia","description":"Proyectos, inversión, ejecución, beneficiarios y resultados."},{"id":"method-4","title":"Intervenciones complementarias","description":"Fuentes de financiación, impactos, dificultades y prioridades."},{"id":"method-5","title":"Síntesis de resultados","description":"Logros, avances sectoriales y relación con el Plan de Desarrollo."},{"id":"method-6","title":"Compromisos y seguimiento","description":"Retos 2026 en vías, acueductos, emprendimiento, transparencia y control social."}],"focusAreas":["Transparencia y control social","Planeación y sostenibilidad financiera","Inversión social y enfoque diferencial","Infraestructura y servicios esenciales","Participación ciudadana y seguimiento institucional"],"institutionalResults":[{"id":"result-finance","department":"Hacienda","actions":"Modernización financiera, saneamiento fiscal, recaudo y refinanciación.","result":"Mayor recaudo, reducción de tasa y estabilidad fiscal.","value":"$501.938.794"},{"id":"result-planning","department":"Planeación e Infraestructura","actions":"Servicios públicos, saneamiento, vías, alumbrado, residuos y subsidios.","result":"Mejoramiento de condiciones urbanas y rurales.","value":"$7.772.469.282"},{"id":"result-welfare","department":"Bienestar Social","actions":"Adultos mayores, género, LGBTIQ+, etnias, NNA y familia.","result":"Inclusión y protección social.","value":"$618.577.054"},{"id":"result-education","department":"Educación, Cultura y Deporte","actions":"PAE, transporte, gratuidad, cultura, deporte y escenarios.","result":"Permanencia escolar, identidad cultural y recreación.","value":"Más de $1.500 millones"},{"id":"result-agriculture","department":"Agricultura y Ambiente","actions":"Campo, bienestar animal, mercados, huertas y recurso hídrico.","result":"Fortalecimiento rural y sostenibilidad ambiental.","value":"$588.722.397"},{"id":"result-government","department":"Gobierno y Convivencia","actions":"Víctimas, tránsito, sistema penitenciario, JAC, comisaría y riesgo.","result":"Seguridad, participación y atención a emergencias.","value":"$1.698.864.332"},{"id":"result-health","department":"Salud","actions":"PIC, discapacidad, población vulnerable, aseguramiento y EPS/IPS.","result":"Prevención, cobertura y atención territorial.","value":"$501.246.394 PIC"},{"id":"result-general","department":"Secretaría General","actions":"Turismo, emprendimiento, empleo, transparencia, web y PQR.","result":"San Pedro Impulsa, ITA 92/100 y modernización.","value":"$160.502.998"},{"id":"result-social","department":"Gestión Social","actions":"Campañas solidarias, donaciones y apoyo a pacientes y familias.","result":"Articulación comunitaria y privada.","value":"Sin cifra única reportada"}],"keyPoints":["La gestión financiera permitió mejorar la capacidad institucional de inversión mediante recaudo, fiscalización y refinanciación.","La infraestructura y los servicios públicos concentraron la mayor inversión reportada.","La política social se mantuvo como eje estratégico con enfoque diferencial.","Educación, cultura y deporte aportaron a permanencia escolar, identidad cultural y recreación.","El campo, el ambiente y la gestión del riesgo requieren continuidad.","La modernización institucional fortaleció la transparencia y el acceso a la información."]}};
 
   const DEFAULT_COMMITMENTS = [{"id":"commit-2025-01","year":2025,"title":"Intervención de vías rurales","responsible":"Planeación, Infraestructura, Agricultura y Alcaldía","scope":"Mantenimiento y adecuación de vías afectadas por ola invernal para facilitar movilidad y comercialización campesina.","priority":"Alta","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-02","year":2025,"title":"Continuidad San Pedro Impulsa","responsible":"Secretaría General y aliados institucionales","scope":"Fortalecer capacitación, entrega de insumos y acompañamiento a emprendimientos locales.","priority":"Alta","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-03","year":2025,"title":"Proyecto de doble calzada","responsible":"Alcaldía, Planeación e instancias competentes","scope":"Avanzar en mesas de trabajo, cumplimiento de sentencia y obras con inversión estimada cercana a $8.000 millones.","priority":"Estratégica","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-04","year":2025,"title":"Acueducto en San José","responsible":"Alcaldía y Planeación","scope":"Gestionar proyecto de infraestructura con cifra estimada cercana a $8.000 millones.","priority":"Estratégica","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-05","year":2025,"title":"Vías hacia Todos Santos","responsible":"Alcaldía y Gobernación del Valle del Cauca","scope":"Continuar gestión y articulación para mejorar corredores viales departamentales.","priority":"Alta","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-06","year":2025,"title":"Veeduría y control social","responsible":"Alcaldía, Concejo, Personería y comunidad","scope":"Promover acompañamiento ciudadano e institucional a proyectos y obras públicas.","priority":"Transversal","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""},{"id":"commit-2025-07","year":2025,"title":"Canales digitales y PQR","responsible":"Secretaría General y dependencias competentes","scope":"Mantener ventanilla única, página web, transparencia activa y atención oportuna al ciudadano.","priority":"Transversal","status":"pendiente","progress":0,"dueDate":"","evidenceUrl":"","updatedAt":""}];
@@ -153,6 +266,7 @@
     years: loadArray(KEYS.years, DEFAULT_YEARS),
     resources: loadArray(KEYS.resources, DEFAULT_RESOURCES),
     ideas: loadArray(KEYS.ideas, DEFAULT_IDEAS),
+    news: loadArray(KEYS.news, DEFAULT_NEWS),
     settings: loadObject(KEYS.settings, DEFAULT_SETTINGS),
     content: loadObject(KEYS.content, {}),
     pageSettings: loadObject(KEYS.pageSettings, {}),
@@ -176,6 +290,9 @@
       const numeric = Number(year);
       if ([2025, 2026, 2027].includes(numeric)) return `rendicion-${numeric}.html`;
       return `rendicion.html?year=${numeric}`;
+    },
+    newsUrl(id) {
+      return `noticia.html?id=${encodeURIComponent(String(id || ""))}`;
     },
     typeLabel(type) {
       return {
@@ -210,6 +327,7 @@
       localStorage.setItem(KEYS.years, JSON.stringify(state.years));
       localStorage.setItem(KEYS.resources, JSON.stringify(state.resources));
       localStorage.setItem(KEYS.ideas, JSON.stringify(state.ideas));
+      localStorage.setItem(KEYS.news, JSON.stringify(state.news));
       localStorage.setItem(KEYS.settings, JSON.stringify(state.settings));
       localStorage.setItem(KEYS.content, JSON.stringify(state.content));
       localStorage.setItem(KEYS.pageSettings, JSON.stringify(state.pageSettings));
@@ -307,6 +425,7 @@
               </div>
             </div>
             <a class="${active("resources")}" href="recursos.html">Recursos</a>
+            <a class="${active("news")}" href="noticias.html">Noticias</a>
             <a class="${active("ideas")}" href="ideas.html">Ideas ciudadanas</a>
           </nav>
 
@@ -403,7 +522,7 @@
             <div class="footer-social"><span>f</span><span>◎</span><span>▶</span></div>
           </div>
           <div><h3>Rendición</h3><a href="rendicion-2025.html">Vigencia 2025</a><a href="rendicion-2026.html">Vigencia 2026</a><a href="vigencias.html">Archivo histórico</a></div>
-          <div><h3>Ciudadanía</h3><a href="ideas.html">Laboratorio de ideas</a><a href="recursos.html">Centro de recursos</a><a href="https://www.sanpedro-valle.gov.co/?x=1600527" target="_blank">PQRDS</a></div>
+          <div><h3>Ciudadanía</h3><a href="noticias.html">Noticias y avances</a><a href="ideas.html">Laboratorio de ideas</a><a href="recursos.html">Centro de recursos</a><a href="https://www.sanpedro-valle.gov.co/?x=1600527" target="_blank">PQRDS</a></div>
           <div><h3>Contacto</h3><p>Calle 5 # 3-85 Esquina</p><p>San Pedro, Valle del Cauca</p><a href="https://www.sanpedro-valle.gov.co/" target="_blank">Portal institucional ↗</a></div>
         </div>
         <div class="site-shell site-footer__bottom"><span>© ${new Date().getFullYear()} Municipio de San Pedro</span><span>Rendición de Cuentas</span></div>
@@ -433,6 +552,12 @@
         <span class="section-kicker">CUENTA CIUDADANA</span>
         <h2>Ingresar al portal</h2>
         <p class="dialog-note">La ciudadanía puede crear una cuenta gratuita. Las cuentas nuevas se registran automáticamente con el rol de invitado.</p>
+
+        <div class="auth-benefits" aria-label="Beneficios de la cuenta ciudadana">
+          <div><span aria-hidden="true">✓</span><strong>Participación segura</strong><small>Apoye ideas y consulte respuestas.</small></div>
+          <div><span aria-hidden="true">✉</span><strong>Correo verificado</strong><small>Firebase protege el acceso a la cuenta.</small></div>
+          <div><span aria-hidden="true">◎</span><strong>Rol controlado</strong><small>El superadministrador gestiona permisos.</small></div>
+        </div>
 
         <div class="auth-view-tabs" role="tablist" aria-label="Acceso al portal">
           <button type="button" class="active" data-auth-view="login" role="tab" aria-selected="true">Iniciar sesión</button>
@@ -639,6 +764,7 @@
       list.innerHTML = `
         <a class="search-item" href="vigencias.html"><span><strong>Archivo histórico</strong><small>Consulte todas las vigencias</small></span><b>→</b></a>
         <a class="search-item" href="recursos.html"><span><strong>Centro de recursos</strong><small>Informes, videos, datos y respuestas</small></span><b>→</b></a>
+        <a class="search-item" href="noticias.html"><span><strong>Noticias y avances</strong><small>Novedades de la gestión y de la Rendición de Cuentas</small></span><b>→</b></a>
         <a class="search-item" href="ideas.html"><span><strong>Ideas ciudadanas</strong><small>Propuestas y respuestas institucionales</small></span><b>→</b></a>`;
       return;
     }
@@ -650,6 +776,13 @@
     state.resources
       .filter(r => `${r.title} ${r.description} ${r.year} ${r.type}`.toLowerCase().includes(q))
       .forEach(r => results.push({ title:r.title, meta:`${r.year} · ${helpers.typeLabel(r.type)}`, href:`recursos.html?q=${encodeURIComponent(r.title)}` }));
+    state.news
+      .filter(item => `${item.title} ${item.excerpt} ${item.body} ${item.category} ${(item.tags || []).join(" ")}`.toLowerCase().includes(q))
+      .forEach(item => results.push({
+        title:item.title,
+        meta:`Noticia · ${item.category || "Gestión municipal"}`,
+        href:helpers.newsUrl(item.id)
+      }));
     state.ideas
       .filter(i => `${i.title} ${i.description} ${i.category} ${i.location}`.toLowerCase().includes(q))
       .forEach(i => results.push({ title:i.title, meta:`Idea · ${helpers.statusLabel(i.status)}`, href:`ideas.html?id=${i.id}` }));
@@ -1291,7 +1424,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=10.4-design-system";
+    script.src = "firebase-service.js?v=10.5-news-inline";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1302,7 +1435,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.4-design-system";
+    script.src = "inline-admin.js?v=10.5-news-inline";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -1849,7 +1982,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.4-design-system`;
+      const versioned = `${base}?v=10.5-news-inline`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }

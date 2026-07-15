@@ -10,6 +10,7 @@
   let bannerTimer = null;
   let bannerIndex = 0;
   const publicationUi = { tab:"recent", year:"all", type:"all", view:"grid" };
+  let quickControlsEnabled = sessionStorage.getItem("sp_admin_quick_view") !== "visitor";
 
   const pageKey = () => helpers.pageKey();
 
@@ -896,6 +897,88 @@
           </form>
         </div>
       </div>
+
+      <div class="news-editor-modal" id="newsEditorModal" hidden>
+        <button type="button" class="news-editor-modal__backdrop" id="newsEditorBackdrop" aria-label="Cerrar editor de noticia"></button>
+
+        <section class="news-editor-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="newsEditorTitle">
+          <header class="news-editor-modal__head">
+            <div>
+              <span>EDITOR DE NOTICIAS</span>
+              <h2 id="newsEditorTitle">Nueva noticia</h2>
+              <p id="newsEditorSubtitle">Publique una novedad con estructura institucional, accesible y preparada para buscadores.</p>
+            </div>
+            <button type="button" class="news-editor-modal__close" id="newsEditorClose" aria-label="Cerrar editor">×</button>
+          </header>
+
+          <form class="news-editor-form" id="newsEditorForm">
+            <input type="hidden" name="id">
+
+            <div class="news-editor-grid">
+              <label class="news-editor-field news-editor-field--wide">Título
+                <input name="title" maxlength="180" required placeholder="Título claro y descriptivo">
+              </label>
+
+              <label class="news-editor-field">Categoría
+                <input name="category" maxlength="80" required placeholder="Transparencia, Participación, Resultados…">
+              </label>
+
+              <label class="news-editor-field">Fecha de publicación
+                <input name="publishedAt" type="date" required>
+              </label>
+
+              <label class="news-editor-field">Dependencia o fuente
+                <input name="source" maxlength="120" placeholder="Secretaría o dependencia responsable">
+              </label>
+
+              <label class="news-editor-field">Autor institucional
+                <input name="author" maxlength="120" placeholder="Alcaldía Municipal de San Pedro">
+              </label>
+
+              <label class="news-editor-field news-editor-field--wide">Resumen
+                <textarea name="excerpt" rows="3" maxlength="420" required placeholder="Resumen breve para la tarjeta de la noticia"></textarea>
+              </label>
+
+              <label class="news-editor-field news-editor-field--wide">Contenido completo
+                <textarea name="body" rows="10" required placeholder="Escriba la noticia. Separe los párrafos con una línea en blanco."></textarea>
+              </label>
+
+              <label class="news-editor-field news-editor-field--wide">Etiquetas
+                <input name="tags" placeholder="Transparencia, gestión, participación">
+              </label>
+
+              <label class="news-editor-field news-editor-field--wide">Texto alternativo de la imagen
+                <input name="imageAlt" maxlength="240" placeholder="Describa la fotografía para personas que no pueden verla">
+              </label>
+
+              <label class="news-editor-field news-editor-upload">Imagen de portada
+                <input name="image" type="file" accept="image/*">
+                <small id="newsImageHint">JPG o PNG. Tamaño sugerido: 1600 × 900 px.</small>
+              </label>
+
+              <label class="news-editor-field news-editor-upload">Documento relacionado
+                <input name="document" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx">
+                <small id="newsDocumentHint">Puede adjuntar un informe, presentación o base de datos.</small>
+              </label>
+
+              <label class="news-editor-field news-editor-field--wide">Enlace relacionado
+                <input name="url" placeholder="https://...">
+              </label>
+            </div>
+
+            <div class="news-editor-switches">
+              <label><input name="featured" type="checkbox"><span>Noticia destacada</span></label>
+              <label><input name="active" type="checkbox" checked><span>Publicación activa</span></label>
+              <label><input name="hidden" type="checkbox"><span>Ocultar de la vista pública</span></label>
+            </div>
+
+            <footer class="news-editor-actions">
+              <button type="button" class="publication-secondary-button" id="newsEditorCancel">Cancelar</button>
+              <button type="submit" class="publication-primary-button" id="newsEditorSave">Guardar noticia</button>
+            </footer>
+          </form>
+        </section>
+      </div>
     `;
   }
 
@@ -908,6 +991,7 @@
     document.body.appendChild(holder);
 
     bindToolbar();
+    bindNewsEditor();
     renderPublicationManager();
     updateDrivePanel();
     updateConsoleIdentity();
@@ -991,6 +1075,7 @@
   }
 
   function openConsole(tabName = "editing") {
+    enableQuickControls();
     injectToolbar();
     const shell = document.querySelector("#inlineAdminToolbar");
     if (!shell) return;
@@ -1201,6 +1286,10 @@
     get("#inlineConsoleBackdrop")?.addEventListener("click",closeConsole);
 
     document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && document.querySelector("#newsEditorModal")?.classList.contains("open")) {
+        closeNewsModal();
+        return;
+      }
       if (event.key === "Escape" && document.querySelector("#publicationModal")?.classList.contains("open")) {
         closePublicationModal();
         return;
@@ -1224,6 +1313,7 @@
     });
 
     const visitorMode = () => {
+      disableQuickControls();
       deactivate(false);
       closeConsole();
       helpers.toast("Vista de visitante activada.");
@@ -1681,6 +1771,470 @@
     renderPublicationManager();
   }
 
+
+  function normalizeNewsItem(item = {}) {
+    return {
+      id:item.id || `n${Date.now()}`,
+      title:item.title || "",
+      category:item.category || "Gestión municipal",
+      excerpt:item.excerpt || "",
+      body:item.body || "",
+      publishedAt:item.publishedAt || new Date().toISOString().slice(0,10),
+      source:item.source || "",
+      author:item.author || "Alcaldía Municipal de San Pedro",
+      tags:Array.isArray(item.tags)
+        ? item.tags
+        : String(item.tags || "").split(",").map(value => value.trim()).filter(Boolean),
+      image:item.image || "",
+      imageAlt:item.imageAlt || "",
+      url:item.url || "#",
+      featured:Boolean(item.featured),
+      active:item.active !== false,
+      hidden:Boolean(item.hidden),
+      createdAt:item.createdAt || new Date().toISOString()
+    };
+  }
+
+  function ensureNewsState() {
+    if (!Array.isArray(state.news)) state.news = [];
+    state.news = state.news.map(normalizeNewsItem);
+    return state.news;
+  }
+
+  function openNewsModal(newsId = "") {
+    injectToolbar();
+    ensureNewsState();
+
+    const modal = document.querySelector("#newsEditorModal");
+    const form = document.querySelector("#newsEditorForm");
+    if (!modal || !form) return;
+
+    const current = state.news.find(item => item.id === newsId);
+    const item = normalizeNewsItem(current || {});
+
+    document.querySelector("#newsEditorTitle").textContent =
+      current ? "Editar noticia" : "Nueva noticia";
+    document.querySelector("#newsEditorSubtitle").textContent =
+      current
+        ? "Actualice la publicación y guarde los cambios sin abandonar la página."
+        : "Cree una publicación institucional con imagen, contenido, etiquetas y documento relacionado.";
+
+    form.reset();
+    form.elements.id.value = current ? item.id : "";
+    form.elements.title.value = current ? item.title : "";
+    form.elements.category.value = item.category;
+    form.elements.publishedAt.value = item.publishedAt;
+    form.elements.source.value = item.source;
+    form.elements.author.value = item.author;
+    form.elements.excerpt.value = item.excerpt;
+    form.elements.body.value = item.body;
+    form.elements.tags.value = item.tags.join(", ");
+    form.elements.imageAlt.value = item.imageAlt;
+    form.elements.url.value = item.url !== "#" ? item.url : "";
+    form.elements.featured.checked = item.featured;
+    form.elements.active.checked = item.active;
+    form.elements.hidden.checked = item.hidden;
+    form.elements.image.value = "";
+    form.elements.document.value = "";
+
+    document.querySelector("#newsImageHint").textContent =
+      current && item.image
+        ? "La portada actual se conservará si no carga una nueva imagen."
+        : "JPG o PNG. Tamaño sugerido: 1600 × 900 px.";
+    document.querySelector("#newsDocumentHint").textContent =
+      current && item.url !== "#"
+        ? "El documento o enlace actual se conservará si no selecciona otro."
+        : "Puede adjuntar un informe, presentación o base de datos.";
+
+    modal.hidden = false;
+    requestAnimationFrame(() => {
+      modal.classList.add("open");
+      form.elements.title?.focus();
+    });
+    document.body.classList.add("news-editor-open");
+  }
+
+  function closeNewsModal() {
+    const modal = document.querySelector("#newsEditorModal");
+    if (!modal) return;
+    modal.classList.remove("open");
+    document.body.classList.remove("news-editor-open");
+    window.setTimeout(() => {
+      modal.hidden = true;
+    },180);
+  }
+
+  function saveNewsAndRefresh(message) {
+    helpers.save();
+    persist();
+    window.dispatchEvent(new CustomEvent("portal:datachange"));
+    window.dispatchEvent(new CustomEvent("portal:rendered"));
+    refreshQuickAdminControls();
+    helpers.toast(message);
+  }
+
+  function bindNewsEditor() {
+    const modal = document.querySelector("#newsEditorModal");
+    const form = document.querySelector("#newsEditorForm");
+    if (!modal || !form || modal.dataset.bound === "1") return;
+    modal.dataset.bound = "1";
+
+    document.querySelector("#newsEditorClose")?.addEventListener("click",closeNewsModal);
+    document.querySelector("#newsEditorCancel")?.addEventListener("click",closeNewsModal);
+    document.querySelector("#newsEditorBackdrop")?.addEventListener("click",closeNewsModal);
+
+    form.addEventListener("change",event => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "file") return;
+      const file = input.files?.[0];
+      if (!file) return;
+
+      const size = file.size > 1024 * 1024
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.max(1,Math.round(file.size / 1024))} KB`;
+      const hint = document.querySelector(
+        input.name === "image" ? "#newsImageHint" : "#newsDocumentHint"
+      );
+      if (hint) hint.textContent = `${file.name} · ${size}`;
+    });
+
+    form.addEventListener("submit",async event => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const saveButton = document.querySelector("#newsEditorSave");
+      const current = ensureNewsState().find(item => item.id === data.get("id"));
+      const baseItem = normalizeNewsItem(current || {});
+
+      saveButton.disabled = true;
+      saveButton.textContent = "Guardando…";
+      form.classList.add("is-saving");
+
+      try {
+        let image = baseItem.image;
+        let url = baseItem.url || "#";
+
+        const imageFile = form.elements.image.files[0];
+        if (imageFile) {
+          image = await persistImage(
+            await compressedImage(imageFile,{
+              maxWidth:1800,
+              maxHeight:1200,
+              quality:.86
+            }),
+            "news/images"
+          );
+        }
+
+        const documentFile = form.elements.document.files[0];
+        if (documentFile) {
+          url = await persistDocument(documentFile,"news/documents") || url;
+        } else if (String(data.get("url") || "").trim()) {
+          url = String(data.get("url")).trim();
+        }
+
+        const record = {
+          ...baseItem,
+          title:String(data.get("title") || "").trim(),
+          category:String(data.get("category") || "").trim(),
+          excerpt:String(data.get("excerpt") || "").trim(),
+          body:String(data.get("body") || "").trim(),
+          publishedAt:String(data.get("publishedAt") || "").trim(),
+          source:String(data.get("source") || "").trim(),
+          author:String(data.get("author") || "").trim(),
+          tags:String(data.get("tags") || "")
+            .split(",")
+            .map(value => value.trim())
+            .filter(Boolean),
+          imageAlt:String(data.get("imageAlt") || "").trim(),
+          image,
+          url:url || "#",
+          featured:data.get("featured") === "on",
+          active:data.get("active") === "on",
+          hidden:data.get("hidden") === "on",
+          createdAt:current?.createdAt || new Date().toISOString()
+        };
+
+        if (current) Object.assign(current,record);
+        else state.news.unshift({
+          id:`n${Date.now()}`,
+          ...record
+        });
+
+        closeNewsModal();
+        saveNewsAndRefresh(
+          current
+            ? "Noticia actualizada correctamente."
+            : "Nueva noticia publicada."
+        );
+      } catch (error) {
+        helpers.toast(
+          window.FirebasePortal?.friendlyError?.(error)
+          || error.message
+        );
+      } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "Guardar noticia";
+        form.classList.remove("is-saving");
+      }
+    });
+  }
+
+  function adminCanEdit() {
+    return Boolean(
+      state.admin
+      || window.FirebasePortal?.getStatus?.()?.canWrite
+      || sessionStorage.getItem("sp_admin_mode") === "local"
+    );
+  }
+
+  function quickSectionKind(section) {
+    const page = document.body.dataset.page || "";
+    const identity = [
+      section.id,
+      section.className,
+      section.querySelector(".section-kicker")?.textContent,
+      section.querySelector("h1,h2")?.textContent
+    ].join(" ").toLowerCase();
+
+    if (page === "news" || identity.includes("noticia")) return "news";
+    if (page === "resources" || /recurso|biblioteca|documento|destacado/.test(identity)) return "resource";
+    if (page === "ideas" || /idea|particip/.test(identity)) return "idea";
+    if (/hero|banner|portada/.test(identity)) return "banner";
+    return "resource";
+  }
+
+  function quickCreateLabel(kind) {
+    return {
+      news:"Nueva noticia",
+      resource:"Nuevo recurso",
+      idea:"Nueva idea",
+      banner:"Editar banner"
+    }[kind] || "Nuevo contenido";
+  }
+
+  function disableSectionQuickText(section) {
+    if (!section) return;
+    section.classList.remove("admin-quick-text-active");
+
+    section.querySelectorAll(".admin-inline-text").forEach(element => {
+      if (active) return;
+      element.contentEditable = "false";
+      element.classList.remove("admin-inline-text");
+      element.removeAttribute("aria-label");
+    });
+
+    section.querySelectorAll(".admin-inline-image").forEach(image => {
+      if (!active) image.classList.remove("admin-inline-image");
+    });
+
+    const button = section.querySelector("[data-quick-text]");
+    if (button) button.textContent = "Editar textos";
+  }
+
+  function toggleSectionQuickText(section) {
+    if (!section) return;
+    const enabling = !section.classList.contains("admin-quick-text-active");
+
+    document.querySelectorAll(".admin-quick-text-active").forEach(current => {
+      if (current !== section) disableSectionQuickText(current);
+    });
+
+    if (!enabling) {
+      disableSectionQuickText(section);
+      helpers.toast("Edición de textos finalizada.");
+      return;
+    }
+
+    section.classList.add("admin-quick-text-active");
+
+    section.querySelectorAll(
+      "h1,h2,h3,h4,p,li,blockquote,summary,.button,a:not(nav a)"
+    ).forEach(element => {
+      if (element.closest(
+        "form,dialog,.admin-context-actions,.admin-quick-card-edit,.no-inline-edit"
+      )) return;
+      element.classList.add("admin-inline-text");
+      element.contentEditable = "true";
+      element.spellcheck = true;
+      element.dataset.adminContentKey = contentKey(element);
+      element.setAttribute(
+        "aria-label",
+        `Texto editable: ${element.textContent.trim().slice(0,80)}`
+      );
+    });
+
+    section.querySelectorAll("img").forEach(image => {
+      image.classList.add("admin-inline-image");
+      image.dataset.adminImageKey = imageKey(image);
+    });
+
+    const button = section.querySelector("[data-quick-text]");
+    if (button) button.textContent = "Finalizar textos";
+    helpers.toast("Edite directamente los textos de esta sección.");
+  }
+
+  function clearQuickAdminControls() {
+    document.querySelectorAll(
+      ".admin-context-actions,.admin-quick-card-edit,.admin-quick-dock"
+    ).forEach(element => element.remove());
+
+    document.querySelectorAll(".admin-quick-section").forEach(section => {
+      disableSectionQuickText(section);
+      section.classList.remove("admin-quick-section");
+    });
+
+    document.body.classList.remove("admin-quick-mode");
+  }
+
+  function decorateQuickAdminControls() {
+    if (!adminCanEdit() || !quickControlsEnabled || active) {
+      clearQuickAdminControls();
+      return;
+    }
+
+    document.body.classList.add("admin-quick-mode");
+
+    document.querySelectorAll("main section").forEach(section => {
+      if (section.querySelector(":scope > .admin-context-actions")) return;
+
+      section.classList.add("admin-quick-section");
+      const kind = quickSectionKind(section);
+      const title =
+        section.querySelector("h1,h2")?.textContent?.trim()
+        || "Sección";
+
+      const controls = document.createElement("div");
+      controls.className = "admin-context-actions";
+      controls.setAttribute(
+        "aria-label",
+        `Administrar ${title.slice(0,80)}`
+      );
+      controls.innerHTML = `
+        <span>${helpers.escape(title.slice(0,42))}</span>
+        <button type="button" data-quick-section>Diseño</button>
+        <button type="button" data-quick-text>Editar textos</button>
+        <button type="button" data-quick-create="${kind}">
+          ${helpers.escape(quickCreateLabel(kind))}
+        </button>`;
+      section.prepend(controls);
+    });
+
+    document.querySelectorAll("[data-admin-entity]").forEach(card => {
+      if (card.querySelector(":scope > .admin-quick-card-edit")) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "admin-quick-card-edit";
+      button.dataset.quickEntity = card.dataset.adminEntity;
+      button.dataset.entityId = card.dataset.entityId || "";
+      button.dataset.entityYear = card.dataset.entityYear || "";
+      button.textContent = "Editar";
+      card.appendChild(button);
+    });
+
+    if (!document.querySelector(".admin-quick-dock")) {
+      const dock = document.createElement("div");
+      dock.className = "admin-quick-dock";
+      dock.innerHTML = `
+        <span>Edición rápida</span>
+        <button type="button" data-quick-global="news">＋ Noticia</button>
+        <button type="button" data-quick-global="resource">＋ Recurso</button>
+        <button type="button" data-quick-global="visitor">Vista visitante</button>
+        <button type="button" data-quick-global="console">Administrador</button>`;
+      document.body.appendChild(dock);
+    }
+  }
+
+  function refreshQuickAdminControls() {
+    window.setTimeout(decorateQuickAdminControls,60);
+  }
+
+  function enableQuickControls() {
+    quickControlsEnabled = true;
+    sessionStorage.setItem("sp_admin_quick_view","edit");
+    refreshQuickAdminControls();
+  }
+
+  function disableQuickControls() {
+    quickControlsEnabled = false;
+    sessionStorage.setItem("sp_admin_quick_view","visitor");
+    clearQuickAdminControls();
+  }
+
+  function bindQuickAdminActions() {
+    document.addEventListener("click",event => {
+      const sectionButton = event.target.closest("[data-quick-section]");
+      const textButton = event.target.closest("[data-quick-text]");
+      const createButton = event.target.closest("[data-quick-create]");
+      const entityButton = event.target.closest("[data-quick-entity]");
+      const globalButton = event.target.closest("[data-quick-global]");
+
+      if (!sectionButton && !textButton && !createButton && !entityButton && !globalButton) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (sectionButton) {
+        openSectionInspector(sectionButton.closest("section"));
+        return;
+      }
+
+      if (textButton) {
+        toggleSectionQuickText(textButton.closest("section"));
+        return;
+      }
+
+      if (entityButton) {
+        openEntityInspector(
+          entityButton.dataset.quickEntity,
+          entityButton.dataset.entityId,
+          entityButton.dataset.entityYear
+        );
+        return;
+      }
+
+      const kind =
+        createButton?.dataset.quickCreate
+        || globalButton?.dataset.quickGlobal;
+
+      if (kind === "news") {
+        openNewsModal();
+        return;
+      }
+      if (kind === "resource") {
+        injectToolbar();
+        openPublicationModal();
+        return;
+      }
+      if (kind === "idea") {
+        openNewEntityInspector("idea");
+        return;
+      }
+      if (kind === "banner") {
+        openSectionInspector(createButton.closest("section"));
+        return;
+      }
+      if (kind === "visitor") {
+        disableQuickControls();
+        deactivate(false);
+        helpers.toast("Vista de visitante activada.");
+        return;
+      }
+      if (kind === "console") {
+        openConsole("editing");
+      }
+    },true);
+
+    document.addEventListener("click",event => {
+      const image = event.target.closest(
+        ".admin-quick-text-active .admin-inline-image"
+      );
+      if (!image || active) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openImageInspector(image);
+    },true);
+  }
+
   function updateBannerPreview() {
     const holder = document.querySelector("#inlineBannerPreviewStrip");
     const count = document.querySelector("#inlineBannerCount");
@@ -2024,6 +2578,8 @@
   }
 
   function activate(openPanel = true) {
+    enableQuickControls();
+    clearQuickAdminControls();
     active = true;
     state.admin = true;
     sessionStorage.setItem(Portal.KEYS.admin,"1");
@@ -2059,6 +2615,7 @@
     closeInspector();
     undecorate();
     updateEditingInterface();
+    if (quickControlsEnabled) refreshQuickAdminControls();
 
     if (showMessage) {
       helpers.toast("Vista de visitante activada.");
@@ -2279,6 +2836,7 @@
     if (type === "year") return state.years.find(item => String(item.year) === String(id));
     if (type === "resource") return state.resources.find(item => item.id === id);
     if (type === "idea") return state.ideas.find(item => item.id === id);
+    if (type === "news") return ensureNewsState().find(item => item.id === id);
     if (type === "dashboardKpi") return dashboard?.kpis?.find(item => item.id === id);
     if (type === "investmentItem") return dashboard?.investment?.find(item => item.id === id);
     if (type === "reachItem") return dashboard?.populationReach?.find(item => item.id === id);
@@ -2289,6 +2847,11 @@
   }
 
   function openEntityInspector(type, id, year) {
+    if (type === "news") {
+      openNewsModal(id);
+      return;
+    }
+
     const entity = entityData(type, id, year);
     if (!entity) return;
 
@@ -2891,7 +3454,8 @@
 
     document.addEventListener("input", event => {
       const editable = event.target.closest(".admin-inline-text");
-      if (!active || !editable) return;
+      const quickEditing = Boolean(editable?.closest(".admin-quick-text-active"));
+      if ((!active && !quickEditing) || !editable) return;
       const key = contentKey(editable);
       state.content[key] = editable.innerHTML;
       persist();
@@ -2899,7 +3463,8 @@
 
     document.addEventListener("keydown", event => {
       const editable = event.target.closest(".admin-inline-text");
-      if (!active || !editable) return;
+      const quickEditing = Boolean(editable?.closest(".admin-quick-text-active"));
+      if ((!active && !quickEditing) || !editable) return;
       if (event.key === "Escape") editable.blur();
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") editable.blur();
     });
@@ -2963,9 +3528,16 @@
     window.addEventListener("firebase:auth",event => {
       updateUserManagementButton();
       updateConsoleIdentity();
-      if (!event.detail?.canWrite && event.detail?.user) {
+
+      if (event.detail?.canWrite) {
+        if (sessionStorage.getItem("sp_admin_quick_view") !== "visitor") {
+          quickControlsEnabled = true;
+        }
+        refreshQuickAdminControls();
+      } else if (event.detail?.user) {
         closeConsole();
         deactivate(false);
+        clearQuickAdminControls();
       }
     });
     window.addEventListener("firebase:users",() => {
@@ -2982,6 +3554,11 @@
     applyBanner();
     applyPublicationState();
     bindDocumentEditing();
+    bindQuickAdminActions();
+    bindNewsEditor();
+    refreshQuickAdminControls();
+
+    window.addEventListener("portal:datachange", refreshQuickAdminControls);
 
     window.addEventListener("portal:rendered", () => {
       applySavedContent();
@@ -2989,6 +3566,7 @@
       applySectionStyles();
       renderCustomBlocks();
       if (active) decorate();
+      else refreshQuickAdminControls();
     });
   }
 
@@ -2998,6 +3576,9 @@
     deactivate,
     openConsole,
     closeConsole,
+    openNews:openNewsModal,
+    enableQuickControls,
+    disableQuickControls,
     isEditing:() => active,
     decorate,
     openEntityEditor:openEntityInspector,

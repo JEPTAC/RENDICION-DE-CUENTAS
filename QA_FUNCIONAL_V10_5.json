@@ -1,0 +1,39 @@
+{
+  "version": "10.5",
+  "javascript": {
+    "shared.js": "OK",
+    "inline-admin.js": "OK",
+    "firebase-service.js": "OK",
+    "noticias.js": "OK",
+    "noticia.js": "OK"
+  },
+  "css_braces_balanced": true,
+  "new_pages": [
+    "noticias.html",
+    "noticia.html"
+  ],
+  "functions_added": [
+    "sala pública de noticias",
+    "noticia destacada",
+    "búsqueda y filtros",
+    "paginación accesible",
+    "detalle de noticia",
+    "impresión y compartir",
+    "noticias relacionadas",
+    "editor completo de noticias",
+    "edición contextual por sección",
+    "edición de textos sin consola",
+    "edición directa de tarjetas",
+    "acciones rápidas para noticias, recursos e ideas",
+    "vista visitante sin cerrar sesión",
+    "sincronización de noticias con Firestore"
+  ],
+  "research_patterns": [
+    "tarjetas semánticas y jerarquía accesible",
+    "categoría, fecha, título y resumen visibles",
+    "filtros por texto, categoría y año",
+    "paginación limitada",
+    "narración e impresión",
+    "administración contextual"
+  ]
+}
