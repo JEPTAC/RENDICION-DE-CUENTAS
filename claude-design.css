@@ -3509,3 +3509,14 @@ body.hero-layout-wide.claude-page-home .home-section > .admin-section-edit-butto
     padding:14px 12px 14px !important;
   }
 }
+
+
+/* =========================================================
+   V10.36 · Botón editorial con texto azul
+   ========================================================= */
+.claude-page-home .editorial-feature .button,
+.claude-page-home .editorial-feature .button *,
+.claude-page-home .editorial-feature a.button,
+.claude-page-home .editorial-feature a.button *{
+  color:#123e7a !important;
+}

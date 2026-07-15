@@ -1,0 +1,11 @@
+{
+  "version": "10.36",
+  "name": "Botón editorial con texto azul",
+  "replace_files": [
+    "claude-design.css"
+  ],
+  "main_changes": [
+    "El texto del botón 'Leer edición 2025' en la tarjeta editorial ahora se fuerza en color azul.",
+    "Se aplica también a iconos y spans internos para evitar que hereden el amarillo del encabezado."
+  ]
+}
