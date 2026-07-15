@@ -376,14 +376,41 @@ function hideLoading(message = 'Contenido cargado correctamente') {
 function showClickEffect(x, y) {
   ensureFeedbackUi();
   if (!feedbackLayer) return;
-  const sticker = document.createElement('img');
-  sticker.className = 'ui-click-sticker';
-  sticker.src = UI_ASSETS.clickEffect;
-  sticker.alt = '';
-  sticker.style.left = `${x}px`;
-  sticker.style.top = `${y}px`;
-  feedbackLayer.appendChild(sticker);
-  window.setTimeout(() => sticker.remove(), 850);
+  const pop = document.createElement('span');
+  pop.className = 'ui-click-pop';
+  pop.style.left = `${x}px`;
+  pop.style.top = `${y}px`;
+  feedbackLayer.appendChild(pop);
+  window.setTimeout(() => pop.remove(), 520);
+}
+
+
+function mountNewsHoverCat(summary = document.querySelector('.news-hero-summary')) {
+  if (!summary) return null;
+  let gif = summary.querySelector('.news-summary-hover-gif');
+  if (!gif) {
+    gif = document.createElement('img');
+    gif.className = 'news-summary-hover-gif';
+    gif.src = UI_ASSETS.hoverCat;
+    gif.alt = '';
+    gif.loading = 'lazy';
+    summary.appendChild(gif);
+  }
+  if (summary.dataset.catBound === '1') return gif;
+  summary.dataset.catBound = '1';
+  let catTimer = null;
+  const revealCat = () => {
+    clearTimeout(catTimer);
+    summary.classList.add('is-cat-peeking');
+    catTimer = setTimeout(() => summary.classList.remove('is-cat-peeking'), 1800);
+  };
+  summary.addEventListener('pointerenter', revealCat);
+  summary.addEventListener('mouseenter', revealCat);
+  summary.addEventListener('focusin', revealCat);
+  summary.addEventListener('mousemove', () => summary.classList.add('is-cat-peeking'));
+  summary.addEventListener('pointerleave', () => { clearTimeout(catTimer); summary.classList.remove('is-cat-peeking'); });
+  summary.addEventListener('mouseleave', () => { clearTimeout(catTimer); summary.classList.remove('is-cat-peeking'); });
+  return gif;
 }
 
 function initInteractiveFeedback() {
@@ -391,61 +418,48 @@ function initInteractiveFeedback() {
 
   const clickableSelector = 'a,button,[role="button"],summary,.news-card,.year-resource-card,.news-story,.resource-library-card,.followup-summary>article';
 
-  document.addEventListener('pointerdown', event => {
+  const launchClickEffect = (target, event) => {
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const x = event?.clientX || (rect.left + rect.width / 2);
+    const y = event?.clientY || (rect.top + rect.height / 2);
+    showClickEffect(x, y);
+  };
+
+  document.addEventListener('click', event => {
     const trigger = event.target.closest(clickableSelector);
-    if (!trigger) return;
-    const pointX = event.clientX || (trigger.getBoundingClientRect().left + trigger.getBoundingClientRect().width / 2);
-    const pointY = event.clientY || (trigger.getBoundingClientRect().top + trigger.getBoundingClientRect().height / 2);
-    showClickEffect(pointX, pointY);
+    if (trigger) launchClickEffect(trigger, event);
+
+    const anchor = event.target.closest('a[href]');
+    if (anchor) {
+      const href = anchor.getAttribute('href') || '';
+      if (href && !href.startsWith('#') && !href.startsWith('javascript:') && anchor.target !== '_blank' && !anchor.hasAttribute('download') && !anchor.classList.contains('dialog-close')) {
+        showLoading('Abriendo contenido…');
+      }
+    }
+
+    const summary = event.target.closest('.news-hero-summary');
+    if (summary) mountNewsHoverCat(summary);
   }, true);
 
   document.addEventListener('keydown', event => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     const trigger = event.target.closest(clickableSelector);
-    if (!trigger) return;
-    const rect = trigger.getBoundingClientRect();
-    showClickEffect(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    if (trigger) launchClickEffect(trigger);
+  }, true);
+
+  document.addEventListener('mouseover', event => {
+    const summary = event.target.closest('.news-hero-summary');
+    if (summary) mountNewsHoverCat(summary);
   }, true);
 
   document.addEventListener('submit', () => {
     showLoading('Procesando la información…');
   }, true);
 
-  document.addEventListener('click', event => {
-    const anchor = event.target.closest('a[href]');
-    if (!anchor) return;
-    const href = anchor.getAttribute('href') || '';
-    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
-    if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
-    if (anchor.classList.contains('dialog-close')) return;
-    showLoading('Abriendo contenido…');
-  }, true);
-
-  const newsSummary = document.querySelector('.news-hero-summary');
-  if (newsSummary && !newsSummary.querySelector('.news-summary-hover-gif')) {
-    const gif = document.createElement('img');
-    gif.className = 'news-summary-hover-gif';
-    gif.src = UI_ASSETS.hoverCat;
-    gif.alt = '';
-    newsSummary.appendChild(gif);
-
-    let catTimer = null;
-    const revealCat = () => {
-      clearTimeout(catTimer);
-      newsSummary.classList.add('is-cat-peeking');
-      catTimer = setTimeout(() => {
-        newsSummary.classList.remove('is-cat-peeking');
-      }, 1800);
-    };
-
-    newsSummary.addEventListener('pointerenter', revealCat);
-    newsSummary.addEventListener('mousemove', () => newsSummary.classList.add('is-cat-peeking'));
-    newsSummary.addEventListener('pointerleave', () => {
-      clearTimeout(catTimer);
-      newsSummary.classList.remove('is-cat-peeking');
-    });
-  }
+  mountNewsHoverCat();
 }
+
   const state = {
     years: loadArray(KEYS.years, DEFAULT_YEARS),
     resources: loadArray(KEYS.resources, DEFAULT_RESOURCES),
@@ -1631,7 +1645,7 @@ helpers.toast = function(message) {
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.7-professional-repair";
+    script.src = "inline-admin.js?v=10.18-home-news-ideas";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -2226,7 +2240,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.7-professional-repair`;
+      const versioned = `${base}?v=10.18-home-news-ideas`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2258,18 +2272,28 @@ helpers.toast = function(message) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+  const currentPage = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.body.classList.toggle('page-home', currentPage === '' || currentPage === 'index.html');
+  document.body.classList.toggle('page-news', currentPage === 'noticias.html' || currentPage === 'noticia.html');
+  document.body.classList.toggle('page-ideas', currentPage === 'ideas.html');
   initInteractiveFeedback();
+  mountNewsHoverCat();
   showLoading('Estamos preparando la página…');
 }, { once:true });
 
 window.addEventListener('load', () => {
+  document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+  mountNewsHoverCat();
   hideLoading('Contenido cargado correctamente.');
 }, { once:true });
 
 window.addEventListener('pageshow', () => {
+  document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+  mountNewsHoverCat();
   hideLoading('Contenido listo para consultar.');
 });
 
-  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, KEYS };
+  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, mountNewsHoverCat, KEYS };
   document.addEventListener("DOMContentLoaded", init);
 })();
