@@ -27,8 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hero-gif-canvas">
           <span class="hero-gif-glow hero-gif-glow--a"></span>
           <span class="hero-gif-glow hero-gif-glow--b"></span>
-          <span class="hero-gif-panel hero-gif-panel--main"></span>
-          <span class="hero-gif-panel hero-gif-panel--mini"></span>
           <img class="hero-gif hero-gif--chiva" src="hero-gifs/chiva.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--bus-mini" src="hero-gifs/bus.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--notes-a" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
@@ -43,9 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hero-gif-canvas">
           <span class="hero-gif-glow hero-gif-glow--a"></span>
           <span class="hero-gif-glow hero-gif-glow--c"></span>
-          <span class="hero-gif-panel hero-gif-panel--route"></span>
-          <span class="hero-gif-line hero-gif-line--a"></span>
-          <span class="hero-gif-line hero-gif-line--b"></span>
           <img class="hero-gif hero-gif--bus-main" src="hero-gifs/bus.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--chiva-small" src="hero-gifs/chiva.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-route" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
@@ -58,9 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hero-gif-canvas">
           <span class="hero-gif-glow hero-gif-glow--a"></span>
           <span class="hero-gif-glow hero-gif-glow--d"></span>
-          <span class="hero-gif-panel hero-gif-panel--arena"></span>
-          <span class="hero-gif-orbit hero-gif-orbit--a"></span>
-          <span class="hero-gif-orbit hero-gif-orbit--b"></span>
           <img class="hero-gif hero-gif--football" src="hero-gifs/football.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--basketball" src="hero-gifs/basketball.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-sport" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
@@ -70,14 +62,106 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>`
   };
 
+  document.body.classList.remove(
+    "year-theme--celebration",
+    "year-theme--mobility",
+    "year-theme--sports"
+  );
+  document.body.classList.add(`year-theme--${selectedTheme}`);
+  document.body.dataset.yearTheme = selectedTheme;
+
   if (pageHero) {
-    pageHero.classList.remove("page-hero--celebration", "page-hero--mobility", "page-hero--sports");
+    pageHero.classList.remove(
+      "page-hero--celebration",
+      "page-hero--mobility",
+      "page-hero--sports"
+    );
     pageHero.classList.add(`page-hero--${selectedTheme}`);
     pageHero.dataset.heroTheme = selectedTheme;
-    if (!pageHero.querySelector('.page-hero__scene')) {
-      pageHero.insertAdjacentHTML('afterbegin', heroScenes[selectedTheme]);
+
+    if (!pageHero.querySelector(".page-hero__scene")) {
+      pageHero.insertAdjacentHTML("afterbegin", heroScenes[selectedTheme]);
     }
   }
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  let premiumModuleObserver = null;
+
+  function initPremiumModuleMotion(root = document) {
+    const selector = [
+      ".year-metric",
+      ".sector-bars > div",
+      ".dashboard-panel",
+      ".executive-kpi",
+      ".institution-result",
+      ".method-step",
+      ".followup-summary > article",
+      ".request-summary > article",
+      ".news-story",
+      ".year-resource-card",
+      ".commitment-row",
+      ".resource-library-card",
+      ".dashboard-chart-card",
+      ".year-overview",
+      ".year-section__head"
+    ].join(",");
+
+    const targets = root.querySelectorAll(selector);
+
+    if (!premiumModuleObserver && !reducedMotion && "IntersectionObserver" in window) {
+      premiumModuleObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-ultra-visible");
+          premiumModuleObserver.unobserve(entry.target);
+        });
+      }, {
+        threshold: 0.09,
+        rootMargin: "0px 0px -6% 0px"
+      });
+    }
+
+    targets.forEach((element, index) => {
+      if (element.dataset.ultraMotion === "true") return;
+
+      element.dataset.ultraMotion = "true";
+      element.classList.add("ultra-motion-item", `ultra-motion-${index % 4}`);
+      element.style.setProperty("--ultra-delay", `${Math.min(index % 8, 7) * 55}ms`);
+
+      if (reducedMotion || !premiumModuleObserver) {
+        element.classList.add("is-ultra-visible");
+      } else {
+        premiumModuleObserver.observe(element);
+      }
+    });
+  }
+
+  function initHeroParallax() {
+    if (!pageHero || reducedMotion || !window.matchMedia("(pointer:fine)").matches) return;
+
+    pageHero.addEventListener("pointermove", event => {
+      const rect = pageHero.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+      pageHero.style.setProperty("--hero-shift-x", `${(x * 10).toFixed(2)}px`);
+      pageHero.style.setProperty("--hero-shift-y", `${(y * 7).toFixed(2)}px`);
+      pageHero.style.setProperty("--hero-light-x", `${((x + 0.5) * 100).toFixed(1)}%`);
+      pageHero.style.setProperty("--hero-light-y", `${((y + 0.5) * 100).toFixed(1)}%`);
+    }, { passive: true });
+
+    pageHero.addEventListener("pointerleave", () => {
+      pageHero.style.setProperty("--hero-shift-x", "0px");
+      pageHero.style.setProperty("--hero-shift-y", "0px");
+      pageHero.style.setProperty("--hero-light-x", "74%");
+      pageHero.style.setProperty("--hero-light-y", "18%");
+    }, { passive: true });
+  }
+
+  initHeroParallax();
   const yearMain = document.querySelector("#main-content");
   if (yearMain) {
     yearMain.dataset.adminEntity = "year";
@@ -105,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ["Espacios participativos", year.metrics.participation, "Mesas, audiencias y encuentros ciudadanos."]
   ];
   document.querySelector("#yearMetrics").innerHTML = metrics.map((m,index) => `
-    <article class="year-metric reveal visible"><span>0${index+1}</span><strong>${m[1]}</strong><h3>${m[0]}</h3><p>${m[2]}</p></article>`).join("");
+    <article class="year-metric reveal"><span>0${index+1}</span><strong>${m[1]}</strong><h3>${m[0]}</h3><p>${m[2]}</p></article>`).join("");
 
   document.querySelector("#sectorBars").innerHTML = year.sectors.map(item => `
     <div><span><b>${helpers.escape(item[0])}</b><strong>${item[1]}%</strong></span><i><u style="width:${item[1]}%"></u></i></div>`).join("");
@@ -113,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resources = state.resources.filter(r => Number(r.year) === year.year);
   const featured = resources.slice(0,6);
   document.querySelector("#yearResources").innerHTML = featured.length ? featured.map(item => `
-    <article class="year-resource-card reveal visible" data-resource-id="${item.id}" data-admin-entity="resource" data-entity-id="${item.id}">
+    <article class="year-resource-card reveal" data-resource-id="${item.id}" data-admin-entity="resource" data-entity-id="${item.id}">
       <span class="${item.image ? "has-resource-image" : ""}" ${item.image ? `style="background-image:url('${item.image}')"` : ""}>${item.image ? "" : helpers.typeIcon(item.type)}</span>
       <div><small>${helpers.typeLabel(item.type)}</small><strong>${helpers.escape(item.title)}</strong><p>${helpers.escape(item.meta)}</p></div>
       <button class="year-resource-open" type="button" aria-label="Ver recurso">↗</button>
@@ -126,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ["Preguntas de la ciudadanía", "Respuestas oficiales y aclaraciones relacionadas con la vigencia."]
   ];
   document.querySelector("#yearStories").innerHTML = stories.map((story,index) => `
-    <article class="news-story reveal visible">
+    <article class="news-story reveal">
       <div class="news-story__number">0${index+1}</div>
       <small>EDICIÓN ${year.year}</small>
       <h3>${story[0]}</h3>
@@ -157,12 +241,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const dashboardScript = document.createElement("script");
   dashboardScript.src = "dashboard.js?v=10.7-professional-repair";
-  dashboardScript.onload = () => window.RendicionDashboard?.init?.(year.year);
+  dashboardScript.onload = () => {
+    window.RendicionDashboard?.init?.(year.year);
+    window.setTimeout(() => initPremiumModuleMotion(document), 80);
+  };
   dashboardScript.onerror = () => helpers.toast("No fue posible cargar el tablero de indicadores.");
   document.head.appendChild(dashboardScript);
 
   window.addEventListener("firebase:data", () => window.RendicionDashboard?.refresh?.(year.year));
   window.dispatchEvent(new CustomEvent("portal:rendered"));
+  window.setTimeout(() => initPremiumModuleMotion(document), 70);
 
   document.querySelector("#yearNewsletter").addEventListener("submit", event => {
     event.preventDefault();

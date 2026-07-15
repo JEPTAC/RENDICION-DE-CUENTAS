@@ -1,0 +1,31 @@
+{
+  "version": "10.13",
+  "base": "V10.12_HERO_GIFS_REFINADOS",
+  "files_to_replace": [
+    "styles.css",
+    "year-page.js"
+  ],
+  "required_existing_folder": "hero-gifs/",
+  "year_compositions": {
+    "2025": "Celebración institucional: chiva, bus, notas y destellos con acento naranja/dorado.",
+    "2026": "Movilidad y territorio: bus, chiva y elementos de ruta con acento verde azulado.",
+    "2027": "Deporte y comunidad: fútbol, baloncesto y destellos con acento azul-violeta."
+  },
+  "visual_improvements": [
+    "Degradados diferenciados y azul profundo en cada vigencia.",
+    "GIFs sin paneles decorativos rígidos.",
+    "Zona reservada para animaciones sin cubrir el selector.",
+    "Brillo y profundidad consistentes en módulos.",
+    "Entrada escalonada mediante IntersectionObserver.",
+    "Animación de barras de indicadores.",
+    "Parallax ligero únicamente con puntero preciso.",
+    "Controles administrativos integrados con el tema.",
+    "Respeto por prefers-reduced-motion."
+  ],
+  "validation": {
+    "javascript_syntax": "OK",
+    "css_braces": "3102 / 3102",
+    "gif_assets": "7 / 7",
+    "automated_browser_capture": "No completada: Chromium quedó bloqueado por restricciones del entorno."
+  }
+}

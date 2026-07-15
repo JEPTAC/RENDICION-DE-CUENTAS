@@ -14558,3 +14558,786 @@ main button{
   .page-hero--sports .hero-gif--basketball{ width:104px !important; right:14px !important; bottom:8px !important; }
   .page-hero--sports .hero-gif--sparkle-sport{ width:42px !important; right:18px !important; top:10px !important; }
 }
+
+
+/* =========================================================
+   V10.13 — Vigencias ultra premium
+   Escenas diferenciadas, hero refinado y módulos animados.
+   ========================================================= */
+
+:root{
+  --ultra-navy:#061f4c;
+  --ultra-blue:#0c4f9d;
+  --ultra-cyan:#3aa9e8;
+  --ultra-gold:#f3bd45;
+  --ultra-glow:0 18px 42px rgba(6,39,90,.11),0 3px 12px rgba(24,89,166,.07);
+  --ultra-glow-hover:0 26px 58px rgba(6,39,90,.17),0 8px 22px rgba(24,89,166,.12);
+  --ultra-ease:cubic-bezier(.2,.76,.24,1);
+}
+
+body.year-theme--celebration{
+  --year-accent:#ef8e2e;
+  --year-accent-soft:#fff1d8;
+  --year-deep:#092b68;
+  --year-mid:#155fba;
+  --year-bright:#50b2ea;
+}
+
+body.year-theme--mobility{
+  --year-accent:#18a285;
+  --year-accent-soft:#dff8f0;
+  --year-deep:#063d61;
+  --year-mid:#0a6896;
+  --year-bright:#39b4cf;
+}
+
+body.year-theme--sports{
+  --year-accent:#6f61d8;
+  --year-accent-soft:#ece9ff;
+  --year-deep:#152c70;
+  --year-mid:#3156b8;
+  --year-bright:#55a8ed;
+}
+
+/* ---------------- Hero editorial por vigencia ---------------- */
+.page-hero{
+  --hero-shift-x:0px;
+  --hero-shift-y:0px;
+  --hero-light-x:74%;
+  --hero-light-y:18%;
+  position:relative;
+  min-height:clamp(610px,72vh,770px)!important;
+  padding:74px 0 86px!important;
+  isolation:isolate;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at var(--hero-light-x) var(--hero-light-y),rgba(255,255,255,.42),transparent 22rem),
+    linear-gradient(100deg,#fbfdff 0%,#f1f7fd 31%,#e0effb 48%,var(--year-bright) 72%,var(--year-mid) 86%,var(--year-deep) 100%)!important;
+  box-shadow:inset 0 -28px 55px rgba(255,255,255,.16);
+}
+
+body.year-theme--celebration .page-hero{
+  background:
+    radial-gradient(circle at var(--hero-light-x) var(--hero-light-y),rgba(255,222,135,.34),transparent 20rem),
+    radial-gradient(circle at 87% 78%,rgba(242,144,46,.22),transparent 18rem),
+    linear-gradient(101deg,#fbfdff 0%,#f2f8fd 32%,#e0effc 50%,#55afe5 73%,#175baa 87%,#08285f 100%)!important;
+}
+
+body.year-theme--mobility .page-hero{
+  background:
+    radial-gradient(circle at var(--hero-light-x) var(--hero-light-y),rgba(112,229,212,.25),transparent 21rem),
+    radial-gradient(circle at 88% 82%,rgba(27,169,151,.22),transparent 18rem),
+    linear-gradient(101deg,#fbfdff 0%,#eef8fa 32%,#d9f1f2 49%,#45b6c9 72%,#0b6d97 86%,#063b62 100%)!important;
+}
+
+body.year-theme--sports .page-hero{
+  background:
+    radial-gradient(circle at var(--hero-light-x) var(--hero-light-y),rgba(171,163,255,.27),transparent 21rem),
+    radial-gradient(circle at 88% 80%,rgba(63,139,229,.25),transparent 19rem),
+    linear-gradient(101deg,#fbfdff 0%,#f2f5ff 32%,#e3e9fb 50%,#6ea8e5 72%,#3557ad 86%,#142d70 100%)!important;
+}
+
+.page-hero::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  display:block!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.16),transparent 24%),
+    radial-gradient(circle at 79% 16%,rgba(255,255,255,.30),transparent 25rem)!important;
+  transform:none!important;
+  border-radius:0!important;
+  filter:none!important;
+}
+
+.page-hero::after{
+  content:""!important;
+  position:absolute!important;
+  left:-8%!important;
+  right:-8%!important;
+  top:auto!important;
+  bottom:-22%!important;
+  width:auto!important;
+  height:42%!important;
+  display:block!important;
+  border:0!important;
+  border-radius:50%!important;
+  pointer-events:none!important;
+  background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.88),rgba(255,255,255,.14) 55%,transparent 72%)!important;
+  box-shadow:none!important;
+  opacity:.82!important;
+}
+
+.page-hero__grid{
+  position:relative!important;
+  z-index:4!important;
+  min-height:440px!important;
+  grid-template-columns:minmax(0,1.12fr) minmax(380px,.72fr)!important;
+  align-items:center!important;
+  gap:clamp(42px,5vw,78px)!important;
+}
+
+.page-hero__grid>div:first-child{
+  max-width:790px!important;
+  padding-right:12px;
+}
+
+.page-hero h1{
+  color:#102f55!important;
+  text-shadow:0 2px 0 rgba(255,255,255,.35);
+}
+
+.page-hero h2{
+  color:#1b416f!important;
+}
+
+.page-hero p{
+  color:#526f8e!important;
+}
+
+.page-hero__badge{
+  border:1px solid color-mix(in srgb,var(--year-accent) 22%,transparent)!important;
+  background:color-mix(in srgb,var(--year-accent-soft) 88%,white)!important;
+  color:color-mix(in srgb,var(--year-accent) 82%,#6c4b00)!important;
+  box-shadow:0 9px 20px color-mix(in srgb,var(--year-accent) 12%,transparent);
+}
+
+.year-selector-card{
+  width:min(100%,430px)!important;
+  justify-self:center!important;
+  padding:28px!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  border-top:4px solid var(--year-accent)!important;
+  border-radius:25px!important;
+  background:linear-gradient(160deg,rgba(255,255,255,.98),rgba(244,250,255,.94))!important;
+  box-shadow:0 30px 64px rgba(4,31,75,.18),inset 0 1px 0 rgba(255,255,255,.96)!important;
+  backdrop-filter:blur(12px) saturate(1.04);
+}
+
+.year-selector-card>span{
+  color:var(--year-accent)!important;
+}
+
+.year-selector-card select:focus{
+  border-color:var(--year-accent)!important;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--year-accent) 14%,transparent)!important;
+}
+
+.year-selector-stats>div{
+  border:1px solid rgba(44,102,169,.08);
+  background:linear-gradient(145deg,#f8fbff,#eef5fc)!important;
+  transition:transform .22s var(--ultra-ease),box-shadow .22s ease;
+}
+
+.year-selector-stats>div:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 24px rgba(6,39,90,.09);
+}
+
+.year-selector-stats strong{
+  color:var(--year-mid)!important;
+}
+
+/* ---------------- GIFs: sin paneles rígidos ---------------- */
+.page-hero .page-hero__scene--gif{
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+}
+
+.page-hero .page-hero__scene--gif::after{
+  display:none!important;
+}
+
+.page-hero .hero-gif-canvas{
+  position:absolute!important;
+  inset:1% -2% 1% 66%!important;
+  min-width:390px!important;
+  transform:translate3d(var(--hero-shift-x),var(--hero-shift-y),0);
+  transition:transform 650ms var(--ultra-ease);
+}
+
+.page-hero .hero-gif-panel,
+.page-hero .hero-gif-line,
+.page-hero .hero-gif-orbit{
+  display:none!important;
+}
+
+.page-hero .hero-gif-glow{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(18px)!important;
+  opacity:.64!important;
+  background:radial-gradient(circle,rgba(255,255,255,.86),rgba(255,255,255,.30) 34%,color-mix(in srgb,var(--year-accent) 18%,transparent) 56%,transparent 72%)!important;
+}
+
+.page-hero .hero-gif-glow--a{
+  width:300px!important;
+  height:300px!important;
+  right:1%!important;
+  top:8%!important;
+}
+
+.page-hero .hero-gif-glow--b,
+.page-hero .hero-gif-glow--c,
+.page-hero .hero-gif-glow--d{
+  width:150px!important;
+  height:150px!important;
+  right:34%!important;
+  top:20%!important;
+}
+
+.page-hero .hero-gif{
+  position:absolute!important;
+  max-width:none!important;
+  filter:drop-shadow(0 24px 36px rgba(3,24,65,.20)) drop-shadow(0 7px 14px rgba(42,111,190,.11))!important;
+}
+
+/* 2025: celebración institucional */
+.page-hero--celebration .hero-gif--chiva{
+  width:min(300px,22vw)!important;
+  right:0!important;
+  bottom:0!important;
+}
+
+.page-hero--celebration .hero-gif--bus-mini{
+  width:min(92px,7vw)!important;
+  right:31%!important;
+  top:36%!important;
+  bottom:auto!important;
+}
+
+.page-hero--celebration .hero-gif--notes-a{
+  width:68px!important;
+  right:11%!important;
+  top:6%!important;
+}
+
+.page-hero--celebration .hero-gif--notes-b{
+  width:50px!important;
+  right:35%!important;
+  top:19%!important;
+}
+
+.page-hero--celebration .hero-gif--sparkle-a{
+  width:58px!important;
+  right:27%!important;
+  top:6%!important;
+}
+
+.page-hero--celebration .hero-gif--sparkle-b{
+  width:42px!important;
+  right:2%!important;
+  top:29%!important;
+}
+
+.page-hero--celebration .hero-gif--stream-a{
+  width:52px!important;
+  right:42%!important;
+  top:9%!important;
+}
+
+/* 2026: movilidad y territorio */
+.page-hero--mobility .hero-gif--bus-main{
+  width:min(220px,17vw)!important;
+  right:5%!important;
+  bottom:6%!important;
+}
+
+.page-hero--mobility .hero-gif--chiva-small{
+  width:min(118px,9vw)!important;
+  right:35%!important;
+  top:20%!important;
+}
+
+.page-hero--mobility .hero-gif--sparkle-route{
+  width:52px!important;
+  right:25%!important;
+  top:8%!important;
+}
+
+.page-hero--mobility .hero-gif--stream-route{
+  width:52px!important;
+  right:3%!important;
+  top:25%!important;
+}
+
+.page-hero--mobility .hero-gif--notes-route{
+  width:54px!important;
+  right:33%!important;
+  bottom:20%!important;
+}
+
+/* 2027: deporte y comunidad */
+.page-hero--sports .hero-gif--football{
+  width:min(142px,11vw)!important;
+  right:29%!important;
+  top:10%!important;
+}
+
+.page-hero--sports .hero-gif--basketball{
+  width:min(152px,12vw)!important;
+  right:3%!important;
+  bottom:4%!important;
+}
+
+.page-hero--sports .hero-gif--sparkle-sport{
+  width:50px!important;
+  right:6%!important;
+  top:12%!important;
+}
+
+.page-hero--sports .hero-gif--stream-sport{
+  width:52px!important;
+  right:43%!important;
+  top:26%!important;
+}
+
+.page-hero--sports .hero-gif--notes-sport{
+  width:52px!important;
+  right:0!important;
+  top:34%!important;
+}
+
+/* ---------------- Encabezados y acentos ---------------- */
+.year-section{
+  position:relative;
+  background:
+    radial-gradient(circle at 92% 0,color-mix(in srgb,var(--year-accent) 5%,transparent),transparent 19rem),
+    linear-gradient(180deg,#fff,#f7fbff 72%,#fff)!important;
+}
+
+.year-section:nth-of-type(even){
+  background:
+    radial-gradient(circle at 9% 4,color-mix(in srgb,var(--year-accent) 5%,transparent),transparent 18rem),
+    linear-gradient(180deg,#f4f8fd,#fff)!important;
+}
+
+.year-section::before{
+  width:min(390px,28vw)!important;
+  height:8px!important;
+  top:48px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,var(--year-deep),var(--year-mid),var(--year-bright))!important;
+  box-shadow:0 12px 24px color-mix(in srgb,var(--year-mid) 22%,transparent)!important;
+}
+
+.year-section__head .section-kicker,
+.dashboard-panel .section-kicker{
+  color:var(--year-accent)!important;
+}
+
+/* ---------------- Módulos con luz y profundidad ---------------- */
+.year-overview,
+.dashboard-panel,
+.executive-kpi,
+.institution-result,
+.method-step,
+.followup-summary>article,
+.request-summary>article,
+.news-story,
+.year-resource-card,
+.commitment-row,
+.resource-library-card,
+.dashboard-chart-card{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  border:1px solid rgba(73,119,180,.14)!important;
+  background:linear-gradient(155deg,rgba(255,255,255,.99),rgba(244,249,255,.96))!important;
+  box-shadow:var(--ultra-glow)!important;
+  transition:transform .26s var(--ultra-ease),box-shadow .26s ease,border-color .26s ease!important;
+}
+
+.year-overview::after,
+.dashboard-panel::after,
+.executive-kpi::after,
+.institution-result::after,
+.method-step::after,
+.followup-summary>article::after,
+.request-summary>article::after,
+.news-story::after,
+.year-resource-card::after,
+.commitment-row::after,
+.resource-library-card::after,
+.dashboard-chart-card::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-45% auto auto -40%;
+  width:52%;
+  height:190%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.72),transparent);
+  transform:rotate(12deg) translateX(-160%);
+  transition:transform .72s ease;
+  pointer-events:none;
+}
+
+.year-overview:hover,
+.dashboard-panel:hover,
+.executive-kpi:hover,
+.institution-result:hover,
+.method-step:hover,
+.followup-summary>article:hover,
+.request-summary>article:hover,
+.news-story:hover,
+.year-resource-card:hover,
+.commitment-row:hover,
+.resource-library-card:hover,
+.dashboard-chart-card:hover{
+  transform:translateY(-5px)!important;
+  border-color:color-mix(in srgb,var(--year-mid) 24%,transparent)!important;
+  box-shadow:var(--ultra-glow-hover)!important;
+}
+
+.year-overview:hover::after,
+.dashboard-panel:hover::after,
+.executive-kpi:hover::after,
+.institution-result:hover::after,
+.method-step:hover::after,
+.followup-summary>article:hover::after,
+.request-summary>article:hover::after,
+.news-story:hover::after,
+.year-resource-card:hover::after,
+.commitment-row:hover::after,
+.resource-library-card:hover::after,
+.dashboard-chart-card:hover::after{
+  transform:rotate(12deg) translateX(360%);
+}
+
+.year-metric{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.14)!important;
+  background:
+    radial-gradient(circle at 88% 8%,rgba(255,255,255,.16),transparent 8rem),
+    linear-gradient(135deg,var(--year-mid),var(--year-deep))!important;
+  box-shadow:0 22px 46px color-mix(in srgb,var(--year-deep) 25%,transparent),inset 0 1px 0 rgba(255,255,255,.16)!important;
+  transition:transform .26s var(--ultra-ease),box-shadow .26s ease!important;
+}
+
+.year-metric::after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  right:-72px;
+  bottom:-82px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+
+.year-metric:hover{
+  transform:translateY(-6px) scale(1.01)!important;
+  box-shadow:0 30px 60px color-mix(in srgb,var(--year-deep) 31%,transparent),inset 0 1px 0 rgba(255,255,255,.19)!important;
+}
+
+.year-metric>strong,
+.year-metric h3{
+  color:#fff!important;
+}
+
+.year-metric>span,
+.year-metric p{
+  color:rgba(238,247,255,.82)!important;
+}
+
+.sector-bars u{
+  background:linear-gradient(90deg,var(--year-deep),var(--year-mid),var(--year-bright))!important;
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform 1.05s var(--ultra-ease) .2s;
+}
+
+.sector-bars.is-ultra-visible u,
+.year-overview.is-ultra-visible .sector-bars u{
+  transform:scaleX(1);
+}
+
+.dashboard-panel--focus{
+  background:
+    radial-gradient(circle at 90% 5%,rgba(255,255,255,.15),transparent 12rem),
+    linear-gradient(145deg,var(--year-mid),var(--year-deep))!important;
+}
+
+.year-resource-card>span{
+  background:linear-gradient(145deg,var(--year-bright),var(--year-mid))!important;
+  box-shadow:0 13px 25px color-mix(in srgb,var(--year-mid) 25%,transparent)!important;
+}
+
+.year-resource-open,
+.news-story button{
+  color:var(--year-mid)!important;
+}
+
+/* ---------------- Entrada escalonada ---------------- */
+.ultra-motion-item{
+  --ultra-x:0px;
+  --ultra-y:24px;
+  opacity:0!important;
+  transform:translate3d(var(--ultra-x),var(--ultra-y),0) scale(.986)!important;
+  filter:blur(3px);
+  transition:
+    opacity .68s ease var(--ultra-delay,0ms),
+    transform .72s var(--ultra-ease) var(--ultra-delay,0ms),
+    filter .62s ease var(--ultra-delay,0ms)!important;
+}
+
+.ultra-motion-1{
+  --ultra-x:-18px;
+  --ultra-y:18px;
+}
+
+.ultra-motion-2{
+  --ultra-x:18px;
+  --ultra-y:18px;
+}
+
+.ultra-motion-3{
+  --ultra-x:0px;
+  --ultra-y:30px;
+}
+
+.ultra-motion-item.is-ultra-visible{
+  opacity:1!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+  filter:none;
+}
+
+/* La animación de entrada no anula el hover una vez visible */
+.ultra-motion-item.is-ultra-visible:hover{
+  transition:
+    transform .26s var(--ultra-ease),
+    box-shadow .26s ease,
+    border-color .26s ease!important;
+}
+
+/* ---------------- Administración integrada ---------------- */
+body.admin-quick-mode .page-hero>.admin-section-edit-button,
+body.admin-quick-mode .year-section>.admin-section-edit-button{
+  border-color:rgba(255,255,255,.28)!important;
+  background:linear-gradient(135deg,rgba(7,41,91,.92),rgba(16,88,164,.88))!important;
+  color:#fff!important;
+  box-shadow:0 14px 32px rgba(4,28,68,.22)!important;
+  backdrop-filter:blur(10px);
+}
+
+body.admin-quick-mode .admin-quick-card-edit{
+  border-color:rgba(70,120,183,.16)!important;
+  background:rgba(255,255,255,.96)!important;
+  color:var(--year-mid)!important;
+}
+
+body.admin-quick-mode .admin-quick-dock{
+  background:linear-gradient(135deg,var(--year-deep),var(--year-mid))!important;
+  box-shadow:0 25px 56px color-mix(in srgb,var(--year-deep) 33%,transparent)!important;
+}
+
+/* ---------------- Responsive ---------------- */
+@media(max-width:1280px){
+  .page-hero__grid{
+    grid-template-columns:minmax(0,1.05fr) minmax(350px,.75fr)!important;
+    gap:40px!important;
+  }
+
+  .page-hero .hero-gif-canvas{
+    inset:3% -3% 3% 64%!important;
+  }
+
+  .page-hero--celebration .hero-gif--chiva{
+    width:min(270px,21vw)!important;
+  }
+
+  .page-hero--mobility .hero-gif--bus-main{
+    width:min(198px,16vw)!important;
+  }
+
+  .page-hero--sports .hero-gif--football{
+    width:min(128px,10vw)!important;
+  }
+
+  .page-hero--sports .hero-gif--basketball{
+    width:min(138px,11vw)!important;
+  }
+}
+
+@media(max-width:1100px){
+  .page-hero{
+    min-height:auto!important;
+    padding:60px 0 290px!important;
+  }
+
+  .page-hero__grid{
+    grid-template-columns:1fr!important;
+    min-height:0!important;
+    gap:26px!important;
+  }
+
+  .year-selector-card{
+    max-width:570px!important;
+    justify-self:start!important;
+  }
+
+  .page-hero .hero-gif-canvas{
+    inset:auto 3% 10px 35%!important;
+    height:270px;
+    min-width:0!important;
+  }
+
+  .page-hero--celebration .hero-gif--chiva{
+    width:245px!important;
+  }
+
+  .page-hero--celebration .hero-gif--bus-mini{
+    width:82px!important;
+  }
+
+  .page-hero--mobility .hero-gif--bus-main{
+    width:180px!important;
+  }
+
+  .page-hero--mobility .hero-gif--chiva-small{
+    width:98px!important;
+  }
+
+  .page-hero--sports .hero-gif--football{
+    width:108px!important;
+  }
+
+  .page-hero--sports .hero-gif--basketball{
+    width:118px!important;
+  }
+}
+
+@media(max-width:760px){
+  .page-hero{
+    padding:46px 0 238px!important;
+    background:
+      radial-gradient(circle at 78% 10%,rgba(132,208,255,.28),transparent 16rem),
+      linear-gradient(180deg,#fbfdff 0%,#eef7fd 54%,color-mix(in srgb,var(--year-bright) 50%,#eaf5ff) 100%)!important;
+  }
+
+  .page-hero::after{
+    display:none!important;
+  }
+
+  .page-hero .hero-gif-canvas{
+    inset:auto 0 4px 0!important;
+    height:220px!important;
+    transform:none!important;
+  }
+
+  .page-hero .hero-gif-glow{
+    opacity:.48!important;
+  }
+
+  .page-hero--celebration .hero-gif--chiva{
+    width:205px!important;
+    right:4px!important;
+  }
+
+  .page-hero--celebration .hero-gif--bus-mini{
+    width:72px!important;
+    right:132px!important;
+    top:22px!important;
+  }
+
+  .page-hero--celebration .hero-gif--notes-a,
+  .page-hero--celebration .hero-gif--notes-b,
+  .page-hero--celebration .hero-gif--stream-a{
+    display:none!important;
+  }
+
+  .page-hero--celebration .hero-gif--sparkle-a{
+    width:42px!important;
+    right:140px!important;
+    top:4px!important;
+  }
+
+  .page-hero--celebration .hero-gif--sparkle-b{
+    width:35px!important;
+    right:18px!important;
+    top:25px!important;
+  }
+
+  .page-hero--mobility .hero-gif--bus-main{
+    width:145px!important;
+    right:17px!important;
+    bottom:12px!important;
+  }
+
+  .page-hero--mobility .hero-gif--chiva-small{
+    width:82px!important;
+    right:132px!important;
+    top:20px!important;
+  }
+
+  .page-hero--mobility .hero-gif--notes-route,
+  .page-hero--mobility .hero-gif--stream-route{
+    display:none!important;
+  }
+
+  .page-hero--mobility .hero-gif--sparkle-route{
+    width:40px!important;
+    right:124px!important;
+    top:3px!important;
+  }
+
+  .page-hero--sports .hero-gif--football{
+    width:88px!important;
+    right:126px!important;
+    top:18px!important;
+  }
+
+  .page-hero--sports .hero-gif--basketball{
+    width:98px!important;
+    right:16px!important;
+    bottom:8px!important;
+  }
+
+  .page-hero--sports .hero-gif--notes-sport,
+  .page-hero--sports .hero-gif--stream-sport{
+    display:none!important;
+  }
+
+  .page-hero--sports .hero-gif--sparkle-sport{
+    width:40px!important;
+    right:18px!important;
+    top:12px!important;
+  }
+
+  .year-section::before{
+    width:min(250px,55vw)!important;
+    height:7px!important;
+  }
+
+  .ultra-motion-item{
+    --ultra-x:0px!important;
+    --ultra-y:18px!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .page-hero .hero-gif-canvas,
+  .page-hero .hero-gif,
+  .page-hero .hero-gif-glow,
+  .ultra-motion-item,
+  .sector-bars u{
+    animation:none!important;
+    transition:none!important;
+    transform:none!important;
+  }
+
+  .ultra-motion-item{
+    opacity:1!important;
+    filter:none!important;
+  }
+
+  .sector-bars u{
+    transform:scaleX(1)!important;
+  }
+}
