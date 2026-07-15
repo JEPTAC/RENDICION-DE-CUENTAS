@@ -340,17 +340,25 @@ function playNotification() {
 function showLoading(message = 'Estamos cargando el contenido solicitado…') {
   ensureFeedbackUi();
   if (!loaderPanel) return;
+  clearTimeout(window.__globalLoadingTimer);
+  clearTimeout(window.__globalLoadingFailSafe);
   loaderPanel.classList.remove('is-success');
   loaderPanel.classList.add('is-visible');
   loaderPanel.setAttribute('aria-hidden', 'false');
   if (loaderGif) loaderGif.src = UI_ASSETS.loading;
   if (loaderTitle) loaderTitle.textContent = 'Cargando contenido';
   if (loaderText) loaderText.textContent = message;
+  window.__globalLoadingFailSafe = setTimeout(() => {
+    loaderPanel.classList.remove('is-success');
+    loaderPanel.classList.remove('is-visible');
+    loaderPanel.setAttribute('aria-hidden', 'true');
+  }, 4200);
 }
 
 function hideLoading(message = 'Contenido cargado correctamente') {
   ensureFeedbackUi();
   if (!loaderPanel) return;
+  clearTimeout(window.__globalLoadingFailSafe);
   loaderPanel.classList.add('is-success');
   loaderPanel.classList.add('is-visible');
   loaderPanel.setAttribute('aria-hidden', 'false');
@@ -362,7 +370,7 @@ function hideLoading(message = 'Contenido cargado correctamente') {
   window.__globalLoadingTimer = setTimeout(() => {
     loaderPanel.classList.remove('is-visible', 'is-success');
     loaderPanel.setAttribute('aria-hidden', 'true');
-  }, 950);
+  }, 1100);
 }
 
 function showClickEffect(x, y) {
@@ -381,12 +389,22 @@ function showClickEffect(x, y) {
 function initInteractiveFeedback() {
   ensureFeedbackUi();
 
-  document.addEventListener('click', event => {
-    const trigger = event.target.closest('a,button,[role="button"],summary,.news-card,.year-resource-card,.news-story');
+  const clickableSelector = 'a,button,[role="button"],summary,.news-card,.year-resource-card,.news-story,.resource-library-card,.followup-summary>article';
+
+  document.addEventListener('pointerdown', event => {
+    const trigger = event.target.closest(clickableSelector);
     if (!trigger) return;
     const pointX = event.clientX || (trigger.getBoundingClientRect().left + trigger.getBoundingClientRect().width / 2);
     const pointY = event.clientY || (trigger.getBoundingClientRect().top + trigger.getBoundingClientRect().height / 2);
     showClickEffect(pointX, pointY);
+  }, true);
+
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const trigger = event.target.closest(clickableSelector);
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    showClickEffect(rect.left + rect.width / 2, rect.top + rect.height / 2);
   }, true);
 
   document.addEventListener('submit', () => {
@@ -410,6 +428,22 @@ function initInteractiveFeedback() {
     gif.src = UI_ASSETS.hoverCat;
     gif.alt = '';
     newsSummary.appendChild(gif);
+
+    let catTimer = null;
+    const revealCat = () => {
+      clearTimeout(catTimer);
+      newsSummary.classList.add('is-cat-peeking');
+      catTimer = setTimeout(() => {
+        newsSummary.classList.remove('is-cat-peeking');
+      }, 1800);
+    };
+
+    newsSummary.addEventListener('pointerenter', revealCat);
+    newsSummary.addEventListener('mousemove', () => newsSummary.classList.add('is-cat-peeking'));
+    newsSummary.addEventListener('pointerleave', () => {
+      clearTimeout(catTimer);
+      newsSummary.classList.remove('is-cat-peeking');
+    });
   }
 }
   const state = {
@@ -1601,7 +1635,9 @@ helpers.toast = function(message) {
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
-      if (state.admin) window.InlineAdmin?.activate();
+      if (state.admin) {
+        document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+      }
     };
     script.onerror = () => helpers.toast("No fue posible cargar el editor directo.");
     document.head.appendChild(script);
@@ -2229,6 +2265,10 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
   hideLoading('Contenido cargado correctamente.');
 }, { once:true });
+
+window.addEventListener('pageshow', () => {
+  hideLoading('Contenido listo para consultar.');
+});
 
   window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, KEYS };
   document.addEventListener("DOMContentLoaded", init);

@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hero-gif-canvas">
           <span class="hero-gif-glow hero-gif-glow--a"></span>
           <span class="hero-gif-glow hero-gif-glow--b"></span>
-          <img class="hero-gif hero-gif--chiva" src="hero-gifs/chiva.gif" alt="" loading="eager" decoding="async">
-          <img class="hero-gif hero-gif--bus-mini" src="hero-gifs/bus.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--festival-main" src="hero-gifs/festival-main.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--bus-accent" src="hero-gifs/bus-accent.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--notes-a" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--notes-b" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-a" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="hero-gif-glow hero-gif-glow--a"></span>
           <span class="hero-gif-glow hero-gif-glow--c"></span>
           <img class="hero-gif hero-gif--bus-main" src="hero-gifs/bus.gif" alt="" loading="eager" decoding="async">
-          <img class="hero-gif hero-gif--chiva-small" src="hero-gifs/chiva.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--mobility-festival" src="hero-gifs/mobility-festival.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-route" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--stream-route" src="hero-gifs/streamer.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--notes-route" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
@@ -53,8 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="hero-gif-canvas">
           <span class="hero-gif-glow hero-gif-glow--a"></span>
           <span class="hero-gif-glow hero-gif-glow--d"></span>
+          <img class="hero-gif hero-gif--sports-main" src="hero-gifs/sports-main.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--football" src="hero-gifs/football.gif" alt="" loading="eager" decoding="async">
-          <img class="hero-gif hero-gif--basketball" src="hero-gifs/basketball.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--sports-accent" src="hero-gifs/sports-accent.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-sport" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--stream-sport" src="hero-gifs/streamer.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--notes-sport" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">

@@ -1,0 +1,24 @@
+{
+  "version": "10.16",
+  "base": "10.15",
+  "changes": [
+    "Se retiró el gif de chiva grande del hero 2025 y se reemplazó por un gif más protagonista.",
+    "Popup de carga en azul claro con texto blanco.",
+    "El editor administrativo ya no se activa automáticamente al cambiar de módulo.",
+    "Animación del gato en noticias corregida y vinculada al acercamiento/hover.",
+    "Animación de click más visible.",
+    "Se añadieron gifs más vistosos en las vigencias 2025, 2026 y 2027.",
+    "Más fluidez: fail-safe para popups de carga y pageshow/load para evitar bloqueos.",
+    "Separación de módulos y sombras refinadas."
+  ],
+  "replace_files": [
+    "styles.css",
+    "shared.js",
+    "year-page.js"
+  ],
+  "folders": [
+    "hero-gifs/",
+    "ui-gifs/",
+    "ui-audio/"
+  ]
+}

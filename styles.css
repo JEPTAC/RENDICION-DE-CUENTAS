@@ -16512,3 +16512,195 @@ body.admin-quick-mode .admin-quick-dock{
     filter:none!important;
   }
 }
+
+
+/* =========================================================
+   V10.16 · Ajustes finales solicitados
+   ========================================================= */
+
+.news-hero-summary{
+  position:relative!important;
+  overflow:visible!important;
+}
+.news-summary-hover-gif{
+  left:-26px!important;
+  right:auto!important;
+  top:18px!important;
+  width:124px!important;
+  opacity:0!important;
+  transform:translate(-18px,8px) scale(.82)!important;
+  transform-origin:left center;
+  filter:drop-shadow(0 14px 22px rgba(13,76,160,.18));
+}
+.news-hero-summary.is-cat-peeking .news-summary-hover-gif,
+.news-hero-summary:hover .news-summary-hover-gif,
+.news-hero-summary:focus-within .news-summary-hover-gif{
+  opacity:1!important;
+  transform:translate(0,0) scale(1)!important;
+  animation:cat-peek-wave 1.2s ease;
+}
+@keyframes cat-peek-wave{
+  0%{opacity:0;transform:translate(-18px,10px) scale(.78)}
+  55%{opacity:1;transform:translate(4px,-2px) scale(1.03)}
+  100%{opacity:1;transform:translate(0,0) scale(1)}
+}
+
+.ui-click-sticker{
+  width:132px!important;
+  filter:drop-shadow(0 12px 20px rgba(0,0,0,.18));
+}
+.ui-click-sticker::before{content:none}
+@keyframes ui-click-pop{
+  0%{opacity:0; transform:translate(-50%,-50%) scale(.45) rotate(-10deg)}
+  18%{opacity:1}
+  50%{opacity:1; transform:translate(-50%,-64%) scale(1) rotate(2deg)}
+  100%{opacity:0; transform:translate(-50%,-132%) scale(1.18) rotate(8deg)}
+}
+
+.ui-loader__backdrop{
+  background:rgba(8,47,96,.38)!important;
+  backdrop-filter:blur(8px)!important;
+}
+.ui-loader__panel{
+  border:1px solid rgba(255,255,255,.22)!important;
+  background:linear-gradient(155deg,#6ebcff 0%,#4aa7f5 34%,#2c86df 68%,#165db8 100%)!important;
+  box-shadow:0 28px 80px rgba(4,28,74,.28)!important;
+}
+.ui-loader__gif{
+  width:96px!important;
+  filter:drop-shadow(0 10px 24px rgba(255,255,255,.16))!important;
+}
+.ui-loader__title,
+.ui-loader__text{
+  color:#fff!important;
+}
+.ui-loader__title{
+  letter-spacing:-.02em;
+}
+.ui-loader__text{
+  opacity:.96;
+}
+.ui-loader.is-success .ui-loader__panel{
+  background:linear-gradient(155deg,#7fd7ff 0%,#47b6fb 44%,#1687e0 100%)!important;
+}
+
+.page-hero{
+  overflow:hidden;
+}
+.page-hero::after{
+  content:"";
+  position:absolute;
+  inset:auto -8% -18% -8%;
+  height:46%;
+  background:radial-gradient(circle at 50% 0%, rgba(137,209,255,.26), rgba(16,91,188,0));
+  pointer-events:none;
+  z-index:1;
+}
+.page-hero .page-hero__scene--gif{
+  filter:saturate(1.06);
+}
+.page-hero .hero-gif{
+  filter:drop-shadow(0 16px 30px rgba(6,46,104,.15));
+}
+
+/* 2025 celebración: se retira la chiva grande y entra un gif más protagonista */
+.page-hero--celebration .hero-gif--festival-main,
+.page-hero--celebration .hero-gif--bus-accent,
+.page-hero--mobility .hero-gif--mobility-festival,
+.page-hero--sports .hero-gif--sports-main,
+.page-hero--sports .hero-gif--sports-accent{
+  display:block;
+}
+
+@media(min-width:1440px){
+  .page-hero--celebration .hero-gif--festival-main{width:340px!important; right:7%!important; bottom:2%!important;}
+  .page-hero--celebration .hero-gif--bus-accent{width:156px!important; right:41%!important; top:30%!important;}
+  .page-hero--celebration .hero-gif--stream-a{width:194px!important; right:23%!important; bottom:34%!important;}
+  .page-hero--celebration .hero-gif--notes-a{width:104px!important; right:36%!important; top:7%!important;}
+  .page-hero--celebration .hero-gif--notes-b{width:92px!important; right:5%!important; top:26%!important;}
+  .page-hero--celebration .hero-gif--sparkle-a{width:164px!important; right:25%!important; top:2%!important;}
+  .page-hero--celebration .hero-gif--sparkle-b{width:148px!important; right:-2%!important; top:8%!important;}
+
+  .page-hero--mobility .hero-gif--bus-main{width:268px!important; right:10%!important; bottom:7%!important;}
+  .page-hero--mobility .hero-gif--mobility-festival{width:242px!important; right:35%!important; top:4%!important;}
+  .page-hero--mobility .hero-gif--sparkle-route{width:148px!important; right:4%!important; top:8%!important;}
+  .page-hero--mobility .hero-gif--stream-route{width:118px!important; right:26%!important; bottom:28%!important;}
+  .page-hero--mobility .hero-gif--notes-route{width:96px!important; right:44%!important; top:38%!important;}
+
+  .page-hero--sports .hero-gif--sports-main{width:258px!important; right:7%!important; bottom:4%!important;}
+  .page-hero--sports .hero-gif--football{width:126px!important; right:39%!important; top:7%!important;}
+  .page-hero--sports .hero-gif--sports-accent{width:170px!important; right:31%!important; bottom:17%!important;}
+  .page-hero--sports .hero-gif--sparkle-sport{width:152px!important; right:0%!important; top:7%!important;}
+  .page-hero--sports .hero-gif--stream-sport{width:108px!important; right:26%!important; top:35%!important;}
+  .page-hero--sports .hero-gif--notes-sport{width:86px!important; right:47%!important; top:29%!important;}
+}
+
+@media(min-width:1181px) and (max-width:1439px){
+  .page-hero--celebration .hero-gif--festival-main{width:300px!important; right:7%!important; bottom:1%!important;}
+  .page-hero--celebration .hero-gif--bus-accent{width:138px!important; right:42%!important; top:31%!important;}
+  .page-hero--mobility .hero-gif--mobility-festival{width:214px!important; right:36%!important; top:7%!important;}
+  .page-hero--sports .hero-gif--sports-main{width:224px!important; right:8%!important; bottom:3%!important;}
+  .page-hero--sports .hero-gif--sports-accent{width:148px!important; right:31%!important; bottom:18%!important;}
+}
+
+@media(min-width:821px) and (max-width:1180px){
+  .page-hero--celebration .hero-gif--festival-main{width:240px!important; right:10%!important; bottom:0!important;}
+  .page-hero--celebration .hero-gif--bus-accent{width:102px!important; right:43%!important; top:74px!important;}
+  .page-hero--mobility .hero-gif--mobility-festival{width:184px!important; right:35%!important; top:12px!important;}
+  .page-hero--sports .hero-gif--sports-main{width:194px!important; right:11%!important; bottom:8px!important;}
+  .page-hero--sports .hero-gif--sports-accent{width:120px!important; right:36%!important; bottom:34px!important;}
+}
+
+@media(max-width:820px){
+  .page-hero--celebration .hero-gif--festival-main{width:190px!important; right:12px!important; bottom:0!important;}
+  .page-hero--celebration .hero-gif--bus-accent{width:74px!important; right:138px!important; top:55px!important;}
+  .page-hero--celebration .hero-gif--stream-a{width:96px!important; right:90px!important; bottom:92px!important;}
+  .page-hero--celebration .hero-gif--sparkle-a{width:62px!important; right:132px!important; top:10px!important;}
+  .page-hero--celebration .hero-gif--notes-a{width:52px!important; right:96px!important; top:10px!important;}
+  .page-hero--mobility .hero-gif--mobility-festival{width:126px!important; right:126px!important; top:34px!important;}
+  .page-hero--sports .hero-gif--sports-main{width:126px!important; right:10px!important; bottom:12px!important;}
+  .page-hero--sports .hero-gif--sports-accent{width:84px!important; right:110px!important; bottom:48px!important;}
+  .news-summary-hover-gif{width:94px!important; left:-12px!important; top:10px!important;}
+  .ui-click-sticker{width:96px!important;}
+}
+
+/* Modulos y separaciones más profesionales */
+.year-section{
+  position:relative;
+  background:linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(247,251,255,.98) 100%)!important;
+}
+.year-section:nth-of-type(even){
+  background:linear-gradient(180deg, rgba(246,250,255,.98) 0%, rgba(255,255,255,1) 100%)!important;
+}
+.year-section::before{
+  background:linear-gradient(90deg, rgba(27,115,213,0), rgba(27,115,213,.28), rgba(121,205,255,.55), rgba(27,115,213,0))!important;
+  height:10px!important;
+  border-radius:999px!important;
+  opacity:.9!important;
+}
+.year-overview,
+.followup-summary>article,
+.news-story,
+.resource-library-card,
+.dashboard-panel,
+.executive-kpi,
+.institution-result,
+.method-step,
+.request-summary>article,
+.year-resource-card{
+  box-shadow:0 16px 42px rgba(9,57,124,.08)!important;
+  transition:transform .28s cubic-bezier(.22,.76,.26,1), box-shadow .28s ease, border-color .28s ease!important;
+}
+.year-overview:hover,
+.followup-summary>article:hover,
+.news-story:hover,
+.resource-library-card:hover,
+.dashboard-panel:hover,
+.executive-kpi:hover,
+.institution-result:hover,
+.method-step:hover,
+.request-summary>article:hover,
+.year-resource-card:hover{
+  transform:translateY(-5px)!important;
+  box-shadow:0 24px 60px rgba(7,56,120,.14)!important;
+}
