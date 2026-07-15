@@ -1,0 +1,39 @@
+{
+  "version": "10.22",
+  "base": "10.20 estable",
+  "reason": "V10.21 fue descartada por reglas invasivas.",
+  "files_to_replace": [
+    "styles.css",
+    "shared.js",
+    "year-page.js",
+    "noticias.js",
+    "inline-admin.js"
+  ],
+  "validated": {
+    "shared.js": "OK",
+    "year-page.js": "OK",
+    "noticias.js": "OK",
+    "inline-admin.js": "OK"
+  },
+  "css_braces": {
+    "open": 3881,
+    "close": 3881
+  },
+  "conditions": {
+    "stable_base_v1020": true,
+    "home_banner_after_disabled": true,
+    "home_title_clamped": true,
+    "admin_explicit_open_handler": true,
+    "admin_console_visible_override": true,
+    "section_fusion_only": true,
+    "no_v1021_motion_system": true
+  },
+  "fixes": [
+    "Difuminación eliminada completamente del banner.",
+    "Fusión aplicada solamente entre secciones del Inicio.",
+    "Título Conozca la gestión ajustado para permanecer dentro del cuadro.",
+    "Apertura del administrador restaurada y reforzada.",
+    "Reglas invasivas de V10.21 eliminadas al reconstruir desde V10.20.",
+    "Cache-buster actualizado a V10.22."
+  ]
+}

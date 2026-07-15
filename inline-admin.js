@@ -497,8 +497,8 @@
 
                 <div class="banner-dimension-card">
                   <strong>Tamaño recomendado</strong>
-                  <span>1920 × 900 píxeles</span>
-                  <small>Proporción panorámica. Mantenga personas, logos y elementos importantes en el centro o hacia la derecha. En celular la imagen aparece completa debajo del texto.</small>
+                  <span>1600 × 900 píxeles</span>
+                  <small>Proporción 16:9. Mantenga el contenido importante hacia el centro y la derecha.</small>
                 </div>
 
                 <div class="admin-form-grid">
@@ -518,18 +518,13 @@
                   </label>
 
                   <label class="admin-field-wide">
-                    Altura en escritorio
-                    <output id="inlineBannerOutput">${p.banner.height || "Automática según pantalla"}</output>
+                    Altura
+                    <output id="inlineBannerOutput">${p.banner.height || "Automática"}</output>
                     <input id="inlineBannerHeight"
                       type="range"
-                      min="620"
-                      max="900"
-                      value="${parseInt(p.banner.height)||720}">
-                    <button type="button"
-                      class="admin-action-secondary banner-auto-height"
-                      id="inlineBannerAutoHeight">
-                      Usar altura automática
-                    </button>
+                      min="420"
+                      max="860"
+                      value="${parseInt(p.banner.height)||610}">
                   </label>
 
                   <label>Posición
@@ -1097,7 +1092,7 @@
 
     shell.classList.add("open");
     shell.setAttribute("aria-hidden","false");
-    document.body.classList.add("admin-console-open");
+    document.body.classList.add("admin-console-open", "admin-explicit-open");
     selectConsoleTab(tabName);
     updateConsoleIdentity();
     updateEditingInterface();
@@ -1111,7 +1106,7 @@
     const shell = document.querySelector("#inlineAdminToolbar");
     shell?.classList.remove("open");
     shell?.setAttribute("aria-hidden","true");
-    document.body.classList.remove("admin-console-open");
+    document.body.classList.remove("admin-console-open", "admin-explicit-open");
   }
 
   function bindToolbar() {
@@ -1247,14 +1242,6 @@
       get("#inlineBannerOutput").value = `${event.target.value}px`;
       applyBanner();
       persist();
-    });
-
-    get("#inlineBannerAutoHeight")?.addEventListener("click", () => {
-      pageData().banner.height = "";
-      get("#inlineBannerOutput").value = "Automática según pantalla";
-      applyBanner();
-      persist();
-      helpers.toast("El banner volverá a adaptarse automáticamente a cada pantalla.");
     });
     get("#inlineBannerPosition")?.addEventListener("change", event => {
       pageData().banner.position = event.target.value;
@@ -2357,7 +2344,7 @@
   }
 
   function decorateQuickAdminControls() {
-    if (!adminCanEdit() || !quickControlsEnabled) {
+    if (!adminCanEdit() || !quickControlsEnabled || active) {
       clearQuickAdminControls();
       return;
     }
@@ -2392,7 +2379,6 @@
     });
 
     document.querySelectorAll("[data-admin-entity]").forEach(card => {
-      if (card.matches("main,section")) return;
       if (card.querySelector(
         ":scope > .admin-quick-card-edit"
       )) return;
@@ -2551,19 +2537,13 @@
   }
 
   function ensureBannerMediaLayer(banner) {
-    const target = banner.matches(".home-hero")
-      ? banner.querySelector(".home-hero__visual") || banner
-      : banner;
-
-    let layer = target.querySelector(":scope > .hero-custom-media");
-
+    let layer = banner.querySelector(".hero-custom-media");
     if (!layer) {
       layer = document.createElement("div");
       layer.className = "hero-custom-media";
       layer.setAttribute("aria-hidden","true");
-      target.prepend(layer);
+      banner.prepend(layer);
     }
-
     return layer;
   }
 
@@ -2683,12 +2663,7 @@
     if (!banner) return;
     const config = normalizeBannerConfig(pageData().banner);
 
-    banner.style.minHeight = "";
-    if (config.height) {
-      banner.style.setProperty("--admin-banner-height", config.height);
-    } else {
-      banner.style.removeProperty("--admin-banner-height");
-    }
+    banner.style.minHeight = config.height || "";
     banner.style.setProperty("--admin-banner-position", config.position || "center center");
     banner.style.setProperty("--admin-banner-overlay", String((config.overlay || 0) / 100));
 
@@ -2837,7 +2812,46 @@
 
     applySavedContent();
     applySectionStyles();
-    decorateQuickAdminControls();
+
+    document.querySelectorAll("main section").forEach(section => {
+      if (section.querySelector(":scope > .admin-section-tools")) return;
+      section.classList.add("admin-editable-section");
+
+      const tools = document.createElement("div");
+      tools.className = "admin-section-tools";
+      tools.innerHTML = `
+        <button type="button" data-inline-section="${sectionKey(section)}">Editar sección</button>
+        <button type="button" data-inline-move="up" aria-label="Subir sección">↑</button>
+        <button type="button" data-inline-move="down" aria-label="Bajar sección">↓</button>`;
+      section.prepend(tools);
+    });
+
+    document.querySelectorAll("[data-admin-entity]").forEach(card => {
+      card.classList.add("admin-editable-card");
+      if (card.querySelector(":scope > .admin-card-edit")) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "admin-card-edit";
+      button.dataset.inlineEntity = card.dataset.adminEntity;
+      button.dataset.entityId = card.dataset.entityId;
+      button.dataset.entityYear = card.dataset.entityYear || "";
+      button.textContent = "Editar";
+      card.appendChild(button);
+    });
+
+    document.querySelectorAll("main h1,main h2,main h3,main h4,main p,main li,main summary,main blockquote,main .button,main a:not(nav a)").forEach(element => {
+      if (element.closest("form,dialog,.admin-section-tools,.admin-card-edit,.no-inline-edit")) return;
+      element.classList.add("admin-inline-text");
+      element.contentEditable = "true";
+      element.spellcheck = true;
+      element.dataset.adminContentKey = contentKey(element);
+      element.setAttribute("aria-label", `Texto editable: ${element.textContent.trim().slice(0,80)}`);
+    });
+
+    document.querySelectorAll("main img,header img").forEach(image => {
+      image.classList.add("admin-inline-image");
+      image.dataset.adminImageKey = imageKey(image);
+    });
   }
 
   function undecorate() {
@@ -3710,50 +3724,20 @@
 
   function bindDocumentEditing() {
     document.addEventListener("click", event => {
-      const quickEditableAction = event.target.closest(
-        ".admin-quick-text-active .admin-inline-text"
-      );
-      if (!active && !quickEditableAction) return;
+      if (!active) return;
 
       const sectionButton = event.target.closest("[data-inline-section]");
       const moveButton = event.target.closest("[data-inline-move]");
       const entityButton = event.target.closest("[data-inline-entity]");
       const editableAction = event.target.closest(".admin-inline-text");
 
-      if (
-        sectionButton
-        || moveButton
-        || entityButton
-        || (
-          editableAction
-          && editableAction.matches("a,button,.button")
-        )
-      ) {
+      if (sectionButton || moveButton || entityButton || (editableAction && editableAction.matches("a,button,.button"))) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        if (sectionButton) {
-          openSectionInspector(sectionButton.closest("section"));
-        }
-        if (moveButton) {
-          moveSection(
-            moveButton.closest("section"),
-            moveButton.dataset.inlineMove
-          );
-        }
-        if (entityButton) {
-          openEntityInspector(
-            entityButton.dataset.inlineEntity,
-            entityButton.dataset.entityId,
-            entityButton.dataset.entityYear
-          );
-        }
-        if (
-          quickEditableAction
-          && quickEditableAction.matches("a,button,.button")
-        ) {
-          quickEditableAction.focus();
-        }
+        if (sectionButton) openSectionInspector(sectionButton.closest("section"));
+        if (moveButton) moveSection(moveButton.closest("section"), moveButton.dataset.inlineMove);
+        if (entityButton) openEntityInspector(entityButton.dataset.inlineEntity, entityButton.dataset.entityId, entityButton.dataset.entityYear);
       }
     }, true);
 
@@ -3775,10 +3759,7 @@
     });
 
     document.addEventListener("click", event => {
-      const quickEditable = event.target.closest(
-        ".admin-quick-text-active .admin-inline-text"
-      );
-      if (!active && !quickEditable) return;
+      if (!active) return;
 
       const sectionButton = event.target.closest("[data-inline-section]");
       if (sectionButton) {

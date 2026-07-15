@@ -264,8 +264,10 @@
 
 
 const UI_ASSETS = {
+  clickEffect: "ui-gifs/click-effect.gif",
   loading: "ui-gifs/loading-spinner.gif",
   success: "ui-gifs/ok-hand.gif",
+  hoverCat: "ui-gifs/cat-hello.gif",
   notification: "ui-audio/notification.mp3"
 };
 
@@ -383,43 +385,13 @@ function showClickEffect(x, y) {
 }
 
 
-
-function initPremiumViewportMotion(root = document) {
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const selector = [
-    '.home-section__head', '.edition-card', '.deal-card', '.quote-card', '.trust-card', '.ideas-cta',
-    '.archive-card', '.archive-intro', '.library-toolbar', '.library-summary', '.resource-library-card',
-    '.news-page-hero__grid > *', '.news-toolbar', '.news-quick-categories', '.news-result-summary',
-    '.news-feature-card', '.news-card', '.news-story', '.news-subscription-card',
-    '.ideas-page__head', '.idea-stat-strip', '.ideas-filter', '.idea-column', '.idea-card',
-    '.idea-public-card', '.idea-feature-card', '.ideas-sidebar > article', '.ideas-list > article',
-    '.year-section__head', '.year-overview', '.year-metric', '.dashboard-panel', '.executive-kpi',
-    '.institution-result', '.method-step', '.year-resource-card', '.commitment-row', '.request-summary > article'
-  ].join(',');
-
-  const targets = [...root.querySelectorAll(selector)].filter(element => !element.dataset.premiumMotion);
-  if (!targets.length) return;
-
-  targets.forEach((element,index) => {
-    element.dataset.premiumMotion = '1';
-    element.classList.add('premium-motion-item');
-    element.style.setProperty('--premium-delay', `${Math.min(index % 8, 7) * 42}ms`);
-  });
-
-  if (reduceMotion || !('IntersectionObserver' in window)) {
-    targets.forEach(element => element.classList.add('is-premium-visible'));
-    return;
-  }
-
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('is-premium-visible');
-      observer.unobserve(entry.target);
-    });
-  }, { threshold:0.07, rootMargin:'0px 0px -4% 0px' });
-
-  targets.forEach(element => observer.observe(element));
+function mountNewsHoverCat(summary = document.querySelector('.news-hero-summary')) {
+  if (!summary) return null;
+  const existing = summary.querySelector('.news-summary-hover-gif');
+  if (existing) existing.remove();
+  summary.classList.remove('is-cat-peeking');
+  delete summary.dataset.catBound;
+  return null;
 }
 
 function initInteractiveFeedback() {
@@ -447,6 +419,8 @@ function initInteractiveFeedback() {
       }
     }
 
+    const summary = event.target.closest('.news-hero-summary');
+    if (summary) mountNewsHoverCat(summary);
   }, true);
 
   document.addEventListener('keydown', event => {
@@ -456,12 +430,15 @@ function initInteractiveFeedback() {
   }, true);
 
   document.addEventListener('mouseover', event => {
+    const summary = event.target.closest('.news-hero-summary');
+    if (summary) mountNewsHoverCat(summary);
   }, true);
 
   document.addEventListener('submit', () => {
     showLoading('Procesando la información…');
   }, true);
 
+  mountNewsHoverCat();
 }
 
   const state = {
@@ -1316,7 +1293,33 @@ helpers.toast = function(message) {
     });
 
     document.querySelector("#adminConsoleEntry")?.addEventListener("click", () => {
-      window.InlineAdmin?.openConsole?.("editing");
+      document.body.classList.add('admin-explicit-open');
+
+      if (window.InlineAdmin?.openConsole) {
+        window.InlineAdmin.openConsole("editing");
+        return;
+      }
+
+      loadInlineAdministration();
+      let attempts = 0;
+      const waitForAdmin = window.setInterval(() => {
+        attempts += 1;
+        if (window.InlineAdmin?.openConsole) {
+          window.clearInterval(waitForAdmin);
+          document.body.classList.add('admin-explicit-open');
+          window.InlineAdmin.openConsole("editing");
+        } else if (attempts >= 20) {
+          window.clearInterval(waitForAdmin);
+          document.body.classList.remove('admin-explicit-open');
+          helpers.toast("No fue posible abrir el panel administrativo. Recargue la página e inténtelo nuevamente.");
+        }
+      }, 100);
+    });
+
+    document.addEventListener('click', event => {
+      if (event.target.closest('#inlineConsoleClose,#inlineConsoleBackdrop,.admin-console__close')) {
+        document.body.classList.remove('admin-explicit-open');
+      }
     });
 
     document.querySelector("#adminSessionIdentity")?.addEventListener("click", () => {
@@ -1649,13 +1652,44 @@ helpers.toast = function(message) {
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.21-cierre-premium";
+    script.src = "inline-admin.js?v=10.22-reparacion-estable";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
-      if (state.admin) {
-        document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+
+      if (window.InlineAdmin && !window.InlineAdmin.__v1022Patched) {
+        const originalOpen = window.InlineAdmin.openConsole?.bind(window.InlineAdmin);
+        const originalClose = window.InlineAdmin.closeConsole?.bind(window.InlineAdmin);
+
+        if (originalOpen) {
+          window.InlineAdmin.openConsole = (...args) => {
+            document.body.classList.add('admin-explicit-open');
+            const result = originalOpen(...args);
+            window.setTimeout(() => {
+              document.querySelector('#inlineAdminToolbar')?.classList.add('open');
+              document.body.classList.add('admin-console-open');
+            }, 0);
+            return result;
+          };
+        }
+
+        if (originalClose) {
+          window.InlineAdmin.closeConsole = (...args) => {
+            const result = originalClose(...args);
+            document.body.classList.remove('admin-explicit-open');
+            return result;
+          };
+        }
+
+        window.InlineAdmin.__v1022Patched = true;
       }
+
+      document.body.classList.remove(
+        'admin-inline-active',
+        'admin-inspector-open',
+        'admin-explicit-open',
+        'admin-console-open'
+      );
     };
     script.onerror = () => helpers.toast("No fue posible cargar el editor directo.");
     document.head.appendChild(script);
@@ -2244,7 +2278,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.21-cierre-premium`;
+      const versioned = `${base}?v=10.22-reparacion-estable`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2276,39 +2310,28 @@ helpers.toast = function(message) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+  document.body.classList.remove('admin-inline-active', 'admin-inspector-open', 'admin-explicit-open', 'admin-console-open');
   const currentPage = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  const pageClasses = {
-    'page-home': currentPage === '' || currentPage === 'index.html',
-    'page-news': currentPage === 'noticias.html' || currentPage === 'noticia.html',
-    'page-ideas': currentPage === 'ideas.html',
-    'page-resources': currentPage === 'recursos.html',
-    'page-years': currentPage === 'vigencias.html',
-    'page-year-detail': currentPage === 'rendicion.html' || /^rendicion-\d{4}\.html$/.test(currentPage)
-  };
-  Object.entries(pageClasses).forEach(([className, active]) => {
-    document.body.classList.toggle(className, active);
-  });
+  document.body.classList.toggle('page-home', currentPage === '' || currentPage === 'index.html');
+  document.body.classList.toggle('page-news', currentPage === 'noticias.html' || currentPage === 'noticia.html');
+  document.body.classList.toggle('page-ideas', currentPage === 'ideas.html');
   initInteractiveFeedback();
-  initPremiumViewportMotion(document);
+  mountNewsHoverCat();
   showLoading('Estamos preparando la página…');
 }, { once:true });
 
-
-document.addEventListener('portal:rendered', event => {
-  initPremiumViewportMotion(event.target || document);
-});
-
 window.addEventListener('load', () => {
-  document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+  document.body.classList.remove('admin-inline-active', 'admin-inspector-open', 'admin-explicit-open', 'admin-console-open');
+  mountNewsHoverCat();
   hideLoading('Contenido cargado correctamente.');
 }, { once:true });
 
 window.addEventListener('pageshow', () => {
-  document.body.classList.remove('admin-inline-active', 'admin-inspector-open');
+  document.body.classList.remove('admin-inline-active', 'admin-inspector-open', 'admin-explicit-open', 'admin-console-open');
+  mountNewsHoverCat();
   hideLoading('Contenido listo para consultar.');
 });
 
-  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, KEYS };
+  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, mountNewsHoverCat, KEYS };
   document.addEventListener("DOMContentLoaded", init);
 })();

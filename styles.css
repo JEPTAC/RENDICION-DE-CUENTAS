@@ -17769,495 +17769,294 @@ body.page-home{ background:linear-gradient(180deg,#f4f8fd 0%,#eff5fc 52%,#f4f8fd
 
 
 /* =========================================================
-   V10.21 · Cierre visual premium y consistencia total
+   V10.22 · Reparación estable y controlada
+   Base: V10.20. No hereda las reglas invasivas de V10.21.
    ========================================================= */
 
 :root{
-  --space-page-x:clamp(18px,4vw,68px);
-  --space-section-y:clamp(64px,7vw,108px);
-  --space-card:clamp(18px,2vw,26px);
-  --radius-premium:26px;
-  --radius-premium-sm:18px;
-  --border-premium:rgba(72,124,194,.14);
-  --shadow-premium:0 20px 54px rgba(13,59,124,.10);
-  --shadow-premium-hover:0 30px 78px rgba(13,59,124,.16);
-  --ease-premium:cubic-bezier(.22,.78,.24,1);
+  --v1022-page:#f4f8fd;
+  --v1022-surface:#ffffff;
+  --v1022-soft:#eef5fc;
+  --v1022-border:rgba(66,119,190,.14);
+  --v1022-shadow:0 18px 44px rgba(11,55,119,.09);
+  --v1022-shadow-hover:0 25px 62px rgba(11,55,119,.14);
 }
 
-/* Rendimiento y movimiento unificado */
-.premium-motion-item{
-  opacity:0;
-  transform:translate3d(0,20px,0) scale(.992);
-  filter:blur(5px);
-  transition:
-    opacity .58s ease var(--premium-delay,0ms),
-    transform .68s var(--ease-premium) var(--premium-delay,0ms),
-    filter .58s ease var(--premium-delay,0ms);
-}
-.premium-motion-item.is-premium-visible{
-  opacity:1;
-  transform:none;
-  filter:none;
-}
-.home-section,
-.year-section,
-.library-page section,
-.news-page section,
-.ideas-page section{
-  content-visibility:auto;
-  contain-intrinsic-size:auto 640px;
-}
-
-/* Sistema de superficie común */
-.edition-card,.deal-card,.quote-card,.trust-card,.ideas-cta,.archive-card,
-.resource-library-card,.news-card,.news-story,.news-feature-card,.news-subscription-card,
-.idea-card,.idea-public-card,.idea-feature-card,.idea-column,.ideas-sidebar>article,
-.ideas-list>article,.year-overview,.year-metric,.dashboard-panel,.executive-kpi,
-.institution-result,.method-step,.year-resource-card,.commitment-row,.request-summary>article{
-  border:1px solid var(--border-premium)!important;
-  border-radius:var(--radius-premium)!important;
-  box-shadow:var(--shadow-premium)!important;
-  transition:
-    transform .28s var(--ease-premium),
-    box-shadow .28s ease,
-    border-color .28s ease!important;
-}
-.edition-card:hover,.deal-card:hover,.quote-card:hover,.trust-card:hover,.ideas-cta:hover,.archive-card:hover,
-.resource-library-card:hover,.news-card:hover,.news-story:hover,.news-feature-card:hover,
-.idea-card:hover,.idea-public-card:hover,.idea-feature-card:hover,.idea-column:hover,
-.year-overview:hover,.dashboard-panel:hover,.executive-kpi:hover,.institution-result:hover,
-.method-step:hover,.year-resource-card:hover,.commitment-row:hover{
-  transform:translateY(-6px)!important;
-  border-color:rgba(50,105,183,.22)!important;
-  box-shadow:var(--shadow-premium-hover)!important;
-}
-
-/* Inicio: continuidad fina, sin difuminación sobre el banner */
+/* 1. El banner no lleva difuminación. */
+body.page-home .home-hero,
+body.page-home .home-hero::before,
 body.page-home .home-hero::after,
-body.page-home .home-hero::before{
+body.page-home .home-hero__grid,
+body.page-home .home-hero__copy,
+body.page-home .home-hero__visual,
+body.page-home .home-hero__visual::before,
+body.page-home .home-hero__visual::after{
   filter:none!important;
 }
-body.page-home .home-hero::after{ display:none!important; }
+body.page-home .home-hero::after{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+}
+body.page-home .home-hero__visual::after{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.page-home .home-hero{
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 83% 14%,rgba(117,191,255,.22),transparent 22%),
+    linear-gradient(180deg,#f8fbff 0%,#eaf4ff 100%)!important;
+}
+
+/* 2. El título siempre queda dentro de su cuadro. */
+body.page-home .home-hero__copy,
+body.page-home .home-hero.has-admin-banner .home-hero__copy{
+  box-sizing:border-box!important;
+  width:min(100%,700px)!important;
+  max-width:700px!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  padding:clamp(28px,3vw,42px)!important;
+  border-radius:32px!important;
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid rgba(255,255,255,.96)!important;
+  box-shadow:0 22px 58px rgba(16,63,128,.11)!important;
+}
+body.page-home .home-hero__copy h1,
+body.page-home .home-hero.has-admin-banner .home-hero__copy h1,
+body.page-home .home-hero h1{
+  box-sizing:border-box!important;
+  display:block!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:.18em 0 .24em!important;
+  font-size:clamp(3.15rem,5.15vw,5.55rem)!important;
+  line-height:.94!important;
+  letter-spacing:-.058em!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+  text-wrap:balance;
+}
+body.page-home .home-hero__copy h1 em{
+  display:inline!important;
+  white-space:normal!important;
+}
+body.page-home .home-hero__copy>p{
+  max-width:580px!important;
+  font-size:clamp(.92rem,1.1vw,1.04rem)!important;
+  line-height:1.68!important;
+}
+
+/* 3. La fusión se aplica únicamente entre módulos del inicio. */
 body.page-home .home-section{
-  padding-block:var(--space-section-y)!important;
+  position:relative!important;
+  overflow:visible!important;
+  padding-block:clamp(72px,6vw,96px)!important;
 }
 body.page-home .home-section + .home-section::before{
-  top:-27px!important;
-  height:54px!important;
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:-17px!important;
+  height:34px!important;
+  z-index:1!important;
+  pointer-events:none!important;
   background:linear-gradient(180deg,
-    rgba(239,246,255,0) 0%,
-    rgba(239,246,255,.48) 26%,
-    rgba(239,246,255,.96) 50%,
-    rgba(239,246,255,.48) 74%,
-    rgba(239,246,255,0) 100%)!important;
-  filter:blur(12px)!important;
+    rgba(238,246,255,0) 0%,
+    rgba(238,246,255,.76) 44%,
+    rgba(238,246,255,.96) 52%,
+    rgba(238,246,255,.74) 60%,
+    rgba(238,246,255,0) 100%)!important;
+  filter:blur(7px)!important;
+  opacity:1!important;
 }
 body.page-home .home-section::after{
-  bottom:-26px!important;
-  height:52px!important;
-  background:linear-gradient(180deg,
-    rgba(239,246,255,0) 0%,
-    rgba(239,246,255,.42) 35%,
-    rgba(239,246,255,.90) 52%,
-    rgba(239,246,255,0) 100%)!important;
+  display:none!important;
+  content:none!important;
 }
-body.page-home .home-section:first-of-type::before{ display:none!important; }
+body.page-home .home-section:first-of-type::before{
+  display:none!important;
+}
+body.page-home .home-section > .site-shell,
+body.page-home .home-section > .container{
+  position:relative!important;
+  z-index:2!important;
+}
+
+/* 4. Home: mejora visible, pero no invasiva. */
+body.page-home{
+  background:linear-gradient(180deg,#f7fbff 0%,#f0f6fd 100%)!important;
+}
+body.page-home .home-hero__grid{
+  align-items:center!important;
+  gap:clamp(34px,4vw,68px)!important;
+}
+body.page-home .home-hero__visual{
+  min-width:0!important;
+  overflow:visible!important;
+}
+body.page-home .explorer-bar{
+  position:relative!important;
+  z-index:5!important;
+  margin-top:-44px!important;
+}
+body.page-home .explorer-panel{
+  border-radius:26px!important;
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid var(--v1022-border)!important;
+  box-shadow:0 22px 55px rgba(11,55,119,.11)!important;
+  backdrop-filter:none!important;
+}
 body.page-home .home-section__head{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(260px,.65fr)!important;
-  gap:clamp(28px,5vw,72px)!important;
-  align-items:end!important;
+  margin-bottom:28px!important;
 }
 body.page-home .home-section__head h2{
-  max-width:720px;
+  font-size:clamp(2rem,3vw,3rem)!important;
+  line-height:1.08!important;
   text-wrap:balance;
 }
 body.page-home .home-section__head p{
-  max-width:620px!important;
-  justify-self:end;
-}
-body.page-home .editions-carousel,
-body.page-home .editorial-deals,
-body.page-home .quote-grid,
-body.page-home .trust-strip{
-  align-items:stretch!important;
+  line-height:1.7!important;
 }
 body.page-home .edition-card,
 body.page-home .deal-card,
 body.page-home .quote-card,
-body.page-home .trust-card{
-  min-height:100%;
-  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(247,251,255,.92))!important;
+body.page-home .trust-card,
+body.page-home .ideas-cta,
+body.page-home .news-card{
+  border:1px solid var(--v1022-border)!important;
+  border-radius:24px!important;
+  background:linear-gradient(180deg,#fff 0%,#f9fcff 100%)!important;
+  box-shadow:var(--v1022-shadow)!important;
+  transition:transform .24s ease,box-shadow .24s ease!important;
 }
-body.page-home .edition-card__body,
-body.page-home .deal-card__body,
-body.page-home .quote-card__body,
-body.page-home .trust-card__body{
-  display:flex;
-  flex-direction:column;
-  min-height:220px;
-}
-body.page-home .edition-card__body .button,
-body.page-home .deal-card__body .button{
-  margin-top:auto;
-  align-self:flex-start;
-}
-
-/* Archivo de vigencias */
-body.page-years{
-  background:linear-gradient(180deg,#f7fbff 0%,#edf5ff 100%)!important;
-}
-body.page-years .archive-page{
-  padding-block:clamp(52px,7vw,92px)!important;
-}
-body.page-years .archive-intro{
-  padding:clamp(24px,4vw,42px)!important;
-  border:1px solid var(--border-premium)!important;
-  border-radius:32px!important;
-  background:
-    radial-gradient(circle at 88% 16%,rgba(100,180,255,.20),transparent 24%),
-    linear-gradient(145deg,rgba(255,255,255,.98),rgba(239,247,255,.92))!important;
-  box-shadow:0 28px 74px rgba(13,59,124,.11)!important;
-}
-body.page-years .archive-grid{
-  gap:22px!important;
-  align-items:stretch;
-}
-body.page-years .archive-card{
-  min-height:310px;
-  display:flex;
-  flex-direction:column;
-  background:linear-gradient(180deg,#fff 0%,#f7fbff 100%)!important;
-}
-body.page-years .archive-card .button,
-body.page-years .archive-card a:last-child{
-  margin-top:auto;
+body.page-home .edition-card:hover,
+body.page-home .deal-card:hover,
+body.page-home .quote-card:hover,
+body.page-home .trust-card:hover,
+body.page-home .ideas-cta:hover,
+body.page-home .news-card:hover{
+  transform:translateY(-4px)!important;
+  box-shadow:var(--v1022-shadow-hover)!important;
 }
 
-/* Recursos: precisión de filtros, tarjetas y responsive */
-body.page-resources{
-  background:linear-gradient(180deg,#f7fbff 0%,#edf5ff 100%)!important;
+/* 5. El administrador abre únicamente al solicitarlo y queda visible. */
+body .admin-console-shell,
+body .inline-admin-inspector{
+  transition:opacity .2s ease,visibility .2s ease,transform .25s ease!important;
 }
-body.page-resources .library-page{
-  padding-block:clamp(48px,6vw,88px)!important;
+body .admin-console-shell.open,
+body.admin-console-open .admin-console-shell,
+body.admin-explicit-open .admin-console-shell{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  display:block!important;
 }
-body.page-resources .library-toolbar{
-  grid-template-columns:minmax(260px,1.5fr) minmax(170px,.55fr) minmax(180px,.65fr) auto!important;
-  gap:12px!important;
-  align-items:end;
+body .admin-console-shell.open .admin-console,
+body.admin-console-open .admin-console-shell .admin-console,
+body.admin-explicit-open .admin-console-shell .admin-console{
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
 }
-body.page-resources .library-toolbar input,
-body.page-resources .library-toolbar select,
-body.page-resources .library-toolbar button{
-  min-height:48px!important;
+body .inline-admin-inspector.open,
+body.admin-explicit-open .inline-admin-inspector.open{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
 }
-body.page-resources .resource-library-grid{
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:24px!important;
-}
-body.page-resources .resource-library-card{
-  display:flex!important;
-  flex-direction:column;
-  min-height:470px;
-  overflow:hidden;
-  background:linear-gradient(180deg,#fff 0%,#f7fbff 100%)!important;
-}
-body.page-resources .resource-library-card__body{
-  display:flex!important;
-  flex-direction:column;
-  flex:1;
-}
-body.page-resources .resource-library-card__body>div:last-child{
-  margin-top:auto!important;
-}
-body.page-resources .resource-library-card button{
-  min-width:112px;
+body:not(.admin-console-open):not(.admin-explicit-open) .admin-console-shell:not(.open){
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
 }
 
-/* Noticias: jerarquía editorial final */
-body.page-news{
-  background:linear-gradient(180deg,#f7fbff 0%,#edf5ff 100%)!important;
+/* 6. Evitar que módulos o textos salgan de sus tarjetas. */
+.home-section *,
+.news-page *,
+.library-page *,
+.ideas-page *,
+.year-section *{
+  min-width:0;
 }
-body.page-news .news-page-hero{
-  min-height:clamp(520px,64vh,680px)!important;
-  display:grid;
-  align-items:center;
+.edition-card,
+.deal-card,
+.quote-card,
+.trust-card,
+.news-card,
+.resource-library-card,
+.idea-card,
+.idea-public-card,
+.idea-column,
+.year-resource-card{
+  overflow:hidden!important;
 }
-body.page-news .news-page-hero__grid{
-  grid-template-columns:minmax(0,1.1fr) minmax(350px,.62fr)!important;
-  gap:clamp(40px,6vw,96px)!important;
-}
-body.page-news .news-hero-summary{
-  min-height:350px;
-  display:flex!important;
-  flex-direction:column;
-  justify-content:center;
-}
-body.page-news .news-feature-card{
-  display:grid!important;
-  grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr)!important;
-  min-height:520px;
-}
-body.page-news .news-feature-card__content{
-  display:flex!important;
-  flex-direction:column;
-  justify-content:center;
-}
-body.page-news .news-toolbar{
-  position:sticky;
-  top:var(--fixed-header-height,106px);
-  z-index:18;
-  backdrop-filter:blur(14px);
-}
-body.page-news .news-card-grid{
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:24px!important;
-}
-body.page-news .news-card{
-  min-height:520px;
-  display:flex!important;
-  flex-direction:column;
-}
-body.page-news .news-card__body{
-  display:flex!important;
-  flex-direction:column;
-  flex:1;
-}
-body.page-news .news-card footer{
-  margin-top:auto!important;
-}
-body.page-news .news-summary-hover-gif{ display:none!important; }
-
-/* Ideas: columnas uniformes y fondo celebrado sin saturación */
-body.page-ideas{
-  background:
-    radial-gradient(circle at 5% 18%,rgba(93,171,255,.13),transparent 18%),
-    radial-gradient(circle at 95% 35%,rgba(255,113,149,.08),transparent 16%),
-    linear-gradient(180deg,#f7fbff 0%,#edf5ff 100%)!important;
-}
-body.page-ideas .ideas-page{
-  padding-block:clamp(48px,6vw,88px)!important;
-}
-body.page-ideas .ideas-page__head{
-  padding:clamp(26px,4vw,44px)!important;
-  min-height:230px;
-}
-body.page-ideas .idea-stat-strip{
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-}
-body.page-ideas .idea-board{
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:18px!important;
-  align-items:stretch;
-}
-body.page-ideas .idea-column{
-  display:flex;
-  flex-direction:column;
-  min-height:520px;
-  overflow:hidden;
-}
-body.page-ideas .idea-column__list,
-body.page-ideas .idea-column>div:last-child{
-  display:grid;
-  gap:14px;
-}
-body.page-ideas .idea-card,
-body.page-ideas .idea-public-card{
-  min-height:255px;
-  display:flex;
-  flex-direction:column;
-}
-body.page-ideas .idea-card footer,
-body.page-ideas .idea-public-card footer{
-  margin-top:auto;
+.edition-card h3,
+.deal-card h3,
+.quote-card h3,
+.news-card h3,
+.resource-library-card h3,
+.idea-card h3,
+.idea-public-card h3,
+.year-resource-card h3{
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
 }
 
-/* Vigencias: remate especial 2026 y 2027 */
-body.year-theme--mobility{
-  --theme-accent:#0d69ba;
-  --theme-deep:#063b78;
-  background:linear-gradient(180deg,#f7fbff 0%,#eef7fb 100%)!important;
+/* Responsive comprobable. */
+@media (max-width:1180px){
+  body.page-home .home-hero__copy,
+  body.page-home .home-hero.has-admin-banner .home-hero__copy{
+    width:100%!important;
+    max-width:760px!important;
+  }
+  body.page-home .home-hero__copy h1,
+  body.page-home .home-hero.has-admin-banner .home-hero__copy h1{
+    font-size:clamp(3rem,7vw,4.8rem)!important;
+  }
 }
-body.year-theme--mobility .page-hero{
-  background:
-    radial-gradient(circle at 78% 14%,rgba(81,215,226,.28),transparent 20%),
-    radial-gradient(circle at 92% 74%,rgba(38,131,208,.20),transparent 24%),
-    linear-gradient(120deg,#f8fcff 0%,#e7f6fb 40%,#8ed4e4 68%,#2686bd 86%,#064777 100%)!important;
-}
-body.year-theme--mobility .year-selector-card,
-body.year-theme--mobility .year-overview,
-body.year-theme--mobility .dashboard-panel,
-body.year-theme--mobility .executive-kpi,
-body.year-theme--mobility .institution-result,
-body.year-theme--mobility .method-step,
-body.year-theme--mobility .year-resource-card,
-body.year-theme--mobility .commitment-row{
-  border-color:rgba(23,143,178,.16)!important;
-}
-body.year-theme--mobility .year-section:nth-of-type(even){
-  background:linear-gradient(180deg,rgba(239,250,252,.96),rgba(248,252,255,.98))!important;
-}
-body.year-theme--mobility .year-section::before{
-  background:linear-gradient(90deg,transparent,rgba(47,180,197,.52),rgba(20,100,183,.48),transparent)!important;
-}
-
-body.year-theme--sports{
-  --theme-accent:#375bd4;
-  --theme-deep:#171d69;
-  background:linear-gradient(180deg,#f8f9ff 0%,#f0f2ff 100%)!important;
-}
-body.year-theme--sports .page-hero{
-  background:
-    radial-gradient(circle at 78% 16%,rgba(144,125,255,.26),transparent 20%),
-    radial-gradient(circle at 92% 74%,rgba(63,119,235,.22),transparent 24%),
-    linear-gradient(120deg,#fbfbff 0%,#eef0ff 38%,#a9b5ff 66%,#4a5ed1 84%,#171d69 100%)!important;
-}
-body.year-theme--sports .year-selector-card,
-body.year-theme--sports .year-overview,
-body.year-theme--sports .dashboard-panel,
-body.year-theme--sports .executive-kpi,
-body.year-theme--sports .institution-result,
-body.year-theme--sports .method-step,
-body.year-theme--sports .year-resource-card,
-body.year-theme--sports .commitment-row{
-  border-color:rgba(74,91,201,.17)!important;
-}
-body.year-theme--sports .year-section:nth-of-type(even){
-  background:linear-gradient(180deg,rgba(244,245,255,.98),rgba(250,251,255,.98))!important;
-}
-body.year-theme--sports .year-section::before{
-  background:linear-gradient(90deg,transparent,rgba(113,100,228,.46),rgba(39,89,198,.52),transparent)!important;
+@media (max-width:760px){
+  body.page-home .home-hero{
+    min-height:auto!important;
+  }
+  body.page-home .home-hero__copy,
+  body.page-home .home-hero.has-admin-banner .home-hero__copy{
+    padding:24px 20px!important;
+    border-radius:24px!important;
+  }
+  body.page-home .home-hero__copy h1,
+  body.page-home .home-hero.has-admin-banner .home-hero__copy h1{
+    font-size:clamp(2.45rem,12vw,3.45rem)!important;
+    line-height:.98!important;
+    letter-spacing:-.045em!important;
+  }
+  body.page-home .home-section{
+    padding-block:58px!important;
+  }
+  body.page-home .home-section + .home-section::before{
+    top:-13px!important;
+    height:26px!important;
+    filter:blur(5px)!important;
+  }
+  body.page-home .explorer-bar{
+    margin-top:-24px!important;
+  }
 }
 
-/* 2026 posiciones finales */
-@media (min-width:1281px){
-  body.year-2026 .page-hero--mobility .hero-gif--mobility-festival{width:268px!important;right:31%!important;top:5%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--bus-main{width:248px!important;right:6%!important;bottom:3%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--bus-accent{width:150px!important;right:47%!important;bottom:10%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--headline-festival{width:134px!important;right:17%!important;top:2%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--sparkle-route{width:136px!important;right:0!important;top:3%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--sparkle-route-b{width:102px!important;right:34%!important;top:18%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--stream-route{width:104px!important;right:25%!important;top:24%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--stream-route-b{width:84px!important;right:8%!important;bottom:26%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--notes-route{width:70px!important;right:44%!important;top:6%!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--notes-route-b{width:62px!important;right:17%!important;top:36%!important;}
-}
-
-/* 2027 posiciones finales */
-@media (min-width:1281px){
-  body.year-2027 .page-hero--sports .hero-gif--sports-main{width:254px!important;right:5%!important;bottom:3%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sports-accent{width:182px!important;right:28%!important;bottom:12%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--headline-festival{width:122px!important;right:41%!important;top:6%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--music-parade{width:128px!important;right:13%!important;top:4%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--football{width:108px!important;right:43%!important;top:20%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--basketball{width:116px!important;right:10%!important;top:23%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sparkle-sport{width:130px!important;right:-1%!important;top:2%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sparkle-sport-b{width:96px!important;right:29%!important;top:0!important;}
-  body.year-2027 .page-hero--sports .hero-gif--stream-sport{width:98px!important;right:23%!important;bottom:23%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--stream-sport-b{width:82px!important;right:48%!important;bottom:18%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--notes-sport{width:70px!important;right:37%!important;top:45%!important;}
-  body.year-2027 .page-hero--sports .hero-gif--notes-sport-b{width:60px!important;right:8%!important;top:48%!important;}
-}
-
-/* Portátil / tablet */
-@media (min-width:769px) and (max-width:1280px){
-  body.page-home .home-section__head{grid-template-columns:1fr!important;gap:14px!important;}
-  body.page-home .home-section__head p{justify-self:start!important;}
-  body.page-resources .library-toolbar{grid-template-columns:1fr 1fr!important;}
-  body.page-resources .resource-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  body.page-news .news-page-hero__grid{grid-template-columns:1fr!important;gap:28px!important;}
-  body.page-news .news-hero-summary{max-width:720px;min-height:0;}
-  body.page-news .news-feature-card{grid-template-columns:1fr 1fr!important;}
-  body.page-news .news-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  body.page-ideas .idea-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  body.page-ideas .idea-board{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-
-  body.year-2026 .page-hero--mobility .hero-gif--mobility-festival{width:190px!important;right:32%!important;top:14px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--bus-main{width:174px!important;right:7%!important;bottom:8px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--bus-accent{width:100px!important;right:47%!important;bottom:50px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--headline-festival{width:88px!important;right:16%!important;top:14px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--sparkle-route{width:88px!important;right:0!important;top:6px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--sparkle-route-b{width:66px!important;right:34%!important;top:66px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--stream-route{width:68px!important;right:24%!important;top:84px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--stream-route-b{width:56px!important;right:7%!important;bottom:82px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--notes-route{width:48px!important;right:44%!important;top:18px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--notes-route-b{width:42px!important;right:17%!important;top:132px!important;}
-
-  body.year-2027 .page-hero--sports .hero-gif--sports-main{width:184px!important;right:6%!important;bottom:8px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sports-accent{width:120px!important;right:29%!important;bottom:52px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--headline-festival{width:76px!important;right:42%!important;top:18px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--music-parade{width:80px!important;right:14%!important;top:14px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--football{width:66px!important;right:43%!important;top:82px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--basketball{width:70px!important;right:11%!important;top:92px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sparkle-sport{width:88px!important;right:0!important;top:6px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sparkle-sport-b{width:62px!important;right:29%!important;top:4px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--stream-sport{width:66px!important;right:23%!important;bottom:82px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--stream-sport-b{width:52px!important;right:48%!important;bottom:50px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--notes-sport{width:44px!important;right:37%!important;top:145px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--notes-sport-b{width:38px!important;right:8%!important;top:150px!important;}
-}
-
-/* Móvil */
-@media (max-width:768px){
-  :root{--radius-premium:20px;--space-card:18px;}
-  .premium-motion-item{transform:translate3d(0,12px,0);filter:blur(3px);}
-  body.page-home .home-section{padding-block:58px!important;}
-  body.page-home .home-section__head{display:block!important;}
-  body.page-home .home-section__head p{margin-top:12px!important;}
-  body.page-years .archive-intro{padding:24px 20px!important;border-radius:24px!important;}
-  body.page-years .archive-grid{grid-template-columns:1fr!important;}
-  body.page-resources .library-toolbar{grid-template-columns:1fr!important;}
-  body.page-resources .resource-library-grid{grid-template-columns:1fr!important;gap:18px!important;}
-  body.page-resources .resource-library-card{min-height:0;}
-  body.page-resources .resource-library-card p{min-height:0!important;}
-  body.page-news .news-page-hero{min-height:0!important;}
-  body.page-news .news-page-hero__grid{grid-template-columns:1fr!important;gap:22px!important;}
-  body.page-news .news-feature-card{grid-template-columns:1fr!important;min-height:0;}
-  body.page-news .news-card-grid{grid-template-columns:1fr!important;gap:18px!important;}
-  body.page-news .news-card{min-height:0;}
-  body.page-news .news-toolbar{position:relative;top:auto;}
-  body.page-ideas .idea-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  body.page-ideas .idea-board{grid-template-columns:1fr!important;}
-  body.page-ideas .idea-column{min-height:0;}
-  body.page-ideas .idea-card,body.page-ideas .idea-public-card{min-height:0;}
-
-  body.year-2026 .page-hero--mobility .hero-gif--mobility-festival{width:116px!important;right:104px!important;top:18px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--bus-main{width:142px!important;right:6px!important;bottom:6px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--bus-accent{width:68px!important;right:126px!important;bottom:42px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--headline-festival{width:64px!important;right:12px!important;top:12px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--sparkle-route{width:68px!important;right:-8px!important;top:4px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--sparkle-route-b{width:48px!important;right:105px!important;top:82px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--stream-route{width:48px!important;right:78px!important;top:92px!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--stream-route-b,
-  body.year-2026 .page-hero--mobility .hero-gif--notes-route-b{display:none!important;}
-  body.year-2026 .page-hero--mobility .hero-gif--notes-route{width:38px!important;right:132px!important;top:14px!important;}
-
-  body.year-2027 .page-hero--sports .hero-gif--sports-main{width:126px!important;right:6px!important;bottom:8px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sports-accent{width:82px!important;right:92px!important;bottom:42px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--headline-festival{width:54px!important;right:118px!important;top:12px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--music-parade{width:56px!important;right:12px!important;top:14px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--football{width:50px!important;right:105px!important;top:62px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--basketball{width:54px!important;right:8px!important;top:60px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sparkle-sport{width:68px!important;right:-8px!important;top:2px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--sparkle-sport-b{width:46px!important;right:83px!important;top:4px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--stream-sport{width:46px!important;right:72px!important;bottom:72px!important;}
-  body.year-2027 .page-hero--sports .hero-gif--stream-sport-b,
-  body.year-2027 .page-hero--sports .hero-gif--notes-sport-b{display:none!important;}
-  body.year-2027 .page-hero--sports .hero-gif--notes-sport{width:36px!important;right:112px!important;top:122px!important;}
-}
-
-/* Accesibilidad de movimiento */
 @media (prefers-reduced-motion:reduce){
-  .premium-motion-item,
-  .premium-motion-item.is-premium-visible,
-  .edition-card,.deal-card,.quote-card,.trust-card,.ideas-cta,.archive-card,
-  .resource-library-card,.news-card,.news-story,.news-feature-card,.news-subscription-card,
-  .idea-card,.idea-public-card,.idea-feature-card,.idea-column,
-  .year-overview,.dashboard-panel,.executive-kpi,.institution-result,.method-step,.year-resource-card,.commitment-row{
-    opacity:1!important;
-    transform:none!important;
-    filter:none!important;
-    animation:none!important;
+  body.page-home .edition-card,
+  body.page-home .deal-card,
+  body.page-home .quote-card,
+  body.page-home .trust-card,
+  body.page-home .ideas-cta,
+  body.page-home .news-card,
+  body .admin-console-shell,
+  body .inline-admin-inspector{
     transition:none!important;
   }
 }
