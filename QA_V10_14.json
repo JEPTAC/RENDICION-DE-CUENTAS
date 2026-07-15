@@ -1,0 +1,23 @@
+{
+  "version": "V10.14",
+  "files": [
+    "styles.css",
+    "year-page.js",
+    "shared.js",
+    "noticias.js",
+    "hero-gifs/party-band.gif",
+    "ui-gifs/click-effect.gif",
+    "ui-gifs/loading-spinner.gif",
+    "ui-gifs/ok-hand.gif",
+    "ui-gifs/cat-hello.gif",
+    "ui-audio/notification.mp3"
+  ],
+  "changes": [
+    "Reemplazo del sticker festivo por party-band.gif en el hero de celebración.",
+    "Aumento de protagonismo de fuegos, balones y elementos animados en el hero.",
+    "Popup global de carga con GIF de loading y estado listo con GIF ok.",
+    "Animación GIF al hacer clic sobre enlaces y botones.",
+    "Sonido de notificación personalizado para toasts y estados de éxito.",
+    "Mejora visual premium del módulo de noticias y hover con sticker en el panel de actualización permanente."
+  ]
+}

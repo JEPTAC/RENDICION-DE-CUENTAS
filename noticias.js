@@ -230,6 +230,17 @@
     window.dispatchEvent(new CustomEvent("portal:rendered"));
   }
 
+
+  function renderWithFeedback(message = "Actualizando noticias…") {
+    window.Portal.helpers.showLoading?.(message);
+    window.requestAnimationFrame(() => {
+      render();
+      window.setTimeout(() => {
+        window.Portal.helpers.hideLoading?.("Noticias actualizadas correctamente.");
+      }, 180);
+    });
+  }
+
   function bind() {
     document.querySelector("#newsSearch")?.addEventListener("input",event => {
       ui.query = event.target.value;
@@ -240,13 +251,13 @@
     document.querySelector("#newsCategory")?.addEventListener("change",event => {
       ui.category = event.target.value;
       ui.page = 1;
-      render();
+      renderWithFeedback("Filtrando noticias por categoría…");
     });
 
     document.querySelector("#newsYear")?.addEventListener("change",event => {
       ui.year = event.target.value;
       ui.page = 1;
-      render();
+      renderWithFeedback("Cargando noticias de la vigencia seleccionada…");
     });
 
     document.querySelector("#newsClearFilters")?.addEventListener("click",() => {
@@ -255,14 +266,14 @@
       ui.year = "all";
       ui.page = 1;
       document.querySelector("#newsSearch").value = "";
-      render();
+      renderWithFeedback("Restableciendo filtros…");
     });
 
     document.querySelector("#newsPagination")?.addEventListener("click",event => {
       const button = event.target.closest("[data-page]");
       if (!button || button.disabled) return;
       ui.page = Number(button.dataset.page);
-      render();
+      renderWithFeedback("Cargando más noticias…");
       document.querySelector("#ultimas-noticias")?.scrollIntoView({
         behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches
           ? "auto"
@@ -274,6 +285,7 @@
     document.querySelector("#newsSubscriptionForm")?.addEventListener("submit",event => {
       event.preventDefault();
       event.currentTarget.reset();
+      window.Portal.helpers.hideLoading?.("Suscripción registrada correctamente.");
       window.Portal.helpers.toast(
         "Suscripción registrada en esta demostración. Conecte un servicio de correo para envíos reales."
       );
@@ -285,5 +297,8 @@
   document.addEventListener("DOMContentLoaded",() => {
     bind();
     render();
+    window.setTimeout(() => {
+      window.Portal.helpers.hideLoading?.("Noticias listas para consultar.");
+    }, 220);
   });
 })();

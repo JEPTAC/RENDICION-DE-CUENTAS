@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <img class="hero-gif hero-gif--notes-b" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-a" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
           <img class="hero-gif hero-gif--sparkle-b" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
-          <img class="hero-gif hero-gif--stream-a" src="hero-gifs/streamer.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--stream-a" src="hero-gifs/party-band.gif" alt="" loading="eager" decoding="async">
         </div>
       </div>`,
     mobility: `
@@ -179,7 +179,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const picker = document.querySelector("#yearPagePicker");
   picker.innerHTML = [...state.years].sort((a,b)=>a.year-b.year).map(y => `<option value="${y.year}" ${y.year===year.year?"selected":""}>${y.year}</option>`).join("");
-  picker.addEventListener("change", event => location.href = helpers.yearUrl(Number(event.target.value)));
+  picker.addEventListener("change", event => {
+    helpers.showLoading?.(`Abriendo Rendición ${event.target.value}...`);
+    window.setTimeout(() => {
+      location.href = helpers.yearUrl(Number(event.target.value));
+    }, 120);
+  });
 
   const reportDashboard = state.dashboards?.[String(year.year)] || state.dashboards?.[year.year];
   const metrics = reportDashboard?.kpis?.slice(0,4).map(item => [item.label,item.display || helpers.formatNumber(item.value),item.description]) || [

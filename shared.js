@@ -262,6 +262,156 @@
     }
   }
 
+
+const UI_ASSETS = {
+  clickEffect: "ui-gifs/click-effect.gif",
+  loading: "ui-gifs/loading-spinner.gif",
+  success: "ui-gifs/ok-hand.gif",
+  hoverCat: "ui-gifs/cat-hello.gif",
+  notification: "ui-audio/notification.mp3"
+};
+
+let feedbackLayer = null;
+let loaderPanel = null;
+let loaderGif = null;
+let loaderTitle = null;
+let loaderText = null;
+let notificationAudio = null;
+
+function ensureFeedbackUi() {
+  if (!document.body) return;
+
+  if (!feedbackLayer) {
+    feedbackLayer = document.querySelector('#uiFeedbackLayer');
+    if (!feedbackLayer) {
+      feedbackLayer = document.createElement('div');
+      feedbackLayer.id = 'uiFeedbackLayer';
+      feedbackLayer.className = 'ui-feedback-layer';
+      document.body.appendChild(feedbackLayer);
+    }
+  }
+
+  if (!loaderPanel) {
+    loaderPanel = document.querySelector('#globalLoadingPopup');
+    if (!loaderPanel) {
+      loaderPanel = document.createElement('div');
+      loaderPanel.id = 'globalLoadingPopup';
+      loaderPanel.className = 'ui-loader';
+      loaderPanel.setAttribute('aria-hidden', 'true');
+      loaderPanel.innerHTML = `
+        <div class="ui-loader__backdrop"></div>
+        <div class="ui-loader__panel" role="status" aria-live="polite">
+          <img class="ui-loader__gif" src="${UI_ASSETS.loading}" alt="">
+          <div class="ui-loader__copy">
+            <strong class="ui-loader__title">Cargando contenido</strong>
+            <span class="ui-loader__text">Estamos preparando la información…</span>
+          </div>
+        </div>`;
+      document.body.appendChild(loaderPanel);
+    }
+    loaderGif = loaderPanel.querySelector('.ui-loader__gif');
+    loaderTitle = loaderPanel.querySelector('.ui-loader__title');
+    loaderText = loaderPanel.querySelector('.ui-loader__text');
+  }
+
+  if (!notificationAudio) {
+    notificationAudio = document.querySelector('#globalNotificationAudio');
+    if (!notificationAudio) {
+      notificationAudio = document.createElement('audio');
+      notificationAudio.id = 'globalNotificationAudio';
+      notificationAudio.preload = 'auto';
+      notificationAudio.src = UI_ASSETS.notification;
+      notificationAudio.volume = 0.42;
+      document.body.appendChild(notificationAudio);
+    }
+  }
+}
+
+function playNotification() {
+  ensureFeedbackUi();
+  if (!notificationAudio) return;
+  try {
+    notificationAudio.currentTime = 0;
+    const promise = notificationAudio.play();
+    if (promise && typeof promise.catch === 'function') promise.catch(() => {});
+  } catch {}
+}
+
+function showLoading(message = 'Estamos cargando el contenido solicitado…') {
+  ensureFeedbackUi();
+  if (!loaderPanel) return;
+  loaderPanel.classList.remove('is-success');
+  loaderPanel.classList.add('is-visible');
+  loaderPanel.setAttribute('aria-hidden', 'false');
+  if (loaderGif) loaderGif.src = UI_ASSETS.loading;
+  if (loaderTitle) loaderTitle.textContent = 'Cargando contenido';
+  if (loaderText) loaderText.textContent = message;
+}
+
+function hideLoading(message = 'Contenido cargado correctamente') {
+  ensureFeedbackUi();
+  if (!loaderPanel) return;
+  loaderPanel.classList.add('is-success');
+  loaderPanel.classList.add('is-visible');
+  loaderPanel.setAttribute('aria-hidden', 'false');
+  if (loaderGif) loaderGif.src = UI_ASSETS.success;
+  if (loaderTitle) loaderTitle.textContent = 'Listo';
+  if (loaderText) loaderText.textContent = message;
+  playNotification();
+  clearTimeout(window.__globalLoadingTimer);
+  window.__globalLoadingTimer = setTimeout(() => {
+    loaderPanel.classList.remove('is-visible', 'is-success');
+    loaderPanel.setAttribute('aria-hidden', 'true');
+  }, 950);
+}
+
+function showClickEffect(x, y) {
+  ensureFeedbackUi();
+  if (!feedbackLayer) return;
+  const sticker = document.createElement('img');
+  sticker.className = 'ui-click-sticker';
+  sticker.src = UI_ASSETS.clickEffect;
+  sticker.alt = '';
+  sticker.style.left = `${x}px`;
+  sticker.style.top = `${y}px`;
+  feedbackLayer.appendChild(sticker);
+  window.setTimeout(() => sticker.remove(), 850);
+}
+
+function initInteractiveFeedback() {
+  ensureFeedbackUi();
+
+  document.addEventListener('click', event => {
+    const trigger = event.target.closest('a,button,[role="button"],summary,.news-card,.year-resource-card,.news-story');
+    if (!trigger) return;
+    const pointX = event.clientX || (trigger.getBoundingClientRect().left + trigger.getBoundingClientRect().width / 2);
+    const pointY = event.clientY || (trigger.getBoundingClientRect().top + trigger.getBoundingClientRect().height / 2);
+    showClickEffect(pointX, pointY);
+  }, true);
+
+  document.addEventListener('submit', () => {
+    showLoading('Procesando la información…');
+  }, true);
+
+  document.addEventListener('click', event => {
+    const anchor = event.target.closest('a[href]');
+    if (!anchor) return;
+    const href = anchor.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+    if (anchor.classList.contains('dialog-close')) return;
+    showLoading('Abriendo contenido…');
+  }, true);
+
+  const newsSummary = document.querySelector('.news-hero-summary');
+  if (newsSummary && !newsSummary.querySelector('.news-summary-hover-gif')) {
+    const gif = document.createElement('img');
+    gif.className = 'news-summary-hover-gif';
+    gif.src = UI_ASSETS.hoverCat;
+    gif.alt = '';
+    newsSummary.appendChild(gif);
+  }
+}
   const state = {
     years: loadArray(KEYS.years, DEFAULT_YEARS),
     resources: loadArray(KEYS.resources, DEFAULT_RESOURCES),
@@ -360,6 +510,18 @@
       window.__toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
     }
   };
+
+
+helpers.playNotification = playNotification;
+helpers.showLoading = showLoading;
+helpers.hideLoading = hideLoading;
+helpers.showClickEffect = showClickEffect;
+
+const __baseToast = helpers.toast.bind(helpers);
+helpers.toast = function(message) {
+  __baseToast(message);
+  playNotification();
+};
 
   function applySettings() {
     const root = document.documentElement;
@@ -1424,7 +1586,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=10.8-responsive-hero";
+    script.src = "firebase-service.js?v=10.7-professional-repair";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1435,7 +1597,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.8-responsive-hero";
+    script.src = "inline-admin.js?v=10.7-professional-repair";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -2028,7 +2190,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.8-responsive-hero`;
+      const versioned = `${base}?v=10.7-professional-repair`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2057,6 +2219,16 @@
       progress.style.width = `${max > 0 ? scrollY / max * 100 : 0}%`;
     });
   }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  initInteractiveFeedback();
+  showLoading('Estamos preparando la página…');
+}, { once:true });
+
+window.addEventListener('load', () => {
+  hideLoading('Contenido cargado correctamente.');
+}, { once:true });
 
   window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, KEYS };
   document.addEventListener("DOMContentLoaded", init);
