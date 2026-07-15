@@ -1,0 +1,44 @@
+{
+  "version": "10.15",
+  "base": "10.14",
+  "files_to_replace": [
+    "styles.css",
+    "year-page.js",
+    "noticias.js"
+  ],
+  "folders_to_keep_or_upload": [
+    "hero-gifs/",
+    "ui-gifs/",
+    "ui-audio/"
+  ],
+  "hero_breakpoints": {
+    "desktop_large": "1440px o más",
+    "desktop_laptop": "1181px a 1439px",
+    "tablet_landscape": "821px a 1180px",
+    "mobile_tablet": "820px o menos"
+  },
+  "news_improvements": [
+    "lectura estimada",
+    "chips rápidos de categoría",
+    "última actualización",
+    "cantidad de categorías",
+    "tarjetas editoriales de altura consistente",
+    "entrada escalonada con IntersectionObserver",
+    "responsive 3/2/1 columnas"
+  ],
+  "accessibility": [
+    "respeta prefers-reduced-motion",
+    "mantiene aria-live existente",
+    "los chips son botones accesibles",
+    "no bloquea navegación por teclado"
+  ],
+  "javascript": {
+    "year-page.js": "OK",
+    "noticias.js": "OK",
+    "shared.js": "OK"
+  },
+  "css_braces": {
+    "open": 3304,
+    "close": 3304
+  }
+}

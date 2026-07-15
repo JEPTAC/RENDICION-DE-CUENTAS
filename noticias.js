@@ -36,6 +36,23 @@
     });
   }
 
+  function readingTime(item) {
+    const words = String(item.body || item.excerpt || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
+    return Math.max(1, Math.ceil(words / 190));
+  }
+
+  function latestUpdate(items) {
+    const item = [...items].sort((a,b) => (
+      new Date(b.publishedAt || b.createdAt || 0)
+      - new Date(a.publishedAt || a.createdAt || 0)
+    ))[0];
+
+    return item ? formatDate(item.publishedAt || item.createdAt) : "Sin publicaciones";
+  }
+
   function visual(item,className = "") {
     const image = item.image
       ? `style="background-image:linear-gradient(180deg,rgba(5,31,70,.04),rgba(5,31,70,.34)),url('${escape(item.image)}')"`
@@ -76,10 +93,14 @@
             <span>${escape(item.category || "Gestión municipal")}</span>
             <time datetime="${escape(item.publishedAt)}">${escape(formatDate(item.publishedAt))}</time>
           </div>
+          <div class="news-reading-meta">
+            <span>${readingTime(item)} min de lectura</span>
+            <span>${escape(item.source || item.author || "Alcaldía Municipal")}</span>
+          </div>
           <h3><a href="${window.Portal.helpers.newsUrl(item.id)}">${escape(item.title)}</a></h3>
           <p>${escape(item.excerpt)}</p>
           <div class="news-feature-card__footer">
-            <span>${escape(item.source || item.author || "Alcaldía Municipal")}</span>
+            <span>Información oficial y verificable</span>
             <a class="news-read-link" href="${window.Portal.helpers.newsUrl(item.id)}">Leer noticia <b aria-hidden="true">→</b></a>
           </div>
         </div>
@@ -127,10 +148,14 @@
               <span>${escape(item.category || "Gestión municipal")}</span>
               <time datetime="${escape(item.publishedAt)}">${escape(formatDate(item.publishedAt))}</time>
             </div>
+            <div class="news-reading-meta">
+              <span>${readingTime(item)} min</span>
+              <span>${escape(item.source || item.author || "Alcaldía Municipal")}</span>
+            </div>
             <h3><a href="${window.Portal.helpers.newsUrl(item.id)}">${escape(item.title)}</a></h3>
             <p>${escape(item.excerpt)}</p>
             <footer>
-              <span>${escape(item.source || item.author || "Alcaldía Municipal")}</span>
+              <span>${escape((item.tags || []).slice(0,2).join(" · ") || "Información pública")}</span>
               <a class="news-read-link" href="${window.Portal.helpers.newsUrl(item.id)}">Conozca más <b aria-hidden="true">→</b></a>
             </footer>
           </div>
@@ -202,10 +227,111 @@
     year.value = ui.year;
   }
 
+  function renderQuickCategories(items) {
+    const toolbar = document.querySelector(".news-toolbar");
+    if (!toolbar) return;
+
+    let holder = document.querySelector("#newsQuickCategories");
+    if (!holder) {
+      holder = document.createElement("div");
+      holder.id = "newsQuickCategories";
+      holder.className = "news-quick-categories";
+      holder.setAttribute("aria-label", "Categorías rápidas");
+      toolbar.insertAdjacentElement("afterend", holder);
+    }
+
+    const categories = [...new Set(
+      items.map(item => item.category).filter(Boolean)
+    )].slice(0,6);
+
+    holder.innerHTML = [
+      `<button type="button" data-quick-category="all"
+        class="${ui.category === "all" ? "active" : ""}">
+        Todas
+      </button>`,
+      ...categories.map(category => `
+        <button type="button"
+          data-quick-category="${escape(category)}"
+          class="${ui.category === category ? "active" : ""}">
+          ${escape(category)}
+        </button>`)
+    ].join("");
+  }
+
+  let newsMotionObserver = null;
+
+  function initNewsMotion(root = document) {
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const targets = root.querySelectorAll([
+      ".news-page-hero__grid > *",
+      ".news-section-heading",
+      ".news-toolbar",
+      ".news-quick-categories",
+      ".news-feature-card",
+      ".news-card",
+      ".news-subscription-card"
+    ].join(","));
+
+    if (!reduced && !newsMotionObserver && "IntersectionObserver" in window) {
+      newsMotionObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-news-visible");
+          newsMotionObserver.unobserve(entry.target);
+        });
+      }, {
+        threshold:0.08,
+        rootMargin:"0px 0px -5% 0px"
+      });
+    }
+
+    targets.forEach((target,index) => {
+      target.classList.add("news-motion-item");
+      target.style.setProperty("--news-delay", `${Math.min(index % 8,7) * 55}ms`);
+
+      if (reduced || !newsMotionObserver) {
+        target.classList.add("is-news-visible");
+      } else {
+        newsMotionObserver.observe(target);
+      }
+    });
+  }
+
+  function updateNewsSummary(items) {
+    const summary = document.querySelector(".news-hero-summary");
+    if (!summary) return;
+
+    let meta = summary.querySelector(".news-summary-meta");
+    if (!meta) {
+      meta = document.createElement("div");
+      meta.className = "news-summary-meta";
+      summary.appendChild(meta);
+    }
+
+    const categoryCount = new Set(
+      items.map(item => item.category).filter(Boolean)
+    ).size;
+
+    meta.innerHTML = `
+      <div>
+        <strong>${categoryCount}</strong>
+        <span>Categorías</span>
+      </div>
+      <div>
+        <strong>${escape(latestUpdate(items))}</strong>
+        <span>Última actualización</span>
+      </div>`;
+  }
+
   function render() {
     const items = normalizedNews();
     renderFeatured(items);
     renderFilters(items);
+    renderQuickCategories(items);
+    updateNewsSummary(items);
 
     const filtered = filteredItems(items);
     const totalPages = Math.max(1,Math.ceil(filtered.length / ui.perPage));
@@ -227,6 +353,7 @@
         </li>`;
 
     pagination(totalPages);
+    initNewsMotion(document);
     window.dispatchEvent(new CustomEvent("portal:rendered"));
   }
 
@@ -258,6 +385,23 @@
       ui.year = event.target.value;
       ui.page = 1;
       renderWithFeedback("Cargando noticias de la vigencia seleccionada…");
+    });
+
+    document.addEventListener("click",event => {
+      const button = event.target.closest("[data-quick-category]");
+      if (!button) return;
+
+      ui.category = button.dataset.quickCategory || "all";
+      ui.page = 1;
+
+      const select = document.querySelector("#newsCategory");
+      if (select) select.value = ui.category;
+
+      renderWithFeedback(
+        ui.category === "all"
+          ? "Cargando todas las noticias…"
+          : `Filtrando noticias de ${ui.category}…`
+      );
     });
 
     document.querySelector("#newsClearFilters")?.addEventListener("click",() => {

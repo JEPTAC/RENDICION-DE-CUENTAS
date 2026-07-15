@@ -82,6 +82,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pageHero.querySelector(".page-hero__scene")) {
       pageHero.insertAdjacentHTML("afterbegin", heroScenes[selectedTheme]);
     }
+
+    const heroAssets = [...pageHero.querySelectorAll(".hero-gif")];
+    pageHero.classList.add("is-hero-loading");
+
+    const markHeroReady = () => {
+      pageHero.classList.remove("is-hero-loading");
+      pageHero.classList.add("is-hero-ready");
+    };
+
+    if (!heroAssets.length) {
+      markHeroReady();
+    } else {
+      let pending = heroAssets.length;
+      const assetReady = () => {
+        pending -= 1;
+        if (pending <= 0) markHeroReady();
+      };
+
+      heroAssets.forEach(asset => {
+        if (asset.complete) {
+          assetReady();
+          return;
+        }
+
+        asset.addEventListener("load", assetReady, { once:true });
+        asset.addEventListener("error", assetReady, { once:true });
+      });
+
+      window.setTimeout(markHeroReady, 1800);
+    }
   }
 
   const reducedMotion = window.matchMedia(
