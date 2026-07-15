@@ -30,6 +30,30 @@
     return "generic";
   }
 
+  function applyHeroLayoutClass() {
+    const allowed = new Set(["compact","balanced","wide"]);
+    const params = new URLSearchParams(location.search);
+    const requested = (params.get("hero") || "").toLowerCase();
+    const stored = (localStorage.getItem("sp_hero_layout") || "").toLowerCase();
+    const hero = allowed.has(requested)
+      ? requested
+      : allowed.has(stored)
+        ? stored
+        : "compact";
+
+    if (allowed.has(requested)) {
+      localStorage.setItem("sp_hero_layout", hero);
+    }
+
+    document.body.classList.remove(
+      "hero-layout-compact",
+      "hero-layout-balanced",
+      "hero-layout-wide"
+    );
+    document.body.classList.add(`hero-layout-${hero}`);
+    document.documentElement.dataset.heroLayout = hero;
+  }
+
   function ensurePageClass() {
     const page = pageName();
     document.body.classList.add(
@@ -38,6 +62,7 @@
       `claude-page-${page}`
     );
     document.documentElement.dataset.claudePage = page;
+    applyHeroLayoutClass();
   }
 
   function sectionTitle(section) {

@@ -1,0 +1,34 @@
+{
+  "version": "10.27",
+  "name": "Layout Polish",
+  "base": "10.26 Blue Studio",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "main_improvements": [
+    "Hero menos invasivo con modo compacto por defecto",
+    "Variantes de hero por URL: compact, balanced, wide",
+    "Encabezados y marcadores más grandes y elegantes",
+    "Mejor contraste en tarjetas y paneles claros",
+    "Espaciados refinados en módulos y títulos",
+    "Decoración de Ideas ajustada para no tapar botones",
+    "Corrección visual de botones de edición dentro del viewport"
+  ],
+  "hero_variants": {
+    "default": "compact",
+    "test_urls": [
+      "?hero=compact",
+      "?hero=balanced",
+      "?hero=wide"
+    ]
+  },
+  "validation": {
+    "css_braces": "203/203",
+    "js_checked": [
+      "shared.js",
+      "claude-design.js"
+    ]
+  }
+}
