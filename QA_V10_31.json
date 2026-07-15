@@ -1,0 +1,15 @@
+{
+  "version": "10.31",
+  "name": "Home simplificado con banner arriba y tarjeta abajo",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "main_changes": [
+    "El banner del inicio queda arriba y la tarjeta de texto queda abajo.",
+    "La tarjeta ahora usa el mismo ancho del banner (hasta 1200 px).",
+    "Se evita que el titular se salga del cuadro o se corte de forma extraña.",
+    "Se simplifica la estructura del hero para evitar configuraciones invasivas."
+  ]
+}

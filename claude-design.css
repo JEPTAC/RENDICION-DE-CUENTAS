@@ -2646,3 +2646,153 @@ body.hero-layout-wide .home-hero__visual{
     width:132px!important;
   }
 }
+
+
+/* =========================================================
+   V10.31 · Home simplificado: banner arriba, tarjeta abajo
+   ========================================================= */
+
+.claude-page-home .home-hero,
+body.hero-layout-compact.claude-page-home .home-hero,
+body.hero-layout-balanced.claude-page-home .home-hero,
+body.hero-layout-wide.claude-page-home .home-hero{
+  padding:22px 16px 0!important;
+}
+
+.claude-page-home .home-hero__grid,
+body.hero-layout-compact .home-hero__grid,
+body.hero-layout-balanced .home-hero__grid,
+body.hero-layout-wide .home-hero__grid{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  width:min(1200px,100%)!important;
+  max-width:1200px!important;
+  margin:0 auto!important;
+  gap:18px!important;
+  min-height:auto!important;
+}
+
+.claude-page-home .home-hero__visual,
+body.hero-layout-compact .home-hero__visual,
+body.hero-layout-balanced .home-hero__visual,
+body.hero-layout-wide .home-hero__visual{
+  order:1!important;
+  width:100%!important;
+  max-width:1200px!important;
+  min-height:300px!important;
+  aspect-ratio:1200 / 300!important;
+  margin:0 auto!important;
+}
+
+.claude-page-home .home-hero__copy,
+.claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+body.hero-layout-compact .home-hero__copy,
+body.hero-layout-balanced .home-hero__copy,
+body.hero-layout-wide .home-hero__copy{
+  order:2!important;
+  width:100%!important;
+  max-width:1200px!important;
+  min-width:0!important;
+  align-self:stretch!important;
+  margin:0 auto!important;
+  padding:26px 30px 24px!important;
+  border-radius:28px!important;
+}
+
+.claude-page-home .home-hero__copy h1,
+body.hero-layout-compact .home-hero__copy h1,
+body.hero-layout-balanced .home-hero__copy h1,
+body.hero-layout-wide .home-hero__copy h1{
+  max-width:100%!important;
+  font-size:clamp(3rem,5vw,5.1rem)!important;
+  line-height:.94!important;
+  letter-spacing:-.04em!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  text-wrap:balance!important;
+}
+
+.claude-page-home .home-hero__copy > p{
+  max-width:820px!important;
+  font-size:clamp(1rem,1.1vw,1.12rem)!important;
+  line-height:1.6!important;
+}
+
+.claude-page-home .home-hero__copy .hero-actions,
+.claude-page-home .home-hero__copy .button-row,
+.claude-page-home .home-hero__copy .cta-row{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:12px!important;
+}
+
+.claude-page-home .explorer-bar{
+  order:3!important;
+  width:100%!important;
+  max-width:1200px!important;
+  margin:0 auto!important;
+}
+
+@media (max-width: 900px){
+  .claude-page-home .home-hero__visual,
+  body.hero-layout-compact .home-hero__visual,
+  body.hero-layout-balanced .home-hero__visual,
+  body.hero-layout-wide .home-hero__visual{
+    aspect-ratio:16 / 6!important;
+    min-height:260px!important;
+  }
+
+  .claude-page-home .home-hero__copy,
+  .claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+  body.hero-layout-compact .home-hero__copy,
+  body.hero-layout-balanced .home-hero__copy,
+  body.hero-layout-wide .home-hero__copy{
+    padding:24px 22px 22px!important;
+  }
+
+  .claude-page-home .home-hero__copy h1,
+  body.hero-layout-compact .home-hero__copy h1,
+  body.hero-layout-balanced .home-hero__copy h1,
+  body.hero-layout-wide .home-hero__copy h1{
+    font-size:clamp(2.55rem,8.2vw,4.1rem)!important;
+  }
+}
+
+@media (max-width: 640px){
+  .claude-page-home .home-hero{
+    padding-inline:10px!important;
+  }
+
+  .claude-page-home .home-hero__visual,
+  body.hero-layout-compact .home-hero__visual,
+  body.hero-layout-balanced .home-hero__visual,
+  body.hero-layout-wide .home-hero__visual{
+    aspect-ratio:4 / 3!important;
+    min-height:220px!important;
+    border-radius:24px!important;
+  }
+
+  .claude-page-home .home-hero__copy,
+  .claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+  body.hero-layout-compact .home-hero__copy,
+  body.hero-layout-balanced .home-hero__copy,
+  body.hero-layout-wide .home-hero__copy{
+    padding:22px 18px 20px!important;
+    border-radius:24px!important;
+  }
+
+  .claude-page-home .home-hero__copy h1,
+  body.hero-layout-compact .home-hero__copy h1,
+  body.hero-layout-balanced .home-hero__copy h1,
+  body.hero-layout-wide .home-hero__copy h1{
+    font-size:clamp(2.2rem,11vw,3.2rem)!important;
+    line-height:.98!important;
+    text-wrap:pretty!important;
+  }
+
+  .claude-page-home .home-hero__copy > p{
+    max-width:none!important;
+    font-size:1rem!important;
+  }
+}
