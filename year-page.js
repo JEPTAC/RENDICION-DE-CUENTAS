@@ -23,71 +23,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const heroScenes = {
     celebration: `
-      <div class="page-hero__scene page-hero__scene--celebration" aria-hidden="true">
-        <div class="hero-illu hero-illu--celebration">
-          <span class="hero-cloud hero-cloud--a"></span>
-          <span class="hero-cloud hero-cloud--b"></span>
-          <span class="hero-sun"></span>
-          <span class="hero-firework hero-firework--a"></span>
-          <span class="hero-firework hero-firework--b"></span>
-          <span class="hero-firework hero-firework--c"></span>
-          <span class="hero-balloon hero-balloon--a"></span>
-          <span class="hero-balloon hero-balloon--b"></span>
-          <span class="hero-balloon hero-balloon--c"></span>
-          <span class="hero-confetti hero-confetti--a"></span>
-          <span class="hero-confetti hero-confetti--b"></span>
-          <span class="hero-confetti hero-confetti--c"></span>
-          <span class="hero-confetti hero-confetti--d"></span>
-          <div class="hero-hill hero-hill--a"></div>
-          <div class="hero-hill hero-hill--b"></div>
-          <div class="hero-stage">
-            <span class="hero-stage__light light-1"></span>
-            <span class="hero-stage__light light-2"></span>
-            <span class="hero-stage__light light-3"></span>
-          </div>
-          <div class="hero-crowd">
-            <span class="hero-crowd__person person-1"></span>
-            <span class="hero-crowd__person person-2"></span>
-            <span class="hero-crowd__person person-3"></span>
-            <span class="hero-crowd__person person-4"></span>
-            <span class="hero-crowd__person person-5"></span>
-          </div>
+      <div class="page-hero__scene page-hero__scene--gif page-hero__scene--celebration" aria-hidden="true">
+        <div class="hero-gif-canvas">
+          <span class="hero-gif-glow hero-gif-glow--a"></span>
+          <span class="hero-gif-glow hero-gif-glow--b"></span>
+          <span class="hero-gif-panel hero-gif-panel--main"></span>
+          <span class="hero-gif-panel hero-gif-panel--mini"></span>
+          <img class="hero-gif hero-gif--chiva" src="hero-gifs/chiva.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--bus-mini" src="hero-gifs/bus.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--notes-a" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--notes-b" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--sparkle-a" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--sparkle-b" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--stream-a" src="hero-gifs/streamer.gif" alt="" loading="eager" decoding="async">
         </div>
       </div>`,
     mobility: `
-      <div class="page-hero__scene page-hero__scene--mobility" aria-hidden="true">
-        <div class="hero-illu hero-illu--mobility">
-          <span class="hero-cloud hero-cloud--a"></span>
-          <span class="hero-cloud hero-cloud--b"></span>
-          <span class="hero-sun hero-sun--small"></span>
-          <div class="hero-hill hero-hill--a"></div>
-          <div class="hero-hill hero-hill--b"></div>
-          <div class="hero-road"></div>
-          <div class="hero-route hero-route--a"></div>
-          <div class="hero-route hero-route--b"></div>
-          <div class="hero-package hero-package--a"></div>
-          <div class="hero-package hero-package--b"></div>
-          <div class="hero-vehicle hero-vehicle--truck"><span class="cabin"></span></div>
-          <div class="hero-vehicle hero-vehicle--bus"></div>
-          <div class="hero-vehicle hero-vehicle--car"></div>
+      <div class="page-hero__scene page-hero__scene--gif page-hero__scene--mobility" aria-hidden="true">
+        <div class="hero-gif-canvas">
+          <span class="hero-gif-glow hero-gif-glow--a"></span>
+          <span class="hero-gif-glow hero-gif-glow--c"></span>
+          <span class="hero-gif-panel hero-gif-panel--route"></span>
+          <span class="hero-gif-line hero-gif-line--a"></span>
+          <span class="hero-gif-line hero-gif-line--b"></span>
+          <img class="hero-gif hero-gif--bus-main" src="hero-gifs/bus.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--chiva-small" src="hero-gifs/chiva.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--sparkle-route" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--stream-route" src="hero-gifs/streamer.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--notes-route" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
         </div>
       </div>`,
     sports: `
-      <div class="page-hero__scene page-hero__scene--sports" aria-hidden="true">
-        <div class="hero-illu hero-illu--sports">
-          <span class="hero-cloud hero-cloud--a"></span>
-          <span class="hero-cloud hero-cloud--b"></span>
-          <span class="hero-sun"></span>
-          <div class="hero-stadium"></div>
-          <div class="hero-track"></div>
-          <span class="hero-ball hero-ball--football"></span>
-          <span class="hero-ball hero-ball--basket"></span>
-          <span class="hero-ball hero-ball--volley"></span>
-          <div class="hero-skate"></div>
-          <div class="hero-pennant hero-pennant--a"></div>
-          <div class="hero-pennant hero-pennant--b"></div>
-          <div class="hero-ring hero-ring--a"></div>
-          <div class="hero-ring hero-ring--b"></div>
+      <div class="page-hero__scene page-hero__scene--gif page-hero__scene--sports" aria-hidden="true">
+        <div class="hero-gif-canvas">
+          <span class="hero-gif-glow hero-gif-glow--a"></span>
+          <span class="hero-gif-glow hero-gif-glow--d"></span>
+          <span class="hero-gif-panel hero-gif-panel--arena"></span>
+          <span class="hero-gif-orbit hero-gif-orbit--a"></span>
+          <span class="hero-gif-orbit hero-gif-orbit--b"></span>
+          <img class="hero-gif hero-gif--football" src="hero-gifs/football.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--basketball" src="hero-gifs/basketball.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--sparkle-sport" src="hero-gifs/sparkle.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--stream-sport" src="hero-gifs/streamer.gif" alt="" loading="eager" decoding="async">
+          <img class="hero-gif hero-gif--notes-sport" src="hero-gifs/notes.gif" alt="" loading="eager" decoding="async">
         </div>
       </div>`
   };

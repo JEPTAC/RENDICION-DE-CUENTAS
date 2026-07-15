@@ -1,0 +1,16 @@
+{
+  "version": "10.11",
+  "base": "V10.10_ANIMACIONES_CARTOON",
+  "changes": [
+    "reemplazo de animaciones CSS por GIFs proporcionados por el usuario",
+    "nuevas escenas hero temáticas para 2025, 2026 y 2027",
+    "composición premium con paneles glassmorphism y resplandores suaves",
+    "responsive para escritorio, tablet y móvil",
+    "se incluyó carpeta hero-gifs con los recursos necesarios"
+  ],
+  "replace_upload": [
+    "styles.css",
+    "year-page.js",
+    "carpeta hero-gifs/"
+  ]
+}
