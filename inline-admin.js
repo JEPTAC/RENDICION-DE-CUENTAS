@@ -497,8 +497,8 @@
 
                 <div class="banner-dimension-card">
                   <strong>Tamaño recomendado</strong>
-                  <span>1600 × 900 píxeles</span>
-                  <small>Proporción 16:9. Mantenga el contenido importante hacia el centro y la derecha.</small>
+                  <span>1920 × 900 píxeles</span>
+                  <small>Proporción panorámica. Mantenga personas, logos y elementos importantes en el centro o hacia la derecha. En celular la imagen aparece completa debajo del texto.</small>
                 </div>
 
                 <div class="admin-form-grid">
@@ -518,13 +518,18 @@
                   </label>
 
                   <label class="admin-field-wide">
-                    Altura
-                    <output id="inlineBannerOutput">${p.banner.height || "Automática"}</output>
+                    Altura en escritorio
+                    <output id="inlineBannerOutput">${p.banner.height || "Automática según pantalla"}</output>
                     <input id="inlineBannerHeight"
                       type="range"
-                      min="420"
-                      max="860"
-                      value="${parseInt(p.banner.height)||610}">
+                      min="620"
+                      max="900"
+                      value="${parseInt(p.banner.height)||720}">
+                    <button type="button"
+                      class="admin-action-secondary banner-auto-height"
+                      id="inlineBannerAutoHeight">
+                      Usar altura automática
+                    </button>
                   </label>
 
                   <label>Posición
@@ -1242,6 +1247,14 @@
       get("#inlineBannerOutput").value = `${event.target.value}px`;
       applyBanner();
       persist();
+    });
+
+    get("#inlineBannerAutoHeight")?.addEventListener("click", () => {
+      pageData().banner.height = "";
+      get("#inlineBannerOutput").value = "Automática según pantalla";
+      applyBanner();
+      persist();
+      helpers.toast("El banner volverá a adaptarse automáticamente a cada pantalla.");
     });
     get("#inlineBannerPosition")?.addEventListener("change", event => {
       pageData().banner.position = event.target.value;
@@ -2344,7 +2357,7 @@
   }
 
   function decorateQuickAdminControls() {
-    if (!adminCanEdit() || !quickControlsEnabled || active) {
+    if (!adminCanEdit() || !quickControlsEnabled) {
       clearQuickAdminControls();
       return;
     }
@@ -2538,13 +2551,19 @@
   }
 
   function ensureBannerMediaLayer(banner) {
-    let layer = banner.querySelector(".hero-custom-media");
+    const target = banner.matches(".home-hero")
+      ? banner.querySelector(".home-hero__visual") || banner
+      : banner;
+
+    let layer = target.querySelector(":scope > .hero-custom-media");
+
     if (!layer) {
       layer = document.createElement("div");
       layer.className = "hero-custom-media";
       layer.setAttribute("aria-hidden","true");
-      banner.prepend(layer);
+      target.prepend(layer);
     }
+
     return layer;
   }
 
@@ -2664,7 +2683,12 @@
     if (!banner) return;
     const config = normalizeBannerConfig(pageData().banner);
 
-    banner.style.minHeight = config.height || "";
+    banner.style.minHeight = "";
+    if (config.height) {
+      banner.style.setProperty("--admin-banner-height", config.height);
+    } else {
+      banner.style.removeProperty("--admin-banner-height");
+    }
     banner.style.setProperty("--admin-banner-position", config.position || "center center");
     banner.style.setProperty("--admin-banner-overlay", String((config.overlay || 0) / 100));
 
@@ -2813,46 +2837,7 @@
 
     applySavedContent();
     applySectionStyles();
-
-    document.querySelectorAll("main section").forEach(section => {
-      if (section.querySelector(":scope > .admin-section-tools")) return;
-      section.classList.add("admin-editable-section");
-
-      const tools = document.createElement("div");
-      tools.className = "admin-section-tools";
-      tools.innerHTML = `
-        <button type="button" data-inline-section="${sectionKey(section)}">Editar sección</button>
-        <button type="button" data-inline-move="up" aria-label="Subir sección">↑</button>
-        <button type="button" data-inline-move="down" aria-label="Bajar sección">↓</button>`;
-      section.prepend(tools);
-    });
-
-    document.querySelectorAll("[data-admin-entity]").forEach(card => {
-      card.classList.add("admin-editable-card");
-      if (card.querySelector(":scope > .admin-card-edit")) return;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "admin-card-edit";
-      button.dataset.inlineEntity = card.dataset.adminEntity;
-      button.dataset.entityId = card.dataset.entityId;
-      button.dataset.entityYear = card.dataset.entityYear || "";
-      button.textContent = "Editar";
-      card.appendChild(button);
-    });
-
-    document.querySelectorAll("main h1,main h2,main h3,main h4,main p,main li,main summary,main blockquote,main .button,main a:not(nav a)").forEach(element => {
-      if (element.closest("form,dialog,[data-admin-entity],.admin-section-tools,.admin-card-edit,.no-inline-edit")) return;
-      element.classList.add("admin-inline-text");
-      element.contentEditable = "true";
-      element.spellcheck = true;
-      element.dataset.adminContentKey = contentKey(element);
-      element.setAttribute("aria-label", `Texto editable: ${element.textContent.trim().slice(0,80)}`);
-    });
-
-    document.querySelectorAll("main img,header img").forEach(image => {
-      image.classList.add("admin-inline-image");
-      image.dataset.adminImageKey = imageKey(image);
-    });
+    decorateQuickAdminControls();
   }
 
   function undecorate() {

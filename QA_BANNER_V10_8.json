@@ -1,0 +1,28 @@
+{
+  "version": "10.8",
+  "javascript": {
+    "shared.js": "OK",
+    "inline-admin.js": "OK"
+  },
+  "css_braces_balanced": true,
+  "files": [
+    "index.html",
+    "styles.css",
+    "shared.js",
+    "inline-admin.js"
+  ],
+  "banner_behavior": {
+    "desktop": "Full-bleed, altura adaptada a la ventana, contenido en zona segura.",
+    "laptop": "Altura y tipografía reducidas proporcionalmente.",
+    "tablet": "Contenido superior e imagen completa en una segunda fila.",
+    "mobile": "Botones en una columna e ilustración de 330 px debajo del contenido.",
+    "custom_images": "La galería cargada ocupa completamente el área visual."
+  },
+  "admin_changes": [
+    "altura automática según pantalla",
+    "altura fija solo para escritorio",
+    "medio del banner insertado dentro de la capa visual",
+    "modo antiguo de Editar sección/subir/bajar eliminado",
+    "Estudio visual compacto conservado"
+  ]
+}
