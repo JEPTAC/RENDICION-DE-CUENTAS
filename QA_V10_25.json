@@ -1,0 +1,48 @@
+{
+  "version": "10.25",
+  "name": "Claude Studio",
+  "base": "10.24",
+  "replace_or_add": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "design_direction": [
+    "Composición editorial cálida inspirada en Claude/Anthropic.",
+    "Tipografía de titulares con carácter editorial.",
+    "Paleta papel, tinta, coral, lavanda, azul y salvia.",
+    "Tarjetas asimétricas con microparallax.",
+    "Navegación lateral por secciones.",
+    "Índices editoriales y ambientación orgánica.",
+    "Movimiento por viewport y respeto de reducción de movimiento."
+  ],
+  "pages": {
+    "home": [
+      "Hero cálido y asimétrico.",
+      "Explorer como barra de comandos.",
+      "Secciones con hilos, orbes y marcas numeradas."
+    ],
+    "resources": [
+      "Biblioteca con textura de estudio.",
+      "Portadas documentales azul profundo.",
+      "Círculos concéntricos animados."
+    ],
+    "news": [
+      "Portada editorial.",
+      "Tarjetas con jerarquía y metadatos.",
+      "Fondos cálidos y azules alternados."
+    ],
+    "ideas": [
+      "Tablero como taller creativo.",
+      "Estados diferenciados por superficies.",
+      "Decoración sin cubrir Nueva idea."
+    ]
+  },
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK"
+    },
+    "css_braces": "134/134"
+  }
+}

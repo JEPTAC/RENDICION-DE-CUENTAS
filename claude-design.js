@@ -1,0 +1,359 @@
+
+(() => {
+  "use strict";
+
+  const PAGE_MAP = {
+    "": "home",
+    "index.html": "home",
+    "recursos.html": "resources",
+    "noticias.html": "news",
+    "noticia.html": "news",
+    "ideas.html": "ideas",
+    "vigencias.html": "vigencias"
+  };
+
+  const state = {
+    initialized:false,
+    mutationObserver:null,
+    sectionObserver:null,
+    railObserver:null,
+    refreshTimer:null
+  };
+
+  const prefersReducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function pageName() {
+    const filename = (location.pathname.split("/").pop() || "").toLowerCase();
+    if (PAGE_MAP[filename]) return PAGE_MAP[filename];
+    if (/rendicion-?\d{4}|rendicion\.html/.test(filename)) return "year";
+    return "generic";
+  }
+
+  function ensurePageClass() {
+    const page = pageName();
+    document.body.classList.add("claude-studio", `claude-page-${page}`);
+    document.documentElement.dataset.claudePage = page;
+  }
+
+  function sectionTitle(section) {
+    const heading = section.querySelector(
+      "h1,h2,h3,.home-section__head h2,.section-head h2,.year-section__head h2"
+    );
+    return (heading?.textContent || "Sección").trim().replace(/\s+/g, " ");
+  }
+
+  function suitableSections() {
+    return [...document.querySelectorAll(
+      "main > section, main > article, .site-main > section, .site-main > article"
+    )].filter(section => {
+      if (!section.isConnected) return false;
+      if (section.matches(
+        ".home-hero,.page-hero,.news-page-hero,[hidden],.dialog-shell"
+      )) return false;
+      return section.getBoundingClientRect().height > 80;
+    });
+  }
+
+  function preferredHead(section) {
+    return section.querySelector([
+      ".home-section__head",
+      ".section-head",
+      ".year-section__head",
+      ".archive-intro",
+      ".news-section-heading",
+      ".library-section-head",
+      ".ideas-section-head"
+    ].join(","));
+  }
+
+  function addAmbient(section, index) {
+    if (section.querySelector(":scope > .cd-ambient")) return;
+
+    const ambient = document.createElement("div");
+    ambient.className = "cd-ambient";
+    ambient.setAttribute("aria-hidden", "true");
+    ambient.innerHTML = `
+      <span class="cd-ambient__orb cd-ambient__orb--a"></span>
+      <span class="cd-ambient__orb cd-ambient__orb--b"></span>
+      <span class="cd-ambient__line"></span>
+      <span class="cd-ambient__spark"></span>`;
+    ambient.style.setProperty("--cd-seed", String(index % 5));
+    section.prepend(ambient);
+  }
+
+  function decorateSections() {
+    const sections = suitableSections();
+
+    sections.forEach((section,index) => {
+      section.classList.add("cd-section", "cd-reveal");
+      section.dataset.cdIndex = String(index + 1).padStart(2, "0");
+
+      if (!section.id) {
+        section.id = `contenido-${index + 1}`;
+      }
+
+      const head = preferredHead(section);
+      if (head && !head.querySelector(".cd-section-mark")) {
+        const mark = document.createElement("div");
+        mark.className = "cd-section-mark";
+        mark.setAttribute("aria-hidden", "true");
+        mark.innerHTML = `
+          <span>${section.dataset.cdIndex}</span>
+          <i></i>
+          <em>San Pedro</em>`;
+        head.prepend(mark);
+      }
+
+      addAmbient(section,index);
+    });
+
+    return sections;
+  }
+
+  const CARD_SELECTOR = [
+    ".edition-card",
+    ".deal-card",
+    ".quote-card",
+    ".trust-card",
+    ".news-card",
+    ".news-story",
+    ".news-feature-card",
+    ".resource-library-card",
+    ".year-resource-card",
+    ".ideas-cta",
+    ".idea-card",
+    ".idea-public-card",
+    ".idea-feature-card",
+    ".idea-column",
+    ".dashboard-panel",
+    ".executive-kpi",
+    ".institution-result",
+    ".method-step",
+    ".commitment-row",
+    ".followup-summary > article",
+    ".request-summary > article"
+  ].join(",");
+
+  function bindCardMotion(card) {
+    if (card.dataset.cdMotion === "1") return;
+    card.dataset.cdMotion = "1";
+    card.classList.add("cd-card", "cd-reveal");
+
+    const index = [...card.parentElement?.children || []].indexOf(card);
+    card.style.setProperty("--cd-order", String(Math.max(index,0)));
+
+    if (prefersReducedMotion()) return;
+
+    let frame = null;
+
+    card.addEventListener("pointermove", event => {
+      if (event.pointerType === "touch") return;
+      const rect = card.getBoundingClientRect();
+      const x = Math.max(0,Math.min(1,(event.clientX - rect.left) / rect.width));
+      const y = Math.max(0,Math.min(1,(event.clientY - rect.top) / rect.height));
+
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        card.style.setProperty("--cd-x", `${(x * 100).toFixed(2)}%`);
+        card.style.setProperty("--cd-y", `${(y * 100).toFixed(2)}%`);
+        card.style.setProperty("--cd-rx", `${((.5 - y) * 2.4).toFixed(2)}deg`);
+        card.style.setProperty("--cd-ry", `${((x - .5) * 3.2).toFixed(2)}deg`);
+      });
+    }, {passive:true});
+
+    card.addEventListener("pointerleave", () => {
+      card.style.setProperty("--cd-rx", "0deg");
+      card.style.setProperty("--cd-ry", "0deg");
+    }, {passive:true});
+  }
+
+  function decorateCards(root = document) {
+    root.querySelectorAll(CARD_SELECTOR).forEach(bindCardMotion);
+  }
+
+  function setupReveal(root = document) {
+    const items = root.querySelectorAll(".cd-reveal:not(.cd-observed)");
+
+    if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
+      items.forEach(item => item.classList.add("cd-observed","cd-visible"));
+      return;
+    }
+
+    if (!state.sectionObserver) {
+      state.sectionObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("cd-visible");
+          state.sectionObserver.unobserve(entry.target);
+        });
+      },{
+        threshold:.08,
+        rootMargin:"0px 0px -6% 0px"
+      });
+    }
+
+    items.forEach(item => {
+      item.classList.add("cd-observed");
+      state.sectionObserver.observe(item);
+    });
+  }
+
+  function buildRail(sections) {
+    document.querySelector(".cd-section-rail")?.remove();
+
+    if (sections.length < 2) return;
+
+    const rail = document.createElement("nav");
+    rail.className = "cd-section-rail";
+    rail.setAttribute("aria-label", "Navegación de la página");
+
+    const title = document.createElement("span");
+    title.className = "cd-section-rail__title";
+    title.textContent = "Recorrido";
+    rail.appendChild(title);
+
+    const list = document.createElement("div");
+    list.className = "cd-section-rail__list";
+
+    sections.slice(0,9).forEach((section,index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.target = section.id;
+      button.setAttribute(
+        "aria-label",
+        `Ir a ${sectionTitle(section)}`
+      );
+      button.innerHTML = `
+        <span>${String(index + 1).padStart(2,"0")}</span>
+        <i></i>`;
+      button.addEventListener("click", () => {
+        section.scrollIntoView({
+          behavior:prefersReducedMotion() ? "auto" : "smooth",
+          block:"start"
+        });
+      });
+      list.appendChild(button);
+    });
+
+    rail.appendChild(list);
+    document.body.appendChild(rail);
+
+    if (state.railObserver) state.railObserver.disconnect();
+
+    state.railObserver = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if (!visible) return;
+
+      rail.querySelectorAll("button").forEach(button => {
+        const active = button.dataset.target === visible.target.id;
+        button.classList.toggle("active",active);
+        button.setAttribute("aria-current",active ? "true" : "false");
+      });
+    },{
+      threshold:[.12,.35,.65],
+      rootMargin:"-18% 0px -60% 0px"
+    });
+
+    sections.slice(0,9).forEach(section => state.railObserver.observe(section));
+  }
+
+  function addPageSignature() {
+    const page = pageName();
+    const target = document.querySelector(
+      ".home-hero,.page-hero,.news-page-hero,.ideas-page__head"
+    );
+
+    if (!target || target.querySelector(".cd-page-signature")) return;
+
+    const signature = document.createElement("div");
+    signature.className = "cd-page-signature";
+    signature.setAttribute("aria-hidden","true");
+    signature.innerHTML = `
+      <span></span>
+      <strong>${
+        page === "home" ? "Gestión abierta" :
+        page === "resources" ? "Biblioteca pública" :
+        page === "news" ? "Actualidad municipal" :
+        page === "ideas" ? "Participación activa" :
+        "Rendición de Cuentas"
+      }</strong>
+      <i></i>`;
+    target.appendChild(signature);
+  }
+
+  function addCursorGlow() {
+    if (prefersReducedMotion()) return;
+    if (document.querySelector(".cd-cursor-glow")) return;
+
+    const glow = document.createElement("div");
+    glow.className = "cd-cursor-glow";
+    glow.setAttribute("aria-hidden","true");
+    document.body.appendChild(glow);
+
+    let frame = null;
+    document.addEventListener("pointermove", event => {
+      if (event.pointerType === "touch") return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        glow.style.setProperty("--cd-pointer-x",`${event.clientX}px`);
+        glow.style.setProperty("--cd-pointer-y",`${event.clientY}px`);
+      });
+    }, {passive:true});
+  }
+
+  function refresh() {
+    ensurePageClass();
+    addPageSignature();
+    const sections = decorateSections();
+    decorateCards();
+    setupReveal();
+    buildRail(sections);
+  }
+
+  function scheduleRefresh() {
+    clearTimeout(state.refreshTimer);
+    state.refreshTimer = window.setTimeout(refresh,80);
+  }
+
+  function observeDynamicContent() {
+    if (state.mutationObserver) return;
+
+    state.mutationObserver = new MutationObserver(mutations => {
+      if (!mutations.some(mutation => mutation.addedNodes.length)) return;
+      scheduleRefresh();
+    });
+
+    state.mutationObserver.observe(document.body,{
+      subtree:true,
+      childList:true
+    });
+
+    document.addEventListener("portal:rendered",scheduleRefresh);
+  }
+
+  function init() {
+    if (!document.body) return;
+    if (state.initialized) {
+      refresh();
+      return;
+    }
+
+    state.initialized = true;
+    ensurePageClass();
+    addCursorGlow();
+    refresh();
+    observeDynamicContent();
+  }
+
+  window.ClaudeStudio = {init,refresh};
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded",init,{once:true});
+  } else {
+    init();
+  }
+})();
