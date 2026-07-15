@@ -1,0 +1,27 @@
+{
+  "version": "10.23",
+  "base": "10.22 stable repair",
+  "files_to_replace": [
+    "styles.css",
+    "shared.js"
+  ],
+  "changes": [
+    "Reduced home hero and title scale to prevent overflow and invasive appearance.",
+    "Removed the invisible decorative panel from the home banner.",
+    "Repositioned admin quick dock as a compact bottom-right control.",
+    "Removed visible separator blur strips and replaced them with imperceptible surface continuity.",
+    "Redesigned Resources hero and cards with waves, circles and executive motion.",
+    "Redesigned News hero, summary and cards with waves, air movement and controlled depth.",
+    "Moved Ideas balloons away from the New Idea button and preserved button stacking.",
+    "Added page-resources and page-vigencias body classes."
+  ],
+  "performance": [
+    "animations use transform/opacity",
+    "prefers-reduced-motion supported",
+    "no new external libraries"
+  ],
+  "validation": {
+    "javascript": "OK",
+    "css_braces": "4001 / 4001"
+  }
+}

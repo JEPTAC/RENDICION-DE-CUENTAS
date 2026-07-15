@@ -1652,7 +1652,7 @@ helpers.toast = function(message) {
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.22-reparacion-estable";
+    script.src = "inline-admin.js?v=10.23-visual-ejecutivo";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -2278,7 +2278,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.22-reparacion-estable`;
+      const versioned = `${base}?v=10.23-visual-ejecutivo`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2315,6 +2315,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.classList.toggle('page-home', currentPage === '' || currentPage === 'index.html');
   document.body.classList.toggle('page-news', currentPage === 'noticias.html' || currentPage === 'noticia.html');
   document.body.classList.toggle('page-ideas', currentPage === 'ideas.html');
+  document.body.classList.toggle('page-resources', currentPage === 'recursos.html');
+  document.body.classList.toggle('page-vigencias', currentPage === 'vigencias.html');
   initInteractiveFeedback();
   mountNewsHoverCat();
   showLoading('Estamos preparando la página…');
