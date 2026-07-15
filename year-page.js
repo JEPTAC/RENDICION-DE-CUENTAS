@@ -12,6 +12,68 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.title = `Rendición de Cuentas ${year.year} | San Pedro`;
+
+  const pageHero = document.querySelector(".page-hero");
+  const yearThemes = {
+    2025: "celebration",
+    2026: "mobility",
+    2027: "sports"
+  };
+  const selectedTheme = yearThemes[year.year] || ["celebration", "mobility", "sports"][Math.abs(year.year) % 3];
+
+  const heroScenes = {
+    celebration: `
+      <div class="page-hero__scene page-hero__scene--celebration" aria-hidden="true">
+        <span class="scene-orb orb-a"></span>
+        <span class="scene-orb orb-b"></span>
+        <span class="scene-firework firework-a"></span>
+        <span class="scene-firework firework-b"></span>
+        <span class="scene-firework firework-c"></span>
+        <span class="scene-spark spark-a"></span>
+        <span class="scene-spark spark-b"></span>
+        <span class="scene-spark spark-c"></span>
+        <span class="scene-confetti confetti-a"></span>
+        <span class="scene-confetti confetti-b"></span>
+        <span class="scene-confetti confetti-c"></span>
+        <span class="scene-ribbon ribbon-a"></span>
+        <span class="scene-ribbon ribbon-b"></span>
+      </div>`,
+    mobility: `
+      <div class="page-hero__scene page-hero__scene--mobility" aria-hidden="true">
+        <span class="scene-orb orb-a"></span>
+        <span class="scene-orb orb-b"></span>
+        <div class="scene-road"></div>
+        <div class="scene-route route-a"></div>
+        <div class="scene-route route-b"></div>
+        <div class="scene-vehicle vehicle-truck"></div>
+        <div class="scene-vehicle vehicle-bus"></div>
+        <div class="scene-vehicle vehicle-car"></div>
+        <div class="scene-crate crate-a"></div>
+        <div class="scene-crate crate-b"></div>
+      </div>`,
+    sports: `
+      <div class="page-hero__scene page-hero__scene--sports" aria-hidden="true">
+        <span class="scene-orb orb-a"></span>
+        <span class="scene-orb orb-b"></span>
+        <span class="scene-ball ball-football"></span>
+        <span class="scene-ball ball-basket"></span>
+        <span class="scene-ball ball-volley"></span>
+        <span class="scene-ball ball-skate"></span>
+        <span class="scene-ring ring-a"></span>
+        <span class="scene-ring ring-b"></span>
+        <span class="scene-trail trail-a"></span>
+        <span class="scene-trail trail-b"></span>
+      </div>`
+  };
+
+  if (pageHero) {
+    pageHero.classList.remove("page-hero--celebration", "page-hero--mobility", "page-hero--sports");
+    pageHero.classList.add(`page-hero--${selectedTheme}`);
+    pageHero.dataset.heroTheme = selectedTheme;
+    if (!pageHero.querySelector('.page-hero__scene')) {
+      pageHero.insertAdjacentHTML('afterbegin', heroScenes[selectedTheme]);
+    }
+  }
   const yearMain = document.querySelector("#main-content");
   if (yearMain) {
     yearMain.dataset.adminEntity = "year";

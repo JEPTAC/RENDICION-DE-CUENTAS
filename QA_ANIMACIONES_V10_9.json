@@ -1,0 +1,20 @@
+{
+  "version": "10.9",
+  "files": [
+    "styles.css",
+    "year-page.js"
+  ],
+  "themes": {
+    "2025": "celebration",
+    "2026": "mobility",
+    "2027": "sports"
+  },
+  "animations": [
+    "fireworks and confetti",
+    "vehicles on soft route",
+    "sports balls and skating board",
+    "orb glows",
+    "section accent bars"
+  ],
+  "reduced_motion_supported": true
+}
