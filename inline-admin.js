@@ -98,11 +98,17 @@
 
   function showSaved() {
     const indicator = document.querySelector("#inlineAdminSaved");
-    if (!indicator) return;
-    indicator.textContent = "Guardado";
-    indicator.classList.add("is-visible");
-    clearTimeout(indicator._timer);
-    indicator._timer = setTimeout(() => indicator.classList.remove("is-visible"), 1400);
+    const quickIndicator = document.querySelector("#quickSaveState");
+
+    [indicator,quickIndicator].filter(Boolean).forEach(node => {
+      node.textContent = "Guardado";
+      node.classList.add("is-visible");
+      clearTimeout(node._timer);
+      node._timer = setTimeout(
+        () => node.classList.remove("is-visible"),
+        1400
+      );
+    });
   }
 
   function compressedImage(file, options = {}) {
@@ -2055,7 +2061,7 @@
       "h1,h2,h3,h4,p,li,blockquote,summary,.button,a:not(nav a)"
     ).forEach(element => {
       if (element.closest(
-        "form,dialog,.admin-context-actions,.admin-quick-card-edit,.no-inline-edit"
+        "form,dialog,[data-admin-entity],.admin-section-edit-button,.admin-quick-card-edit,.no-inline-edit"
       )) return;
       element.classList.add("admin-inline-text");
       element.contentEditable = "true";
@@ -2077,9 +2083,256 @@
     helpers.toast("Edite directamente los textos de esta sección.");
   }
 
+  function studioSectionSettings(section) {
+    const key = sectionKey(section);
+    const saved = pageData().sections[key] || {};
+    return {
+      key,
+      visible:saved.visible !== false,
+      backgroundColor:saved.backgroundColor || "",
+      paddingTop:Number(saved.paddingTop || 0),
+      paddingBottom:Number(saved.paddingBottom || 0),
+      minHeight:Number(saved.minHeight || 0)
+    };
+  }
+
+  function openVisualStudio(section) {
+    if (!section) return;
+
+    const current = studioSectionSettings(section);
+    const kind = quickSectionKind(section);
+    const title =
+      section.querySelector("h1,h2,h3")?.textContent?.trim()
+      || "Sección del portal";
+    const textsActive =
+      section.classList.contains("admin-quick-text-active");
+
+    openInspector(
+      "Estudio visual",
+      title,
+      `
+      <div class="visual-studio">
+        <div class="visual-studio__status">
+          <span></span>
+          <div>
+            <strong>Edición conectada</strong>
+            <small>Los cambios se guardan localmente y se envían a Firebase mediante la sincronización configurada.</small>
+          </div>
+        </div>
+
+        <section class="visual-studio__group">
+          <div class="visual-studio__heading">
+            <span>01</span>
+            <div>
+              <strong>Contenido</strong>
+              <small>Modifique únicamente textos estáticos. Las tarjetas usan su editor de datos.</small>
+            </div>
+          </div>
+
+          <div class="visual-studio__actions">
+            <button type="button"
+              class="visual-studio__primary"
+              id="studioToggleText">
+              ${textsActive ? "Finalizar edición de textos" : "Editar textos en la página"}
+            </button>
+
+            <button type="button"
+              id="studioCreateContent">
+              ${helpers.escape(quickCreateLabel(kind))}
+            </button>
+          </div>
+        </section>
+
+        <section class="visual-studio__group">
+          <div class="visual-studio__heading">
+            <span>02</span>
+            <div>
+              <strong>Apariencia de la sección</strong>
+              <small>Los controles se aplican en tiempo real.</small>
+            </div>
+          </div>
+
+          <div class="visual-studio__fields">
+            <label class="visual-studio__switch">
+              <input id="studioVisible"
+                type="checkbox"
+                ${current.visible ? "checked" : ""}>
+              <span>Mostrar sección</span>
+            </label>
+
+            <label>
+              Fondo
+              <div class="visual-studio__color-row">
+                <input id="studioBackground"
+                  type="color"
+                  value="${current.backgroundColor || "#ffffff"}">
+                <label class="visual-studio__switch">
+                  <input id="studioTransparent"
+                    type="checkbox"
+                    ${current.backgroundColor ? "" : "checked"}>
+                  <span>Automático</span>
+                </label>
+              </div>
+            </label>
+
+            <label>
+              Espacio superior
+              <output id="studioTopOutput">${current.paddingTop}px</output>
+              <input id="studioTop"
+                type="range"
+                min="0"
+                max="160"
+                value="${current.paddingTop}">
+            </label>
+
+            <label>
+              Espacio inferior
+              <output id="studioBottomOutput">${current.paddingBottom}px</output>
+              <input id="studioBottom"
+                type="range"
+                min="0"
+                max="160"
+                value="${current.paddingBottom}">
+            </label>
+          </div>
+        </section>
+
+        <section class="visual-studio__group">
+          <div class="visual-studio__heading">
+            <span>03</span>
+            <div>
+              <strong>Organización</strong>
+              <small>Cambie la posición o restablezca el diseño de esta sección.</small>
+            </div>
+          </div>
+
+          <div class="visual-studio__actions visual-studio__actions--three">
+            <button type="button" id="studioMoveUp">Subir</button>
+            <button type="button" id="studioMoveDown">Bajar</button>
+            <button type="button"
+              class="visual-studio__danger"
+              id="studioReset">Restablecer</button>
+          </div>
+        </section>
+      </div>`
+    );
+
+    const updateStyle = () => {
+      const data = pageData().sections[current.key] || {};
+
+      data.visible =
+        document.querySelector("#studioVisible")?.checked !== false;
+      data.backgroundColor =
+        document.querySelector("#studioTransparent")?.checked
+          ? ""
+          : document.querySelector("#studioBackground")?.value || "";
+      data.paddingTop = Number(
+        document.querySelector("#studioTop")?.value || 0
+      );
+      data.paddingBottom = Number(
+        document.querySelector("#studioBottom")?.value || 0
+      );
+
+      pageData().sections[current.key] = data;
+      applySectionStyles();
+      persist();
+
+      const top = document.querySelector("#studioTop");
+      const bottom = document.querySelector("#studioBottom");
+      if (top) {
+        document.querySelector("#studioTopOutput").value =
+          `${top.value}px`;
+      }
+      if (bottom) {
+        document.querySelector("#studioBottomOutput").value =
+          `${bottom.value}px`;
+      }
+    };
+
+    [
+      "#studioVisible",
+      "#studioBackground",
+      "#studioTransparent",
+      "#studioTop",
+      "#studioBottom"
+    ].forEach(selector => {
+      document.querySelector(selector)?.addEventListener(
+        "input",
+        updateStyle
+      );
+      document.querySelector(selector)?.addEventListener(
+        "change",
+        updateStyle
+      );
+    });
+
+    document.querySelector("#studioToggleText")?.addEventListener(
+      "click",
+      () => {
+        toggleSectionQuickText(section);
+        closeInspector();
+      }
+    );
+
+    document.querySelector("#studioCreateContent")?.addEventListener(
+      "click",
+      () => {
+        closeInspector();
+
+        if (kind === "news") {
+          openNewsModal();
+          return;
+        }
+        if (kind === "idea") {
+          openNewEntityInspector("idea");
+          return;
+        }
+        if (kind === "banner") {
+          openConsole("banner");
+          return;
+        }
+
+        injectToolbar();
+        openPublicationModal();
+      }
+    );
+
+    document.querySelector("#studioMoveUp")?.addEventListener(
+      "click",
+      () => {
+        moveSection(section,"up");
+        closeInspector();
+      }
+    );
+
+    document.querySelector("#studioMoveDown")?.addEventListener(
+      "click",
+      () => {
+        moveSection(section,"down");
+        closeInspector();
+      }
+    );
+
+    document.querySelector("#studioReset")?.addEventListener(
+      "click",
+      () => {
+        delete pageData().sections[current.key];
+        section.hidden = false;
+        section.style.backgroundColor = "";
+        section.style.backgroundImage = "";
+        section.style.paddingTop = "";
+        section.style.paddingBottom = "";
+        section.style.minHeight = "";
+        persist();
+        closeInspector();
+        helpers.toast("Diseño de la sección restablecido.");
+      }
+    );
+  }
+
   function clearQuickAdminControls() {
     document.querySelectorAll(
-      ".admin-context-actions,.admin-quick-card-edit,.admin-quick-dock"
+      ".admin-section-edit-button,.admin-quick-card-edit,.admin-quick-dock"
     ).forEach(element => element.remove());
 
     document.querySelectorAll(".admin-quick-section").forEach(section => {
@@ -2098,40 +2351,57 @@
 
     document.body.classList.add("admin-quick-mode");
 
-    document.querySelectorAll("main section").forEach(section => {
-      if (section.querySelector(":scope > .admin-context-actions")) return;
+    document.querySelectorAll(
+      "main > section,main > article"
+    ).forEach(section => {
+      if (section.querySelector(
+        ":scope > .admin-section-edit-button"
+      )) return;
 
       section.classList.add("admin-quick-section");
-      const kind = quickSectionKind(section);
+
       const title =
         section.querySelector("h1,h2")?.textContent?.trim()
         || "Sección";
 
-      const controls = document.createElement("div");
-      controls.className = "admin-context-actions";
-      controls.setAttribute(
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "admin-section-edit-button";
+      button.dataset.visualStudio = "true";
+      button.setAttribute(
         "aria-label",
-        `Administrar ${title.slice(0,80)}`
+        `Editar sección: ${title.slice(0,80)}`
       );
-      controls.innerHTML = `
-        <span>${helpers.escape(title.slice(0,42))}</span>
-        <button type="button" data-quick-section>Diseño</button>
-        <button type="button" data-quick-text>Editar textos</button>
-        <button type="button" data-quick-create="${kind}">
-          ${helpers.escape(quickCreateLabel(kind))}
-        </button>`;
-      section.prepend(controls);
+      button.innerHTML = `
+        <span aria-hidden="true">✎</span>
+        <b>Editar sección</b>`;
+      section.appendChild(button);
     });
 
     document.querySelectorAll("[data-admin-entity]").forEach(card => {
-      if (card.querySelector(":scope > .admin-quick-card-edit")) return;
+      if (card.matches("main,section")) return;
+      if (card.querySelector(
+        ":scope > .admin-quick-card-edit"
+      )) return;
+
+      const type = card.dataset.adminEntity;
+      const id = card.dataset.entityId || "";
+      if (!type || !id) return;
+
       const button = document.createElement("button");
       button.type = "button";
       button.className = "admin-quick-card-edit";
-      button.dataset.quickEntity = card.dataset.adminEntity;
-      button.dataset.entityId = card.dataset.entityId || "";
-      button.dataset.entityYear = card.dataset.entityYear || "";
-      button.textContent = "Editar";
+      button.dataset.quickEntity = type;
+      button.dataset.entityId = id;
+      button.dataset.entityYear =
+        card.dataset.entityYear || "";
+      button.setAttribute(
+        "aria-label",
+        "Editar los datos de este elemento"
+      );
+      button.innerHTML = `
+        <span aria-hidden="true">✎</span>
+        <b>Editar</b>`;
       card.appendChild(button);
     });
 
@@ -2139,11 +2409,33 @@
       const dock = document.createElement("div");
       dock.className = "admin-quick-dock";
       dock.innerHTML = `
-        <span>Edición rápida</span>
-        <button type="button" data-quick-global="news">＋ Noticia</button>
-        <button type="button" data-quick-global="resource">＋ Recurso</button>
-        <button type="button" data-quick-global="visitor">Vista visitante</button>
-        <button type="button" data-quick-global="console">Administrador</button>`;
+        <div class="admin-quick-dock__identity">
+          <span></span>
+          <div>
+            <strong>Edición administrativa</strong>
+            <small id="quickSaveState">Cambios sincronizados</small>
+          </div>
+        </div>
+
+        <div class="admin-quick-dock__actions">
+          <button type="button"
+            data-quick-global="resource">
+            ＋ Publicar
+          </button>
+          <button type="button"
+            data-quick-global="news">
+            ＋ Noticia
+          </button>
+          <button type="button"
+            data-quick-global="visitor">
+            Vista visitante
+          </button>
+          <button type="button"
+            class="is-primary"
+            data-quick-global="console">
+            Administrador
+          </button>
+        </div>`;
       document.body.appendChild(dock);
     }
   }
@@ -2166,24 +2458,22 @@
 
   function bindQuickAdminActions() {
     document.addEventListener("click",event => {
-      const sectionButton = event.target.closest("[data-quick-section]");
-      const textButton = event.target.closest("[data-quick-text]");
-      const createButton = event.target.closest("[data-quick-create]");
-      const entityButton = event.target.closest("[data-quick-entity]");
-      const globalButton = event.target.closest("[data-quick-global]");
+      const studioButton =
+        event.target.closest("[data-visual-studio]");
+      const entityButton =
+        event.target.closest("[data-quick-entity]");
+      const globalButton =
+        event.target.closest("[data-quick-global]");
 
-      if (!sectionButton && !textButton && !createButton && !entityButton && !globalButton) return;
+      if (!studioButton && !entityButton && !globalButton) return;
 
       event.preventDefault();
       event.stopPropagation();
 
-      if (sectionButton) {
-        openSectionInspector(sectionButton.closest("section"));
-        return;
-      }
-
-      if (textButton) {
-        toggleSectionQuickText(textButton.closest("section"));
+      if (studioButton) {
+        openVisualStudio(
+          studioButton.closest("section,article")
+        );
         return;
       }
 
@@ -2196,33 +2486,28 @@
         return;
       }
 
-      const kind =
-        createButton?.dataset.quickCreate
-        || globalButton?.dataset.quickGlobal;
+      const kind = globalButton.dataset.quickGlobal;
 
       if (kind === "news") {
         openNewsModal();
         return;
       }
+
       if (kind === "resource") {
         injectToolbar();
         openPublicationModal();
         return;
       }
-      if (kind === "idea") {
-        openNewEntityInspector("idea");
-        return;
-      }
-      if (kind === "banner") {
-        openSectionInspector(createButton.closest("section"));
-        return;
-      }
+
       if (kind === "visitor") {
         disableQuickControls();
         deactivate(false);
-        helpers.toast("Vista de visitante activada.");
+        helpers.toast(
+          "Vista visitante activada. La sesión continúa abierta."
+        );
         return;
       }
+
       if (kind === "console") {
         openConsole("editing");
       }
@@ -2233,6 +2518,7 @@
         ".admin-quick-text-active .admin-inline-image"
       );
       if (!image || active) return;
+
       event.preventDefault();
       event.stopPropagation();
       openImageInspector(image);
@@ -2482,7 +2768,7 @@
   }
 
   function applySectionStyles() {
-    document.querySelectorAll("main section").forEach(section => {
+    document.querySelectorAll("main > section,main > article").forEach(section => {
       const key = sectionKey(section);
       const style = pageData().sections[key];
       if (!style) return;
@@ -2555,7 +2841,7 @@
     });
 
     document.querySelectorAll("main h1,main h2,main h3,main h4,main p,main li,main summary,main blockquote,main .button,main a:not(nav a)").forEach(element => {
-      if (element.closest("form,dialog,.admin-section-tools,.admin-card-edit,.no-inline-edit")) return;
+      if (element.closest("form,dialog,[data-admin-entity],.admin-section-tools,.admin-card-edit,.no-inline-edit")) return;
       element.classList.add("admin-inline-text");
       element.contentEditable = "true";
       element.spellcheck = true;
@@ -3439,20 +3725,50 @@
 
   function bindDocumentEditing() {
     document.addEventListener("click", event => {
-      if (!active) return;
+      const quickEditableAction = event.target.closest(
+        ".admin-quick-text-active .admin-inline-text"
+      );
+      if (!active && !quickEditableAction) return;
 
       const sectionButton = event.target.closest("[data-inline-section]");
       const moveButton = event.target.closest("[data-inline-move]");
       const entityButton = event.target.closest("[data-inline-entity]");
       const editableAction = event.target.closest(".admin-inline-text");
 
-      if (sectionButton || moveButton || entityButton || (editableAction && editableAction.matches("a,button,.button"))) {
+      if (
+        sectionButton
+        || moveButton
+        || entityButton
+        || (
+          editableAction
+          && editableAction.matches("a,button,.button")
+        )
+      ) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        if (sectionButton) openSectionInspector(sectionButton.closest("section"));
-        if (moveButton) moveSection(moveButton.closest("section"), moveButton.dataset.inlineMove);
-        if (entityButton) openEntityInspector(entityButton.dataset.inlineEntity, entityButton.dataset.entityId, entityButton.dataset.entityYear);
+        if (sectionButton) {
+          openSectionInspector(sectionButton.closest("section"));
+        }
+        if (moveButton) {
+          moveSection(
+            moveButton.closest("section"),
+            moveButton.dataset.inlineMove
+          );
+        }
+        if (entityButton) {
+          openEntityInspector(
+            entityButton.dataset.inlineEntity,
+            entityButton.dataset.entityId,
+            entityButton.dataset.entityYear
+          );
+        }
+        if (
+          quickEditableAction
+          && quickEditableAction.matches("a,button,.button")
+        ) {
+          quickEditableAction.focus();
+        }
       }
     }, true);
 
@@ -3474,7 +3790,10 @@
     });
 
     document.addEventListener("click", event => {
-      if (!active) return;
+      const quickEditable = event.target.closest(
+        ".admin-quick-text-active .admin-inline-text"
+      );
+      if (!active && !quickEditable) return;
 
       const sectionButton = event.target.closest("[data-inline-section]");
       if (sectionButton) {
@@ -3581,6 +3900,7 @@
     openConsole,
     closeConsole,
     openNews:openNewsModal,
+    openVisualStudio,
     enableQuickControls,
     disableQuickControls,
     isEditing:() => active,

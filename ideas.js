@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
     document.querySelector("#ideaBoard").innerHTML = statuses.map(([status,label]) => {
       const ideas = state.ideas.filter(i => i.status === status);
-      return `<section class="idea-column">
+      return `<div class="idea-column" role="list" aria-label="${label}">
         <div class="idea-column__head"><strong>${label}</strong><span>${ideas.length}</span></div>
         ${ideas.map(idea => `
           <article class="idea-public-card" data-idea-open="${idea.id}" data-admin-entity="idea" data-entity-id="${idea.id}" role="button" tabindex="0">
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h3>${helpers.escape(idea.title)}</h3><p>${helpers.escape(idea.description)}</p>
             <footer><span>${helpers.escape(idea.location)}</span><b>♥ ${idea.votes}</b></footer>
           </article>`).join("")}
-      </section>`;
+      </div>`;
     }).join("");
 
     document.querySelector("#ideaTotal").textContent = state.ideas.length;

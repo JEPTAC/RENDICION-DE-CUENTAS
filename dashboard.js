@@ -192,6 +192,7 @@
     panorama.id = "panorama";
     panorama.className = "year-section dashboard-section dashboard-section--executive";
     panorama.dataset.dashboardGenerated = "true";
+    panorama.dataset.adminSection = "dashboard";
     panorama.innerHTML = `<div class="site-shell">
       <div class="year-section__head"><div><span class="section-kicker">PANORAMA GENERAL</span><h2>Resultados ejecutivos de ${year}</h2></div><p>Indicadores extraídos del informe consolidado de la audiencia pública.</p></div>
       <div class="executive-kpis">${kpisMarkup(year,data)}</div>
@@ -205,6 +206,7 @@
     investment.id = "inversion";
     investment.className = "year-section year-section--soft dashboard-section";
     investment.dataset.dashboardGenerated = "true";
+    investment.dataset.adminSection = "dashboard";
     investment.innerHTML = `<div class="site-shell">
       <div class="year-section__head"><div><span class="section-kicker">INVERSIÓN Y COBERTURA</span><h2>Recursos reportados y población alcanzada</h2></div><p>Las gráficas se complementan con tablas para facilitar la verificación de cada dato.</p></div>
       <div class="dashboard-grid dashboard-grid--charts">
@@ -218,6 +220,7 @@
     execution.id = "ejecucion";
     execution.className = "year-section dashboard-section";
     execution.dataset.dashboardGenerated = "true";
+    execution.dataset.adminSection = "dashboard";
     execution.innerHTML = `<div class="site-shell">
       <div class="year-section__head"><div><span class="section-kicker">EJECUCIÓN Y RESULTADOS</span><h2>Porcentajes reportados e impacto institucional</h2></div><p>La ejecución porcentual se presenta por componente, sin convertirla en un promedio general que pueda ocultar diferencias.</p></div>
       <article class="dashboard-panel dashboard-panel--chart"><header><div><span>GRÁFICA 03</span><h3>Porcentajes de ejecución mencionados en la audiencia</h3></div><strong>${data.execution.length} componentes</strong></header><div class="chart-frame chart-frame--execution"><canvas id="executionChart" aria-label="Gráfica de porcentajes de ejecución por componente"></canvas></div><details class="chart-data-details"><summary>Ver y editar datos</summary><div>${data.execution.map(item=>`<div><span>${portal().helpers.escape(item.label)}</span><strong>${formatNumber(item.value)}%</strong>${adminEditButton("executionItem",item.id,year)}</div>`).join("")}</div></details></article>
@@ -229,6 +232,7 @@
     followup.id = "seguimiento";
     followup.className = "year-section year-section--soft dashboard-section";
     followup.dataset.dashboardGenerated = "true";
+    followup.dataset.adminSection = "dashboard";
     const yearCommitments = portal().state.commitments.filter(item=>Number(item.year)===Number(year));
     const progressAverage = yearCommitments.length ? Math.round(yearCommitments.reduce((sum,item)=>sum+Number(item.progress||0),0)/yearCommitments.length) : 0;
     followup.innerHTML = `<div class="site-shell">
@@ -246,6 +250,7 @@
     requests.id = "solicitudes";
     requests.className = "year-section dashboard-section";
     requests.dataset.dashboardGenerated = "true";
+    requests.dataset.adminSection = "dashboard";
     const yearRequests = portal().state.citizenRequests.filter(item=>Number(item.year)===Number(year));
     const answered = yearRequests.filter(item=>!String(item.status).toLowerCase().includes("pendiente")).length;
     requests.innerHTML = `<div class="site-shell">

@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const dashboardScript = document.createElement("script");
-  dashboardScript.src = "dashboard.js";
+  dashboardScript.src = "dashboard.js?v=10.7-professional-repair";
   dashboardScript.onload = () => window.RendicionDashboard?.init?.(year.year);
   dashboardScript.onerror = () => helpers.toast("No fue posible cargar el tablero de indicadores.");
   document.head.appendChild(dashboardScript);

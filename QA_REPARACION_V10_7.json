@@ -1,0 +1,41 @@
+{
+  "version": "10.7",
+  "javascript": {
+    "shared.js": "OK",
+    "inline-admin.js": "OK",
+    "dashboard.js": "OK",
+    "year-page.js": "OK",
+    "ideas.js": "OK"
+  },
+  "css_braces_balanced": true,
+  "removed_failures": [
+    "franjas blancas sobre banners y secciones",
+    "píldoras azules vacías en encabezados grid",
+    "texto blanco sobre portadas claras",
+    "panel de enfoque blanco con texto invisible",
+    "controles administrativos sobre columnas anidadas",
+    "botones de edición repetidos en todo el contenido",
+    "footer con texto oscuro sobre fondo azul"
+  ],
+  "functional_fixes": [
+    "Estudio visual simplificado por sección",
+    "edición de textos estáticos con persistencia",
+    "edición de tarjetas mediante su entidad real",
+    "guardado con localStorage y queueSync de Firebase",
+    "publicación rápida de recursos y noticias",
+    "vista visitante sin cerrar sesión",
+    "orden de secciones persistente",
+    "fondos y espacios de sección persistentes",
+    "los enlaces y botones se pueden editar sin ejecutar su acción",
+    "los contenedores principales no reciben lápices duplicados",
+    "las entidades generadas se editan únicamente mediante datos estructurados"
+  ],
+  "design_patterns_applied": [
+    "narrativa clara antes que ornamentación",
+    "tarjetas de tema único",
+    "jerarquía diferenciada de botones",
+    "movimiento breve y no repetitivo",
+    "controles administrativos discretos",
+    "contraste explícito en superficies claras y oscuras"
+  ]
+}
