@@ -1,0 +1,15 @@
+{
+  "version": "10.34",
+  "name": "Home ancho y optimizado",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css"
+  ],
+  "main_changes": [
+    "La tarjeta principal del inicio pasa a un formato más ancho para que el contenido respire mejor.",
+    "El banner interno queda debajo del título y encima del texto descriptivo, usando mejor el ancho disponible.",
+    "Se redujo la altura total del hero para hacerlo más navegable en pantallas de portátil.",
+    "Los textos, botones y la franja inferior se compactaron para evitar espacios desperdiciados.",
+    "La barra exploradora inferior se separó del banner para evitar superposiciones visuales."
+  ]
+}
