@@ -325,7 +325,6 @@
         <span>Última actualización</span>
       </div>`;
 
-    window.Portal?.mountNewsHoverCat?.(summary);
   }
 
   function render() {

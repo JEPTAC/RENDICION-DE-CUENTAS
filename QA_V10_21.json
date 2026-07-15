@@ -1,0 +1,45 @@
+{
+  "version": "10.21",
+  "base": "10.20",
+  "files_to_replace": [
+    "styles.css",
+    "shared.js",
+    "year-page.js",
+    "noticias.js"
+  ],
+  "cleanup_optional": [
+    "ui-gifs/cat-hello.gif",
+    "ui-gifs/click-effect.gif"
+  ],
+  "pages_reviewed": [
+    "Inicio",
+    "Vigencias",
+    "Rendición 2025",
+    "Rendición 2026",
+    "Rendición 2027",
+    "Recursos",
+    "Noticias",
+    "Ideas ciudadanas"
+  ],
+  "improvements": [
+    "Sistema unificado de espaciados, radios, bordes y sombras.",
+    "Animaciones por entrada al viewport para reducir carga.",
+    "Remate temático y responsive específico para 2026 y 2027.",
+    "Consistencia 3/2/1 columnas según escritorio, tablet y móvil.",
+    "Eliminación completa de referencias funcionales al gato y al antiguo GIF de clic.",
+    "Revisión fina de tarjetas, filtros, encabezados, modales y secciones."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "year-page.js": "OK",
+      "noticias.js": "OK"
+    },
+    "css_braces": [
+      4003,
+      4003
+    ],
+    "cat_references": 0,
+    "click_gif_references": 0
+  }
+}

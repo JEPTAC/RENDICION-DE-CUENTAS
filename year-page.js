@@ -81,6 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   document.body.classList.add(`year-theme--${selectedTheme}`);
   document.body.dataset.yearTheme = selectedTheme;
+  document.body.classList.remove('year-2025', 'year-2026', 'year-2027');
+  document.body.classList.add(`year-${year.year}`);
+  document.body.dataset.year = String(year.year);
 
   if (pageHero) {
     pageHero.classList.remove(
