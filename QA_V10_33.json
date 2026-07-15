@@ -1,0 +1,15 @@
+{
+  "version": "10.33",
+  "name": "Home compacto y ordenado",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css"
+  ],
+  "main_changes": [
+    "Se reduce el tamaño del título principal para aprovechar mejor la pantalla.",
+    "El texto descriptivo queda más compacto y con menos espacio vertical.",
+    "El banner dentro de la tarjeta ocupa correctamente todo su ancho.",
+    "La barra inferior ya no se superpone al banner y queda mejor separada.",
+    "Se afinó el responsive para portátiles pequeños, tablet y móvil."
+  ]
+}
