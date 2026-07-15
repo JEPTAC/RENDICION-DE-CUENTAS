@@ -4176,3 +4176,43 @@ body.admin-popup-enabled .admin-quick-card-edit:hover{
 @media(prefers-reduced-motion:reduce){
   .ui-loader__spinner{animation:none}
 }
+
+
+/* =========================================================
+   V11.1 · Botón "Leer edición 2025" en azul oscuro
+   ========================================================= */
+
+/*
+   La tarjeta editorial mantiene sus textos informativos blancos,
+   pero el botón claro debe utilizar texto azul oscuro.
+*/
+.claude-page-home .editorial-feature a.button,
+.claude-page-home .editorial-feature a.button:link,
+.claude-page-home .editorial-feature a.button:visited,
+.claude-page-home .editorial-feature a.button:hover,
+.claude-page-home .editorial-feature a.button:focus,
+.claude-page-home .editorial-feature a.button:active,
+.claude-page-home .editorial-feature .button,
+.claude-page-home .editorial-feature .button:hover,
+.claude-page-home .editorial-feature .button:focus,
+.claude-page-home .editorial-feature .button:active,
+.claude-page-home .editorial-feature a[href*="2025"],
+.claude-page-home .editorial-feature a[href*="rendicion"]{
+  color:#123e7a !important;
+  background:rgba(255,255,255,.94) !important;
+  border-color:rgba(255,255,255,.96) !important;
+  text-shadow:none !important;
+}
+
+.claude-page-home .editorial-feature a.button *,
+.claude-page-home .editorial-feature .button *,
+.claude-page-home .editorial-feature a[href*="2025"] *,
+.claude-page-home .editorial-feature a[href*="rendicion"] *,
+.claude-page-home .editorial-feature a.button::before,
+.claude-page-home .editorial-feature a.button::after,
+.claude-page-home .editorial-feature .button::before,
+.claude-page-home .editorial-feature .button::after{
+  color:#123e7a !important;
+  fill:#123e7a !important;
+  stroke:#123e7a !important;
+}

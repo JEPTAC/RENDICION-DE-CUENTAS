@@ -1,0 +1,13 @@
+{
+  "version": "11.1",
+  "name": "Botón Leer edición 2025 en azul oscuro",
+  "replace_files": [
+    "claude-design.css"
+  ],
+  "change": [
+    "El texto del botón Leer edición 2025 se fuerza en azul oscuro.",
+    "La flecha, los spans, SVG y pseudo-elementos internos también usan azul oscuro.",
+    "Los demás textos de la tarjeta editorial permanecen blancos."
+  ],
+  "color": "#123e7a"
+}
