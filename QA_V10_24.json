@@ -1,0 +1,33 @@
+{
+  "version": "10.24",
+  "base": "10.23",
+  "replace_files": [
+    "styles.css",
+    "shared.js"
+  ],
+  "changes": [
+    "Hero del Inicio reducido y reequilibrado.",
+    "La tarjeta principal ahora tiene ancho, tipografía y espaciado controlados.",
+    "Se desactivaron capas decorativas invisibles que podían bloquear el banner.",
+    "Ondas ambientales añadidas únicamente dentro de las secciones del Inicio.",
+    "Botones Editar sección ajustados para permanecer dentro del viewport.",
+    "Portadas de Recursos, Noticias e Ideas reducidas.",
+    "Recursos incorpora ondas internas, círculos y reflejo de tarjeta.",
+    "Noticias incorpora ondas y corrientes internas sin cortes entre secciones.",
+    "Ideas reserva espacio para Nueva idea y mueve las decoraciones detrás.",
+    "Animaciones limitadas a transform y opacity para mantener fluidez."
+  ],
+  "research_applied": [
+    "Ancho de lectura y layout controlado.",
+    "Tarjetas dedicadas a un solo tema y una acción principal.",
+    "Espaciado responsive consistente.",
+    "Navegación predecible y controles de edición dentro del viewport."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK"
+    },
+    "css_open_braces": 4121,
+    "css_close_braces": 4121
+  }
+}

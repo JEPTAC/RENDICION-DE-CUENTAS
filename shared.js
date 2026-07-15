@@ -1652,7 +1652,7 @@ helpers.toast = function(message) {
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.23-visual-ejecutivo";
+    script.src = "inline-admin.js?v=10.24-navegacion-visual";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -2278,7 +2278,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.23-visual-ejecutivo`;
+      const versioned = `${base}?v=10.24-navegacion-visual`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
