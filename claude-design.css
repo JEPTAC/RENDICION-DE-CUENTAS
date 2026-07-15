@@ -3685,3 +3685,8 @@ body.hero-layout-wide.claude-page-home .home-section > .admin-section-edit-butto
 .claude-page-news .news-subscription-section textarea::placeholder{
   color:rgba(31,53,88,.72) !important;
 }
+
+/* V10.40 - ocultar sello/botón superior tipo 'Gestión abierta' */
+.cd-page-signature {
+  display: none !important;
+}
