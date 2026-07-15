@@ -1,0 +1,14 @@
+{
+  "version": "10.12",
+  "base": "V10.11_HERO_GIFS_PREMIUM",
+  "changes": [
+    "se eliminaron las figuras/paneles decorativos rígidos detrás de los GIFs",
+    "se reubicaron los GIFs para una composición más ordenada y profesional",
+    "se intensificó el degradado del hero con azul más oscuro y brillo sutil",
+    "se aplicó brillo/sombra profesional a los módulos de rendición",
+    "se refinaron estados responsive para tablet y móvil"
+  ],
+  "replace_upload": [
+    "styles.css"
+  ]
+}
