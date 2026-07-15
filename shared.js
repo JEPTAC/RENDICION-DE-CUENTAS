@@ -1,4 +1,5 @@
 (() => {
+  const PORTAL_BUILD = "11.0-admin-popup";
   const KEYS = {
     years: "sp_v4_years",
     resources: "sp_v4_resources",
@@ -263,182 +264,74 @@
   }
 
 
-const UI_ASSETS = {
-  clickEffect: "ui-gifs/click-effect.gif",
-  loading: "ui-gifs/loading-spinner.gif",
-  success: "ui-gifs/ok-hand.gif",
-  hoverCat: "ui-gifs/cat-hello.gif",
-  notification: "ui-audio/notification.mp3"
-};
+const UI_ASSETS = Object.freeze({});
 
-let feedbackLayer = null;
 let loaderPanel = null;
-let loaderGif = null;
-let loaderTitle = null;
-let loaderText = null;
-let notificationAudio = null;
 
 function ensureFeedbackUi() {
-  if (!document.body) return;
+  if (!document.body || loaderPanel) return;
+  loaderPanel = document.querySelector("#globalLoadingPopup");
+  if (loaderPanel) return;
 
-  if (!feedbackLayer) {
-    feedbackLayer = document.querySelector('#uiFeedbackLayer');
-    if (!feedbackLayer) {
-      feedbackLayer = document.createElement('div');
-      feedbackLayer.id = 'uiFeedbackLayer';
-      feedbackLayer.className = 'ui-feedback-layer';
-      document.body.appendChild(feedbackLayer);
-    }
-  }
-
-  if (!loaderPanel) {
-    loaderPanel = document.querySelector('#globalLoadingPopup');
-    if (!loaderPanel) {
-      loaderPanel = document.createElement('div');
-      loaderPanel.id = 'globalLoadingPopup';
-      loaderPanel.className = 'ui-loader';
-      loaderPanel.setAttribute('aria-hidden', 'true');
-      loaderPanel.innerHTML = `
-        <div class="ui-loader__backdrop"></div>
-        <div class="ui-loader__panel" role="status" aria-live="polite">
-          <img class="ui-loader__gif" src="${UI_ASSETS.loading}" alt="">
-          <div class="ui-loader__copy">
-            <strong class="ui-loader__title">Cargando contenido</strong>
-            <span class="ui-loader__text">Estamos preparando la información…</span>
-          </div>
-        </div>`;
-      document.body.appendChild(loaderPanel);
-    }
-    loaderGif = loaderPanel.querySelector('.ui-loader__gif');
-    loaderTitle = loaderPanel.querySelector('.ui-loader__title');
-    loaderText = loaderPanel.querySelector('.ui-loader__text');
-  }
-
-  if (!notificationAudio) {
-    notificationAudio = document.querySelector('#globalNotificationAudio');
-    if (!notificationAudio) {
-      notificationAudio = document.createElement('audio');
-      notificationAudio.id = 'globalNotificationAudio';
-      notificationAudio.preload = 'auto';
-      notificationAudio.src = UI_ASSETS.notification;
-      notificationAudio.volume = 0.42;
-      document.body.appendChild(notificationAudio);
-    }
-  }
+  loaderPanel = document.createElement("div");
+  loaderPanel.id = "globalLoadingPopup";
+  loaderPanel.className = "ui-loader ui-loader--lightweight";
+  loaderPanel.setAttribute("aria-hidden", "true");
+  loaderPanel.innerHTML = `
+    <div class="ui-loader__backdrop"></div>
+    <div class="ui-loader__panel" role="status" aria-live="polite">
+      <span class="ui-loader__spinner" aria-hidden="true"></span>
+      <div class="ui-loader__copy">
+        <strong class="ui-loader__title">Cargando contenido</strong>
+        <span class="ui-loader__text">Estamos preparando la información…</span>
+      </div>
+    </div>`;
+  document.body.appendChild(loaderPanel);
 }
 
 function playNotification() {
-  ensureFeedbackUi();
-  if (!notificationAudio) return;
-  try {
-    notificationAudio.currentTime = 0;
-    const promise = notificationAudio.play();
-    if (promise && typeof promise.catch === 'function') promise.catch(() => {});
-  } catch {}
+  // Se conserva como API compatible, sin cargar archivos de audio externos.
 }
 
-function showLoading(message = 'Estamos cargando el contenido solicitado…') {
+function showLoading(message = "Estamos cargando el contenido solicitado…") {
   ensureFeedbackUi();
   if (!loaderPanel) return;
-  clearTimeout(window.__globalLoadingTimer);
+  const title = loaderPanel.querySelector(".ui-loader__title");
+  const text = loaderPanel.querySelector(".ui-loader__text");
+  if (title) title.textContent = "Cargando contenido";
+  if (text) text.textContent = message;
+  loaderPanel.classList.add("is-visible");
+  loaderPanel.setAttribute("aria-hidden", "false");
   clearTimeout(window.__globalLoadingFailSafe);
-  loaderPanel.classList.remove('is-success');
-  loaderPanel.classList.add('is-visible');
-  loaderPanel.setAttribute('aria-hidden', 'false');
-  if (loaderGif) loaderGif.src = UI_ASSETS.loading;
-  if (loaderTitle) loaderTitle.textContent = 'Cargando contenido';
-  if (loaderText) loaderText.textContent = message;
-  window.__globalLoadingFailSafe = setTimeout(() => {
-    loaderPanel.classList.remove('is-success');
-    loaderPanel.classList.remove('is-visible');
-    loaderPanel.setAttribute('aria-hidden', 'true');
-  }, 4200);
+  window.__globalLoadingFailSafe = setTimeout(() => hideLoading(), 5000);
 }
 
-function hideLoading(message = 'Contenido cargado correctamente') {
-  ensureFeedbackUi();
+function hideLoading(message = "Contenido listo") {
   if (!loaderPanel) return;
+  const title = loaderPanel.querySelector(".ui-loader__title");
+  const text = loaderPanel.querySelector(".ui-loader__text");
+  if (title) title.textContent = "Listo";
+  if (text) text.textContent = message;
   clearTimeout(window.__globalLoadingFailSafe);
-  loaderPanel.classList.add('is-success');
-  loaderPanel.classList.add('is-visible');
-  loaderPanel.setAttribute('aria-hidden', 'false');
-  if (loaderGif) loaderGif.src = UI_ASSETS.success;
-  if (loaderTitle) loaderTitle.textContent = 'Listo';
-  if (loaderText) loaderText.textContent = message;
-  playNotification();
-  clearTimeout(window.__globalLoadingTimer);
-  window.__globalLoadingTimer = setTimeout(() => {
-    loaderPanel.classList.remove('is-visible', 'is-success');
-    loaderPanel.setAttribute('aria-hidden', 'true');
-  }, 1100);
+  window.setTimeout(() => {
+    loaderPanel?.classList.remove("is-visible");
+    loaderPanel?.setAttribute("aria-hidden", "true");
+  }, 180);
 }
 
-function showClickEffect(x, y) {
-  ensureFeedbackUi();
-  if (!feedbackLayer) return;
-  const pop = document.createElement('span');
-  pop.className = 'ui-click-pop';
-  pop.style.left = `${x}px`;
-  pop.style.top = `${y}px`;
-  feedbackLayer.appendChild(pop);
-  window.setTimeout(() => pop.remove(), 520);
+function showClickEffect() {
+  // Eliminado: la animación global de clic añadía listeners y nodos en cada interacción.
 }
 
-
-function mountNewsHoverCat(summary = document.querySelector('.news-hero-summary')) {
-  if (!summary) return null;
-  const existing = summary.querySelector('.news-summary-hover-gif');
-  if (existing) existing.remove();
-  summary.classList.remove('is-cat-peeking');
-  delete summary.dataset.catBound;
+function mountNewsHoverCat() {
+  // Eliminado: compatibilidad temporal con llamadas antiguas, sin insertar GIF.
   return null;
 }
 
 function initInteractiveFeedback() {
+  // La retroalimentación global invasiva fue retirada. Los componentes usan
+  // estados propios y el loader solo se muestra cuando una acción lo solicita.
   ensureFeedbackUi();
-
-  const clickableSelector = 'a,button,[role="button"],summary,.news-card,.year-resource-card,.news-story,.resource-library-card,.followup-summary>article';
-
-  const launchClickEffect = (target, event) => {
-    if (!target) return;
-    const rect = target.getBoundingClientRect();
-    const x = event?.clientX || (rect.left + rect.width / 2);
-    const y = event?.clientY || (rect.top + rect.height / 2);
-    showClickEffect(x, y);
-  };
-
-  document.addEventListener('click', event => {
-    const trigger = event.target.closest(clickableSelector);
-    if (trigger) launchClickEffect(trigger, event);
-
-    const anchor = event.target.closest('a[href]');
-    if (anchor) {
-      const href = anchor.getAttribute('href') || '';
-      if (href && !href.startsWith('#') && !href.startsWith('javascript:') && anchor.target !== '_blank' && !anchor.hasAttribute('download') && !anchor.classList.contains('dialog-close')) {
-        showLoading('Abriendo contenido…');
-      }
-    }
-
-    const summary = event.target.closest('.news-hero-summary');
-    if (summary) mountNewsHoverCat(summary);
-  }, true);
-
-  document.addEventListener('keydown', event => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    const trigger = event.target.closest(clickableSelector);
-    if (trigger) launchClickEffect(trigger);
-  }, true);
-
-  document.addEventListener('mouseover', event => {
-    const summary = event.target.closest('.news-hero-summary');
-    if (summary) mountNewsHoverCat(summary);
-  }, true);
-
-  document.addEventListener('submit', () => {
-    showLoading('Procesando la información…');
-  }, true);
-
-  mountNewsHoverCat();
 }
 
   const state = {
@@ -545,12 +438,6 @@ helpers.playNotification = playNotification;
 helpers.showLoading = showLoading;
 helpers.hideLoading = hideLoading;
 helpers.showClickEffect = showClickEffect;
-
-const __baseToast = helpers.toast.bind(helpers);
-helpers.toast = function(message) {
-  __baseToast(message);
-  playNotification();
-};
 
   function applySettings() {
     const root = document.documentElement;
@@ -837,14 +724,15 @@ helpers.toast = function(message) {
         <p class="account-diagnostic" id="firebaseAccountDiagnostic" aria-live="polite"></p>
       </dialog>
 
-      <dialog class="admin-panel" id="adminPanel">
+      <dialog class="admin-panel admin-popup-dialog" id="adminPanel" aria-labelledby="adminTitle">
         <div class="admin-panel__layout">
           <aside class="admin-sidebar">
-            <div class="admin-brand"><img src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro"><span><strong>Administración</strong><small>Modo demostración</small></span></div>
+            <div class="admin-brand"><img src="assets/escudo-san-pedro.png" alt="Escudo oficial del municipio de San Pedro"><span><strong>Administración</strong><small>Centro de control</small></span></div>
             <button class="admin-tab-button active" data-admin-tab="appearance">Apariencia</button>
             <button class="admin-tab-button" data-admin-tab="years">Vigencias</button>
             <button class="admin-tab-button" data-admin-tab="resources">Recursos</button>
             <button class="admin-tab-button" data-admin-tab="ideas">Ideas ciudadanas</button>
+            <button class="admin-tab-button" data-admin-tab="connections">Conexiones</button>
             <button class="admin-tab-button" data-admin-tab="backup">Respaldo</button>
             <button class="admin-tab-button admin-signout" id="adminSignout">Cerrar sesión</button>
           </aside>
@@ -918,6 +806,31 @@ helpers.toast = function(message) {
 
             <div class="admin-tab" data-admin-panel="ideas">
               <div class="admin-card"><h3>Gestión de ideas ciudadanas</h3><div class="admin-scroll-list" id="adminIdeasList"></div></div>
+            </div>
+
+
+            <div class="admin-tab" data-admin-panel="connections">
+              <div class="admin-grid admin-connections-grid">
+                <div class="admin-card">
+                  <h3>Firebase y usuarios</h3>
+                  <p id="adminFirebaseStatus">Consultando el estado de la conexión…</p>
+                  <div class="admin-card-actions">
+                    <button class="button button-primary" type="button" id="adminManageUsers">Gestionar usuarios</button>
+                    <button class="button button-secondary" type="button" id="adminSyncFirebase">Sincronizar información</button>
+                  </div>
+                </div>
+                <div class="admin-card">
+                  <h3>Google Drive</h3>
+                  <p id="adminDriveStatus">Consultando el estado de la conexión…</p>
+                  <div class="admin-card-actions">
+                    <button class="button button-primary" type="button" id="adminOpenDrive">Abrir configuración de Drive</button>
+                  </div>
+                </div>
+                <div class="admin-card admin-context-help">
+                  <h3>Edición directa</h3>
+                  <p>Use los botones <strong>Editar sección</strong> y <strong>Editar</strong> que aparecen en la página. El editor se abrirá como ventana emergente.</p>
+                </div>
+              </div>
             </div>
 
             <div class="admin-tab" data-admin-panel="backup">
@@ -1027,6 +940,26 @@ helpers.toast = function(message) {
     if (ideasList) {
       ideasList.innerHTML = state.ideas.map(i => `
         <div class="admin-list-row"><span><strong>${helpers.escape(i.title)}</strong><small>${helpers.statusLabel(i.status)} · ${helpers.escape(i.location)}</small></span><button data-admin-idea="${i.id}">Gestionar</button></div>`).join("");
+    }
+    syncConnectionStatus();
+  }
+
+  function syncConnectionStatus() {
+    const firebase = window.FirebasePortal?.getStatus?.() || {};
+    const firebaseNode = document.querySelector("#adminFirebaseStatus");
+    const driveNode = document.querySelector("#adminDriveStatus");
+
+    if (firebaseNode) {
+      firebaseNode.textContent = firebase.user
+        ? `Conectado · ${roleLabel(firebase.role)}`
+        : "Firebase disponible. Inicie sesión para administrar usuarios y sincronizar.";
+    }
+
+    if (driveNode) {
+      const status = window.DrivePortal?.getStatus?.();
+      driveNode.textContent = status?.connected
+        ? "Google Drive conectado."
+        : "Google Drive está disponible cuando drive-service.js completa la autorización.";
     }
   }
 
@@ -1190,7 +1123,6 @@ helpers.toast = function(message) {
     sessionStorage.removeItem("sp_admin_mode");
     closeDialog("adminPanel");
     closeDialog("accountDialog");
-    window.InlineAdmin?.deactivate?.(false);
 
     updateAdminHeader({canWrite:false});
     const button = document.querySelector("#adminEntry");
@@ -1212,7 +1144,7 @@ helpers.toast = function(message) {
         const tab = adminTab.dataset.adminTab;
         document.querySelectorAll(".admin-tab-button").forEach(b => b.classList.toggle("active", b.dataset.adminTab === tab));
         document.querySelectorAll(".admin-tab").forEach(p => p.classList.toggle("active", p.dataset.adminPanel === tab));
-        const titles = {appearance:"Apariencia", years:"Vigencias", resources:"Recursos", ideas:"Ideas ciudadanas", backup:"Respaldo"};
+        const titles = {appearance:"Apariencia", years:"Vigencias", resources:"Recursos", ideas:"Ideas ciudadanas", connections:"Conexiones", backup:"Respaldo"};
         document.querySelector("#adminTitle").textContent = titles[tab];
       }
 
@@ -1293,13 +1225,9 @@ helpers.toast = function(message) {
     });
 
     document.querySelector("#adminConsoleEntry")?.addEventListener("click", () => {
-      openInlineAdminConsole("editing");
-    });
-
-    document.addEventListener('click', event => {
-      if (event.target.closest('#inlineConsoleClose,#inlineConsoleBackdrop,.admin-console__close')) {
-        document.body.classList.remove('admin-explicit-open');
-      }
+      syncAdmin();
+      window.AdminPopup?.openAdmin?.();
+      if (!window.AdminPopup) openDialog("adminPanel");
     });
 
     document.addEventListener("click", event => {
@@ -1308,24 +1236,21 @@ helpers.toast = function(message) {
       );
       if (!editButton) return;
 
-      // Evita navegación o envío de formularios, pero permite que
-      // el manejador original del editor reciba el evento.
       event.preventDefault();
+      event.stopPropagation();
 
-      window.setTimeout(() => {
-        const editorOpened = Boolean(
-          document.body.classList.contains("admin-inspector-open") ||
-          document.body.classList.contains("admin-console-open") ||
-          document.querySelector(
-            ".inline-admin-inspector.open, .inline-inspector.open, " +
-            "#inlineAdminToolbar.open, .admin-console-shell.open"
-          )
-        );
+      if (!state.admin) {
+        helpers.toast("Debe iniciar sesión con permisos de edición.");
+        setAuthView("login");
+        openDialog("loginDialog");
+        return;
+      }
 
-        // La consola general es únicamente un respaldo. Si el botón
-        // específico abrió su inspector, no se modifica esa acción.
-        if (!editorOpened) openInlineAdminConsole("editing");
-      }, 140);
+      if (window.AdminPopup?.openEditor) {
+        window.AdminPopup.openEditor(editButton);
+      } else {
+        helpers.toast("El editor todavía se está preparando. Inténtelo nuevamente.");
+      }
     });
 
     document.querySelector("#adminSessionIdentity")?.addEventListener("click", () => {
@@ -1336,8 +1261,13 @@ helpers.toast = function(message) {
           roleLabel:roleLabel(firebaseStatus.role)
         });
         openDialog("accountDialog");
+      } else if (state.admin) {
+        syncAdmin();
+        window.AdminPopup?.openAdmin?.();
+        if (!window.AdminPopup) openDialog("adminPanel");
       } else {
-        openInlineAdminConsole("editing");
+        setAuthView("login");
+        openDialog("loginDialog");
       }
     });
 
@@ -1364,8 +1294,11 @@ helpers.toast = function(message) {
           roleLabel:"Acceso local",
           profile:{displayName:"Administrador local"}
         });
-        window.InlineAdmin?.openConsole?.("editing");
-        helpers.toast("Sesión administrativa local iniciada. Active la edición desde el panel cuando la necesite.");
+        syncAdmin();
+        window.AdminPopup?.sync?.();
+        window.AdminPopup?.openAdmin?.();
+        if (!window.AdminPopup) openDialog("adminPanel");
+        helpers.toast("Sesión administrativa iniciada.");
         return;
       }
 
@@ -1479,11 +1412,38 @@ helpers.toast = function(message) {
 
     document.querySelector("#accountManageUsers")?.addEventListener("click", () => {
       closeDialog("accountDialog");
-      window.InlineAdmin?.activate?.();
-      window.InlineAdmin?.openUsers?.();
+      window.AdminPopup?.openAdmin?.("connections");
+      if (!window.AdminPopup) openDialog("adminPanel");
     });
 
     document.querySelector("#accountSignout")?.addEventListener("click",performFirebaseSignout);
+
+    document.querySelector("#adminManageUsers")?.addEventListener("click", () => {
+      const opened =
+        window.FirebasePortal?.openUsers?.() ||
+        window.FirebasePortal?.openUserManager?.();
+      if (!opened) helpers.toast("La gestión de usuarios depende de firebase-service.js y del rol de superadministrador.");
+    });
+
+    document.querySelector("#adminSyncFirebase")?.addEventListener("click", async () => {
+      try {
+        helpers.showLoading("Sincronizando información con Firebase…");
+        await window.FirebasePortal?.queueSync?.();
+        helpers.hideLoading("Sincronización solicitada.");
+        helpers.toast("Sincronización solicitada.");
+      } catch (error) {
+        helpers.hideLoading();
+        helpers.toast(error?.message || "No fue posible sincronizar Firebase.");
+      }
+    });
+
+    document.querySelector("#adminOpenDrive")?.addEventListener("click", () => {
+      const opened =
+        window.DrivePortal?.openPanel?.() ||
+        window.DrivePortal?.open?.() ||
+        window.DrivePortal?.show?.();
+      if (!opened) helpers.toast("La configuración de Drive depende de drive-service.js.");
+    });
 
     document.querySelector("#adminSignout")?.addEventListener("click",performFirebaseSignout);
 
@@ -1619,12 +1579,12 @@ helpers.toast = function(message) {
 
     return new Promise((resolve, reject) => {
       const configScript = document.createElement("script");
-      configScript.src = "drive-config.js?v=9.3-drive-visible";
+      configScript.src = "drive-config.js?v=11.0";
       configScript.dataset.driveConfig = "true";
 
       configScript.onload = () => {
         const serviceScript = document.createElement("script");
-        serviceScript.src = "drive-service.js?v=9.3-drive-visible";
+        serviceScript.src = "drive-service.js?v=11.0";
         serviceScript.dataset.drivePortal = "true";
         serviceScript.onload = () => {
           window.DrivePortal?.init?.().finally(resolve);
@@ -1647,126 +1607,44 @@ helpers.toast = function(message) {
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=10.7-professional-repair";
+    script.src = "firebase-service.js?v=11.0";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
     document.head.appendChild(script);
   }
 
-  function waitForInlineAdminReady(onReady, onFail) {
-    let tries = 0;
-    const timer = window.setInterval(() => {
-      tries += 1;
-      if (window.InlineAdmin?.openConsole) {
-        window.clearInterval(timer);
-        try {
-          window.InlineAdmin.init?.();
-        } catch (error) {}
-        onReady?.(window.InlineAdmin);
-      } else if (tries >= 40) {
-        window.clearInterval(timer);
-        onFail?.();
-      }
-    }, 120);
-  }
-
-  function openInlineAdminConsole(mode = "editing", retry = 0) {
-    document.body.classList.add("admin-explicit-open");
-
-    const openEditor = admin => {
-      try { admin.activate?.(); } catch (error) {}
-      try { admin.init?.(); } catch (error) {}
-      admin.openConsole?.(mode);
-    };
-
-    if (window.InlineAdmin?.openConsole) {
-      openEditor(window.InlineAdmin);
-      return;
+  function loadAdminPopup() {
+    if (window.AdminPopup?.init) {
+      window.AdminPopup.init();
+      return Promise.resolve(window.AdminPopup);
     }
 
-    loadInlineAdministration();
-
-    waitForInlineAdminReady(
-      openEditor,
-      () => {
-        if (retry < 1) {
-          document.querySelector('script[data-inline-admin]')?.remove();
-          window.setTimeout(
-            () => openInlineAdminConsole(mode, retry + 1),
-            120
-          );
-          return;
-        }
-
-        document.body.classList.remove("admin-explicit-open");
-        helpers.toast(
-          "No fue posible abrir el panel administrativo. " +
-          "Verifique que inline-admin.js esté publicado y recargue la página."
-        );
-      }
-    );
-  }
-
-  function loadInlineAdministration() {
-    const existingScript = document.querySelector('script[data-inline-admin]');
-    if (existingScript) {
-      if (window.InlineAdmin?.init) {
-        try { window.InlineAdmin.init(); } catch (error) {}
-      } else {
-        existingScript.addEventListener("load", () => {
-          try { window.InlineAdmin?.init?.(); } catch (error) {}
-        }, { once:true });
-
-        existingScript.addEventListener("error", () => {
-          existingScript.remove();
-        }, { once:true });
-      }
-      return;
+    const existing = document.querySelector('script[data-admin-popup]');
+    if (existing) {
+      return new Promise(resolve => {
+        existing.addEventListener("load", () => {
+          window.AdminPopup?.init?.();
+          resolve(window.AdminPopup || null);
+        }, {once:true});
+        existing.addEventListener("error", () => resolve(null), {once:true});
+      });
     }
 
-    const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.33-home-compacto-ordenado";
-    script.dataset.inlineAdmin = "true";
-    script.onload = () => {
-      window.InlineAdmin?.init();
-
-      if (window.InlineAdmin && !window.InlineAdmin.__v1022Patched) {
-        const originalOpen = window.InlineAdmin.openConsole?.bind(window.InlineAdmin);
-        const originalClose = window.InlineAdmin.closeConsole?.bind(window.InlineAdmin);
-
-        if (originalOpen) {
-          window.InlineAdmin.openConsole = (...args) => {
-            document.body.classList.add('admin-explicit-open');
-            const result = originalOpen(...args);
-            window.setTimeout(() => {
-              document.querySelector('#inlineAdminToolbar')?.classList.add('open');
-              document.body.classList.add('admin-console-open');
-            }, 0);
-            return result;
-          };
-        }
-
-        if (originalClose) {
-          window.InlineAdmin.closeConsole = (...args) => {
-            const result = originalClose(...args);
-            document.body.classList.remove('admin-explicit-open');
-            return result;
-          };
-        }
-
-        window.InlineAdmin.__v1022Patched = true;
-      }
-
-      document.body.classList.remove(
-        'admin-inline-active',
-        'admin-inspector-open',
-        'admin-explicit-open',
-        'admin-console-open'
-      );
-    };
-    script.onerror = () => helpers.toast("No fue posible cargar el editor directo.");
-    document.head.appendChild(script);
+    return new Promise(resolve => {
+      const script = document.createElement("script");
+      script.src = `admin-popup.js?v=${PORTAL_BUILD}`;
+      script.dataset.adminPopup = "true";
+      script.onload = () => {
+        window.AdminPopup?.init?.();
+        resolve(window.AdminPopup || null);
+      };
+      script.onerror = () => {
+        helpers.toast("No fue posible cargar el editor emergente.");
+        resolve(null);
+      };
+      document.head.appendChild(script);
+    });
   }
 
 
@@ -2167,8 +2045,7 @@ helpers.toast = function(message) {
         sessionStorage.setItem("sp_admin_mode","firebase");
 
         updateAdminHeader(detail);
-        window.InlineAdmin?.deactivate?.(false);
-
+    
         if (detail.reason !== "initial") {
           helpers.toast(
             `Sesión iniciada · ${detail.roleLabel || roleLabel(detail.role)}.`
@@ -2178,9 +2055,9 @@ helpers.toast = function(message) {
         state.admin = false;
         sessionStorage.removeItem(KEYS.admin);
         sessionStorage.removeItem("sp_admin_mode");
-        window.InlineAdmin?.deactivate?.(false);
-
+    
         updateAdminHeader({canWrite:false});
+        window.AdminPopup?.sync?.();
         if (button) {
           button.hidden = false;
           button.textContent = "Mi cuenta";
@@ -2200,6 +2077,7 @@ helpers.toast = function(message) {
         sessionStorage.removeItem("sp_admin_mode");
 
         updateAdminHeader({canWrite:false});
+        window.AdminPopup?.sync?.();
         if (button) {
           button.hidden = false;
           button.textContent = "Ingresar";
@@ -2271,7 +2149,7 @@ helpers.toast = function(message) {
     const syncModalState = () => {
       const hasOpenDialog = Boolean(
         document.querySelector(
-          "dialog[open],.publication-modal.open,.admin-console-shell.open,.inline-admin-inspector.open"
+          "dialog[open],.publication-modal.open,#adminPanel[open],#contextEditorDialog[open]"
         )
       );
       document.body.classList.toggle("has-open-interface", hasOpenDialog);
@@ -2329,7 +2207,7 @@ helpers.toast = function(message) {
     }
 
     document.querySelectorAll(
-      ".dialog-close,.publication-modal__close,.news-editor-modal__close,.admin-console__close,.inline-inspector-head button"
+      ".dialog-close,.publication-modal__close,.news-editor-modal__close,.admin-popup-close,.context-editor__close"
     ).forEach(button => {
       button.classList.add("stable-close-button");
       if (!button.getAttribute("aria-label")) {
@@ -2339,12 +2217,20 @@ helpers.toast = function(message) {
   }
 
   function initReveal() {
+    const items = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      items.forEach(item => item.classList.add("visible"));
+      return;
+    }
+
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add("visible");
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
       });
     }, { threshold:0.08 });
-    document.querySelectorAll(".reveal").forEach(item => observer.observe(item));
+    items.forEach(item => observer.observe(item));
   }
 
   function refreshStylesheetVersion() {
@@ -2352,7 +2238,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.33-home-compacto-ordenado`;
+      const versioned = `${base}?v=11.0-admin-popup`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2366,14 +2252,14 @@ helpers.toast = function(message) {
       const link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
-      link.href = "claude-design.css?v=10.33-home-compacto-ordenado";
+      link.href = `claude-design.css?v=${PORTAL_BUILD}`;
       document.head.appendChild(link);
     }
 
     if (!document.getElementById(scriptId)) {
       const script = document.createElement("script");
       script.id = scriptId;
-      script.src = "claude-design.js?v=10.33-home-compacto-ordenado";
+      script.src = `claude-design.js?v=${PORTAL_BUILD}`;
       script.defer = true;
       script.onload = () => window.ClaudeStudio?.init?.();
       document.head.appendChild(script);
@@ -2395,7 +2281,8 @@ helpers.toast = function(message) {
     bindFirebaseEvents();
     initReader();
     loadFirebaseService();
-    loadDriveService().finally(loadInlineAdministration);
+    loadDriveService().catch(() => null);
+    loadAdminPopup();
     syncAdmin();
     initReveal();
 
@@ -2409,31 +2296,22 @@ helpers.toast = function(message) {
   }
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.classList.remove('admin-inline-active', 'admin-inspector-open', 'admin-explicit-open', 'admin-console-open');
-  const currentPage = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  document.body.classList.toggle('page-home', currentPage === '' || currentPage === 'index.html');
-  document.body.classList.toggle('page-news', currentPage === 'noticias.html' || currentPage === 'noticia.html');
-  document.body.classList.toggle('page-ideas', currentPage === 'ideas.html');
-  document.body.classList.toggle('page-resources', currentPage === 'recursos.html');
-  document.body.classList.toggle('page-vigencias', currentPage === 'vigencias.html');
+document.addEventListener("DOMContentLoaded", () => {
+  const currentPage = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  document.body.classList.toggle("page-home", currentPage === "" || currentPage === "index.html");
+  document.body.classList.toggle("page-news", currentPage === "noticias.html" || currentPage === "noticia.html");
+  document.body.classList.toggle("page-ideas", currentPage === "ideas.html");
+  document.body.classList.toggle("page-resources", currentPage === "recursos.html");
+  document.body.classList.toggle("page-vigencias", currentPage === "vigencias.html");
   initInteractiveFeedback();
-  mountNewsHoverCat();
-  showLoading('Estamos preparando la página…');
-}, { once:true });
+}, {once:true});
 
-window.addEventListener('load', () => {
-  document.body.classList.remove('admin-inline-active', 'admin-inspector-open', 'admin-explicit-open', 'admin-console-open');
-  mountNewsHoverCat();
-  hideLoading('Contenido cargado correctamente.');
-}, { once:true });
-
-window.addEventListener('pageshow', () => {
-  document.body.classList.remove('admin-inline-active', 'admin-inspector-open', 'admin-explicit-open', 'admin-console-open');
-  mountNewsHoverCat();
-  hideLoading('Contenido listo para consultar.');
+window.addEventListener("pageshow", () => {
+  hideLoading();
+  window.AdminPopup?.sync?.();
 });
 
-  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, mountNewsHoverCat, KEYS };
+
+  window.Portal = { state, helpers, openDialog, closeDialog, syncAdmin, applySettings, KEYS, build:PORTAL_BUILD };
   document.addEventListener("DOMContentLoaded", init);
 })();

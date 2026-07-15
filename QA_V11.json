@@ -1,0 +1,67 @@
+{
+  "version": "11.0",
+  "name": "Auditoría y administración emergente",
+  "code_files": [
+    "shared.js",
+    "claude-design.js",
+    "claude-design.css",
+    "admin-popup.js"
+  ],
+  "critical_fixes": 10,
+  "removed_legacy": [
+    "inline-admin dependency",
+    "forced admin toolbar",
+    "global click GIF",
+    "news hover cat",
+    "automatic loader on every navigation/submit",
+    "old cache tags"
+  ],
+  "admin_behavior": {
+    "general": "modal popup",
+    "contextual_edit": "modal popup",
+    "persistent_bar": false
+  },
+  "context_editor": [
+    "texts",
+    "images",
+    "alt text",
+    "background",
+    "text color",
+    "padding",
+    "radius",
+    "max width",
+    "min height"
+  ],
+  "known_external_dependencies": [
+    "firebase-service.js",
+    "drive-config.js",
+    "drive-service.js",
+    "styles.css",
+    "page-specific scripts and HTML"
+  ],
+  "validation": {
+    "node_check": [
+      "shared.js",
+      "claude-design.js",
+      "admin-popup.js"
+    ],
+    "css_braces": "538/538",
+    "inline_admin_runtime_references": 0,
+    "legacy_cat_runtime_calls": 0,
+    "old_cache_10_33_references": 0,
+    "smoke_execution": [
+      "shared.js",
+      "claude-design.js",
+      "admin-popup.js"
+    ],
+    "package_files": [
+      "AUDITORIA_TECNICA_V11.md",
+      "QA_V11.json",
+      "SUBIR_A_GITHUB_V11.txt",
+      "admin-popup.js",
+      "claude-design.css",
+      "claude-design.js",
+      "shared.js"
+    ]
+  }
+}
