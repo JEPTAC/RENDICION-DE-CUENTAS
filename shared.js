@@ -1424,7 +1424,7 @@
   function loadFirebaseService() {
     if (document.querySelector('script[data-firebase-portal]')) return;
     const script = document.createElement("script");
-    script.src = "firebase-service.js?v=10.5-news-inline";
+    script.src = "firebase-service.js?v=10.6-premium-experience";
     script.dataset.firebasePortal = "true";
     script.onload = () => window.FirebasePortal?.init?.();
     script.onerror = () => helpers.toast("No fue posible cargar la conexión con Firebase.");
@@ -1435,7 +1435,7 @@
     if (document.querySelector('script[data-inline-admin]')) return;
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.5-news-inline";
+    script.src = "inline-admin.js?v=10.6-premium-experience";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -1968,6 +1968,152 @@
     });
   }
 
+
+  function initPremiumDesignExperience() {
+    document.body.classList.add("premium-civic-experience");
+
+    if (!document.querySelector(".portal-atmosphere")) {
+      const atmosphere = document.createElement("div");
+      atmosphere.className = "portal-atmosphere";
+      atmosphere.setAttribute("aria-hidden","true");
+      atmosphere.innerHTML = `
+        <span class="portal-atmosphere__glow glow-a"></span>
+        <span class="portal-atmosphere__glow glow-b"></span>
+        <span class="portal-atmosphere__line line-a"></span>
+        <span class="portal-atmosphere__line line-b"></span>`;
+      document.body.prepend(atmosphere);
+    }
+
+    const sections = Array.from(
+      document.querySelectorAll(
+        "main > section,main > article,.home-section,.year-section,.news-feature-section,.news-index-section,.related-news-section"
+      )
+    );
+
+    sections.forEach((section,index) => {
+      section.classList.add("ui-story-section");
+      section.dataset.uiSectionIndex = String(index + 1);
+      section.classList.toggle("ui-story-section--alternate", index % 2 === 1);
+      section.classList.toggle("ui-story-section--feature", index % 3 === 0);
+    });
+
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("ui-section-visible");
+        revealObserver.unobserve(entry.target);
+      });
+    },{
+      threshold:0.08,
+      rootMargin:"0px 0px -8% 0px"
+    });
+
+    sections.forEach(section => revealObserver.observe(section));
+
+    const closeControls = document.querySelectorAll(
+      ".dialog-close,.publication-modal__close,.news-editor-modal__close,.admin-console__close,.inline-inspector-head button,.drive-close-button"
+    );
+
+    closeControls.forEach(control => {
+      if (!control.getAttribute("aria-label")) {
+        control.setAttribute("aria-label","Cerrar ventana");
+      }
+      control.title = control.getAttribute("aria-label") || "Cerrar";
+      control.classList.add("ui-close-control");
+    });
+
+    const motionAllowed = !window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (motionAllowed && window.matchMedia("(pointer:fine)").matches) {
+      document.querySelectorAll(
+        ".home-hero,.news-page-hero,.page-hero"
+      ).forEach(hero => {
+        hero.classList.add("ui-reactive-hero");
+
+        hero.addEventListener("pointermove",event => {
+          const rect = hero.getBoundingClientRect();
+          const x = (event.clientX - rect.left) / rect.width;
+          const y = (event.clientY - rect.top) / rect.height;
+          hero.style.setProperty("--ui-pointer-x",`${(x * 100).toFixed(2)}%`);
+          hero.style.setProperty("--ui-pointer-y",`${(y * 100).toFixed(2)}%`);
+          hero.style.setProperty("--ui-shift-x",`${((x - .5) * 14).toFixed(2)}px`);
+          hero.style.setProperty("--ui-shift-y",`${((y - .5) * 10).toFixed(2)}px`);
+        },{passive:true});
+
+        hero.addEventListener("pointerleave",() => {
+          hero.style.setProperty("--ui-pointer-x","72%");
+          hero.style.setProperty("--ui-pointer-y","22%");
+          hero.style.setProperty("--ui-shift-x","0px");
+          hero.style.setProperty("--ui-shift-y","0px");
+        },{passive:true});
+      });
+
+      const cardSelector = [
+        ".edition-card",
+        ".deal-card",
+        ".news-card",
+        ".resource-library-card",
+        ".idea-public-card",
+        ".year-resource-card",
+        ".publication-card"
+      ].join(",");
+
+      document.addEventListener("pointermove",event => {
+        const card = event.target.closest(cardSelector);
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty(
+          "--ui-card-x",
+          `${Math.max(0,Math.min(100,(event.clientX - rect.left) / rect.width * 100))}%`
+        );
+        card.style.setProperty(
+          "--ui-card-y",
+          `${Math.max(0,Math.min(100,(event.clientY - rect.top) / rect.height * 100))}%`
+        );
+      },{passive:true});
+    }
+
+    const syncInterfaceDepth = () => {
+      const openInterfaces = Array.from(document.querySelectorAll(
+        "dialog[open],.publication-modal.open,.news-editor-modal.open,.admin-console-shell.open,.inline-admin-inspector.open"
+      ));
+
+      document.body.classList.toggle(
+        "ui-interface-open",
+        openInterfaces.length > 0
+      );
+
+      openInterfaces.forEach((element,index) => {
+        element.style.setProperty("--ui-layer-index",String(index + 1));
+      });
+    };
+
+    const interfaceObserver = new MutationObserver(syncInterfaceDepth);
+    interfaceObserver.observe(document.body,{
+      subtree:true,
+      childList:true,
+      attributes:true,
+      attributeFilter:["open","class","hidden"]
+    });
+    syncInterfaceDepth();
+
+    document.addEventListener("click",event => {
+      const control = event.target.closest(
+        ".button,.news-read-link,.publication-mini-action,.admin-action-primary,.admin-action-secondary"
+      );
+      if (!control) return;
+
+      control.classList.remove("ui-control-pulse");
+      requestAnimationFrame(() => control.classList.add("ui-control-pulse"));
+      window.setTimeout(
+        () => control.classList.remove("ui-control-pulse"),
+        360
+      );
+    });
+  }
+
   function initReveal() {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -1982,7 +2128,7 @@
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.5-news-inline`;
+      const versioned = `${base}?v=10.6-premium-experience`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -1994,6 +2140,7 @@
     renderFooter();
     renderGlobalDialogs();
     initUiPolish();
+    initPremiumDesignExperience();
     bindGlobalEvents();
     bindFirebaseEvents();
     initReader();

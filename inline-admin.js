@@ -229,9 +229,9 @@
             <div class="admin-console__header-actions">
               <span class="inline-admin-saved" id="inlineAdminSaved">Guardado</span>
               <button type="button"
-                class="admin-console__close"
+                class="admin-console__close ui-close-control"
                 id="inlineConsoleClose"
-                aria-label="Cerrar panel administrativo">×</button>
+                aria-label="Cerrar panel administrativo"><span aria-hidden="true">×</span></button>
             </div>
           </header>
 
@@ -823,7 +823,7 @@
               <h3 id="publicationModalTitle">Nuevo contenido</h3>
               <p id="publicationModalSubtitle">Complete la información del recurso que se publicará en el portal.</p>
             </div>
-            <button type="button" class="publication-modal__close" id="publicationModalClose" aria-label="Cerrar formulario">×</button>
+            <button type="button" class="publication-modal__close ui-close-control" id="publicationModalClose" aria-label="Cerrar formulario"><span aria-hidden="true">×</span></button>
           </div>
 
           <form class="publication-modal__form" id="publicationForm">
@@ -908,7 +908,7 @@
               <h2 id="newsEditorTitle">Nueva noticia</h2>
               <p id="newsEditorSubtitle">Publique una novedad con estructura institucional, accesible y preparada para buscadores.</p>
             </div>
-            <button type="button" class="news-editor-modal__close" id="newsEditorClose" aria-label="Cerrar editor">×</button>
+            <button type="button" class="news-editor-modal__close ui-close-control" id="newsEditorClose" aria-label="Cerrar editor"><span aria-hidden="true">×</span></button>
           </header>
 
           <form class="news-editor-form" id="newsEditorForm">
@@ -1009,6 +1009,10 @@
       const selected = panel.dataset.consolePanel === tabName;
       panel.classList.toggle("active",selected);
       panel.hidden = !selected;
+      if (selected) {
+        panel.classList.remove("ui-panel-enter");
+        requestAnimationFrame(() => panel.classList.add("ui-panel-enter"));
+      }
     });
 
     if (tabName === "drive") updateDrivePanel();
