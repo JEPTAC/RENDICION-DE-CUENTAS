@@ -1726,7 +1726,7 @@ helpers.toast = function(message) {
     }
 
     const script = document.createElement("script");
-    script.src = "inline-admin.js?v=10.29-editor-banner-premium";
+    script.src = "inline-admin.js?v=10.30-banner-1200-correcciones";
     script.dataset.inlineAdmin = "true";
     script.onload = () => {
       window.InlineAdmin?.init();
@@ -2352,7 +2352,7 @@ helpers.toast = function(message) {
       const href = link.getAttribute("href") || "";
       if (!/(^|\/)styles\.css(?:\?|$)/.test(href)) return;
       const base = href.split("?")[0];
-      const versioned = `${base}?v=10.29-editor-banner-premium`;
+      const versioned = `${base}?v=10.30-banner-1200-correcciones`;
       if (href !== versioned) link.setAttribute("href",versioned);
     });
   }
@@ -2366,14 +2366,14 @@ helpers.toast = function(message) {
       const link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
-      link.href = "claude-design.css?v=10.29-editor-banner-premium";
+      link.href = "claude-design.css?v=10.30-banner-1200-correcciones";
       document.head.appendChild(link);
     }
 
     if (!document.getElementById(scriptId)) {
       const script = document.createElement("script");
       script.id = scriptId;
-      script.src = "claude-design.js?v=10.29-editor-banner-premium";
+      script.src = "claude-design.js?v=10.30-banner-1200-correcciones";
       script.defer = true;
       script.onload = () => window.ClaudeStudio?.init?.();
       document.head.appendChild(script);

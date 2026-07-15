@@ -2363,3 +2363,286 @@ body.hero-layout-wide .home-hero__copy h1{
     transition:none!important;
   }
 }
+
+
+/* =========================================================
+   V10.30 · Correcciones visuales definitivas
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   HOME HERO · tarjeta visible + banner centrado 1200 × 300
+   --------------------------------------------------------- */
+
+.claude-page-home .home-hero,
+body.hero-layout-compact.claude-page-home .home-hero,
+body.hero-layout-balanced.claude-page-home .home-hero,
+body.hero-layout-wide.claude-page-home .home-hero{
+  padding:26px 16px 0!important;
+  min-height:auto!important;
+  background:linear-gradient(180deg,#f5f9ff 0%,#edf5ff 100%)!important;
+  overflow:visible!important;
+}
+
+.claude-page-home .home-hero__grid,
+body.hero-layout-compact .home-hero__grid,
+body.hero-layout-balanced .home-hero__grid,
+body.hero-layout-wide .home-hero__grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:18px!important;
+  align-items:start!important;
+  width:min(1200px,100%)!important;
+  max-width:1200px!important;
+  margin:0 auto!important;
+  min-height:auto!important;
+  padding:0!important;
+}
+
+.claude-page-home .home-hero__copy,
+.claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+body.hero-layout-compact .home-hero__copy,
+body.hero-layout-balanced .home-hero__copy,
+body.hero-layout-wide .home-hero__copy{
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  width:min(660px,100%)!important;
+  max-width:660px!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:28px 30px 26px!important;
+  overflow:visible!important;
+  border-radius:30px!important;
+  background:
+    radial-gradient(circle at 90% 6%,rgba(119,214,255,.14),transparent 20%),
+    linear-gradient(160deg,rgba(255,255,255,.98),rgba(241,247,255,.96))!important;
+  border:1px solid rgba(18,106,182,.14)!important;
+  box-shadow:0 20px 56px rgba(5,45,91,.12)!important;
+  z-index:4!important;
+}
+
+.claude-page-home .home-hero__copy h1,
+body.hero-layout-compact .home-hero__copy h1,
+body.hero-layout-balanced .home-hero__copy h1,
+body.hero-layout-wide .home-hero__copy h1{
+  font-size:clamp(3rem,5.3vw,4.75rem)!important;
+  line-height:.96!important;
+  margin:.12em 0 .22em!important;
+}
+
+.claude-page-home .home-hero__copy > p{
+  color:#557190!important;
+  font-size:clamp(.94rem,1vw,1.04rem)!important;
+}
+
+.claude-page-home .home-hero__visual,
+body.hero-layout-compact .home-hero__visual,
+body.hero-layout-balanced .home-hero__visual,
+body.hero-layout-wide .home-hero__visual{
+  position:relative!important;
+  width:100%!important;
+  max-width:1200px!important;
+  min-height:300px!important;
+  height:auto!important;
+  aspect-ratio:1200 / 300!important;
+  margin:0 auto!important;
+  overflow:hidden!important;
+  border-radius:30px!important;
+  border:1px solid rgba(18,106,182,.12)!important;
+  background:#bfe1fb!important;
+  box-shadow:0 22px 58px rgba(5,45,91,.13)!important;
+}
+
+.claude-page-home .home-hero__visual picture,
+.claude-page-home .home-hero__visual img,
+.claude-page-home .home-hero__visual video,
+.claude-page-home .home-hero__visual canvas,
+.claude-page-home .home-hero__visual .admin-banner-slide,
+.claude-page-home .home-hero__visual .hero-banner-slide{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+
+.claude-page-home .hero-float-card{
+  right:18px!important;
+  top:18px!important;
+  width:155px!important;
+  max-width:calc(100% - 36px)!important;
+  transform:none!important;
+}
+
+/* el panel explorador vuelve debajo del banner */
+.claude-page-home .explorer-bar{
+  margin-top:18px!important;
+  position:relative!important;
+  z-index:3!important;
+}
+
+/* ---------------------------------------------------------
+   VIGENCIAS · etiquetas claras y mejor contraste
+   --------------------------------------------------------- */
+
+.claude-page-vigencias .edition-discount,
+.claude-page-vigencias .edition-card__visual small,
+.claude-page-home .edition-discount,
+.claude-page-home .edition-card__visual small{
+  color:#fff!important;
+}
+
+.claude-page-vigencias .edition-discount,
+.claude-page-home .edition-discount{
+  background:#ff6b42!important;
+  box-shadow:0 8px 16px rgba(255,107,66,.22)!important;
+}
+
+.claude-page-vigencias .edition-card__visual small,
+.claude-page-home .edition-card__visual small{
+  background:rgba(12,46,86,.78)!important;
+}
+
+/* ---------------------------------------------------------
+   TARJETA EDITORIAL OSCURA · tipografía blanca
+   --------------------------------------------------------- */
+
+.claude-page-home .editorial-feature,
+.claude-page-home .editorial-feature > div{
+  color:#fff!important;
+}
+
+.claude-page-home .editorial-feature h3,
+.claude-page-home .editorial-feature p,
+.claude-page-home .editorial-feature a,
+.claude-page-home .editorial-feature .button,
+.claude-page-home .editorial-feature small,
+.claude-page-home .editorial-feature span{
+  color:#fff!important;
+}
+
+.claude-page-home .editorial-feature p{
+  color:rgba(255,255,255,.82)!important;
+}
+
+.claude-page-home .editorial-feature span{
+  color:#ffe37a!important;
+}
+
+.claude-page-home .editorial-feature .button,
+.claude-page-home .editorial-feature a.button{
+  background:rgba(255,255,255,.92)!important;
+  color:#12315f!important;
+  border-color:rgba(255,255,255,.9)!important;
+}
+
+/* ---------------------------------------------------------
+   IDEAS CIUDADANAS · sin fuegos artificiales ni invasión
+   --------------------------------------------------------- */
+
+.claude-page-home .ideas-cta,
+.claude-page-ideas .ideas-page__head{
+  overflow:hidden!important;
+}
+
+.claude-page-home .ideas-cta::before,
+.claude-page-home .ideas-cta::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+}
+
+.claude-page-home .ideas-cta{
+  position:relative!important;
+  background:
+    radial-gradient(circle at 84% 20%,rgba(107,183,255,.15),transparent 18%),
+    linear-gradient(160deg,#ffffff 0%,#f5f9ff 100%)!important;
+  color:#12315f!important;
+  border:1px solid rgba(18,106,182,.12)!important;
+  box-shadow:0 18px 42px rgba(5,45,91,.08)!important;
+}
+
+.claude-page-home .ideas-cta span,
+.claude-page-home .ideas-cta h3,
+.claude-page-home .ideas-cta p{
+  color:inherit!important;
+}
+
+.claude-page-home .ideas-cta span{
+  color:#c9a225!important;
+}
+
+.claude-page-home .ideas-cta p{
+  color:#5b7694!important;
+}
+
+.claude-page-home .ideas-cta .button,
+.claude-page-home .ideas-cta a.button{
+  position:relative!important;
+  z-index:3!important;
+}
+
+/* ---------------------------------------------------------
+   Limpieza de elementos heredados / versiones viejas
+   --------------------------------------------------------- */
+
+.claude-page-home .home-hero__visual::before,
+.claude-page-home .home-hero__visual::after,
+.claude-page-home .home-hero.has-admin-banner .home-hero__visual::before,
+.claude-page-home .home-hero.has-admin-banner .home-hero__visual::after{
+  display:none!important;
+}
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 900px){
+  .claude-page-home .home-hero__copy,
+  .claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+  body.hero-layout-compact .home-hero__copy,
+  body.hero-layout-balanced .home-hero__copy,
+  body.hero-layout-wide .home-hero__copy{
+    width:100%!important;
+    max-width:none!important;
+    padding:24px 20px 22px!important;
+  }
+
+  .claude-page-home .home-hero__visual,
+  body.hero-layout-compact .home-hero__visual,
+  body.hero-layout-balanced .home-hero__visual,
+  body.hero-layout-wide .home-hero__visual{
+    aspect-ratio:4 / 3!important;
+    min-height:320px!important;
+  }
+}
+
+@media (max-width: 640px){
+  .claude-page-home .home-hero{
+    padding-inline:10px!important;
+  }
+
+  .claude-page-home .home-hero__copy,
+  .claude-page-home .home-hero.has-admin-banner .home-hero__copy,
+  body.hero-layout-compact .home-hero__copy,
+  body.hero-layout-balanced .home-hero__copy,
+  body.hero-layout-wide .home-hero__copy{
+    border-radius:24px!important;
+  }
+
+  .claude-page-home .home-hero__copy h1,
+  body.hero-layout-compact .home-hero__copy h1,
+  body.hero-layout-balanced .home-hero__copy h1,
+  body.hero-layout-wide .home-hero__copy h1{
+    font-size:clamp(2.45rem,10.5vw,3.25rem)!important;
+  }
+
+  .claude-page-home .hero-float-card{
+    top:12px!important;
+    right:12px!important;
+    width:132px!important;
+  }
+}

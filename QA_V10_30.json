@@ -1,0 +1,29 @@
+{
+  "version": "10.30",
+  "name": "Banner 1200 y correcciones visuales",
+  "base": "10.29 Editor y banner premium",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "claude-design.js"
+  ],
+  "main_changes": [
+    "El hero del inicio vuelve a un contenedor centrado y no al ancho total de la página.",
+    "El banner principal usa tamaño recomendado 1200 × 300 px.",
+    "La tarjeta “Conozca la gestión” vuelve a quedar visible y encima del banner, en una fila aparte.",
+    "Se restablece el margen general del inicio y se elimina la sensación invasiva del hero.",
+    "Las etiquetas Publicada / En construcción / Programada mantienen texto blanco.",
+    "La tarjeta editorial oscura usa texto blanco para asegurar contraste.",
+    "Se eliminan los fuegos artificiales de la tarjeta de Ideas Ciudadanas.",
+    "Se neutralizan decoraciones heredadas del banner de versiones anteriores que ya no se usan."
+  ],
+  "banner": {
+    "recommended_size": "1200 × 300 px",
+    "desktop_ratio": "4:1",
+    "mobile_behavior": "Se adapta con object-fit: cover y relación más alta en pantallas pequeñas."
+  },
+  "notes": {
+    "remove_old_guide": "Se reemplazó la guía anterior de 1600 × 900.",
+    "old_unused_visual_layers": "Neutralizadas en claude-design.css."
+  }
+}
