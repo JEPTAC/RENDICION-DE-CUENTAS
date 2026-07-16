@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.15-globo-territorial-render";
+  const BUILD = "11.16-atlas-territorial-3d";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -218,151 +218,231 @@
     return [...center,...surface];
   }
 
-  function createVillageTexture() {
-    let seed = 20260716;
+  function createTerritoryAtlas(nodes = []) {
+    let seed = 2026071602;
     const random = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
       return seed / 4294967296;
     };
     const range = (min,max) => min + (max - min) * random();
-    const spreadLat = (limit = 1.12) =>
-      Math.max(-limit,Math.min(limit,Math.asin(random() * 1.94 - .97)));
-    const spreadLon = () => range(-Math.PI,Math.PI);
+    const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
+    const normalizeLon = value => {
+      while (value > Math.PI) value -= Math.PI * 2;
+      while (value < -Math.PI) value += Math.PI * 2;
+      return value;
+    };
 
-    const continentSeeds = [
-      {lat:.34,lon:-1.82,rx:.64,ry:.47,tone:0},
-      {lat:-.14,lon:-.96,rx:.54,ry:.68,tone:1},
-      {lat:.48,lon:.12,rx:.79,ry:.50,tone:2},
-      {lat:-.27,lon:.70,rx:.48,ry:.56,tone:3},
-      {lat:.18,lon:1.72,rx:.66,ry:.44,tone:1},
-      {lat:-.56,lon:2.42,rx:.42,ry:.31,tone:2}
-    ];
+    function nodePoint(node) {
+      return {
+        lat:Number.isFinite(node?.sphereLat) ? node.sphereLat : 0,
+        lon:Number.isFinite(node?.sphereLon) ? node.sphereLon : 0
+      };
+    }
 
-    const land = [];
-    continentSeeds.forEach((seedItem,seedIndex) => {
-      const count = 18 + (seedIndex % 3) * 4;
-      for (let index = 0; index < count; index += 1) {
-        const orbit = Math.sqrt(random());
-        const angle = random() * Math.PI * 2;
-        land.push({
-          lat:Math.max(-1.22,Math.min(1.22,
-            seedItem.lat + Math.sin(angle) * seedItem.ry * orbit)),
-          lon:seedItem.lon + Math.cos(angle) * seedItem.rx * orbit,
-          size:range(15,42) * (1 - orbit * .28),
-          squash:range(.48,.82),
-          angle:range(-Math.PI,Math.PI),
-          tone:(seedItem.tone + index) % 5,
-          alpha:range(.34,.64)
+    function ring(lat,lon,radius,vertices = 22,roughness = .22) {
+      return Array.from({length:vertices + 1},(_,index) => {
+        const angle = index / vertices * Math.PI * 2;
+        const variation = 1 + Math.sin(index * 2.7 + lat * 5) * roughness * .35 +
+          Math.cos(index * 1.35 + lon * 3) * roughness * .22;
+        const localRadius = radius * variation;
+        return {
+          lat:clamp(lat + Math.sin(angle) * localRadius,-1.42,1.42),
+          lon:normalizeLon(
+            lon + Math.cos(angle) * localRadius /
+            Math.max(.34,Math.cos(lat))
+          )
+        };
+      });
+    }
+
+    function greatCirclePath(from,to,steps = 34) {
+      const vector = point => {
+        const cosLat = Math.cos(point.lat);
+        return {
+          x:Math.sin(point.lon) * cosLat,
+          y:Math.sin(point.lat),
+          z:Math.cos(point.lon) * cosLat
+        };
+      };
+      const a = vector(from);
+      const b = vector(to);
+      const dot = clamp(a.x*b.x + a.y*b.y + a.z*b.z,-1,1);
+      const omega = Math.acos(dot);
+      const sinOmega = Math.sin(omega);
+      return Array.from({length:steps},(_,index) => {
+        const t = index / (steps - 1);
+        let x,y,z;
+        if (sinOmega < .00001) {
+          x = a.x + (b.x - a.x) * t;
+          y = a.y + (b.y - a.y) * t;
+          z = a.z + (b.z - a.z) * t;
+        } else {
+          const wa = Math.sin((1-t)*omega) / sinOmega;
+          const wb = Math.sin(t*omega) / sinOmega;
+          x = a.x*wa + b.x*wb;
+          y = a.y*wa + b.y*wb;
+          z = a.z*wa + b.z*wb;
+        }
+        return {
+          lat:Math.asin(clamp(y,-1,1)),
+          lon:Math.atan2(x,z)
+        };
+      });
+    }
+
+    const centerNode = nodes.find(node => node.group === 'center') || {
+      sphereLat:0,
+      sphereLon:0,
+      group:'center',
+      name:'Cabecera municipal'
+    };
+    const center = nodePoint(centerNode);
+    const surfaceNodes = nodes.filter(node => node.group !== 'center');
+
+    const zones = [centerNode,...surfaceNodes].map((node,index) => {
+      const point = nodePoint(node);
+      const radius = node.group === 'center'
+        ? .23
+        : node.group === 'neighborhood'
+          ? range(.115,.155)
+          : range(.16,.215);
+      return {
+        id:node.id,
+        name:node.name,
+        group:node.group,
+        lat:point.lat,
+        lon:point.lon,
+        radius,
+        polygon:ring(point.lat,point.lon,radius,24,node.group === 'rural' ? .34 : .22),
+        tone:index % 5
+      };
+    });
+
+    const parcels = [];
+    const forests = [];
+    const buildings = [];
+    const mountains = [];
+    const localRoads = [];
+    const contours = [];
+
+    zones.forEach((zone,zoneIndex) => {
+      const parcelCount = zone.group === 'rural' ? 5 : zone.group === 'center' ? 6 : 3;
+      for (let index = 0; index < parcelCount; index += 1) {
+        const angle = range(0,Math.PI * 2);
+        const distance = zone.radius * range(.18,.68);
+        const lat = clamp(zone.lat + Math.sin(angle)*distance,-1.38,1.38);
+        const lon = normalizeLon(zone.lon + Math.cos(angle)*distance/Math.max(.36,Math.cos(zone.lat)));
+        parcels.push({
+          group:zone.group,
+          tone:(zoneIndex + index) % 6,
+          polygon:ring(lat,lon,zone.radius*range(.12,.25),8,.12)
         });
+      }
+
+      if (zone.group === 'rural') {
+        for (let index = 0; index < 5; index += 1) {
+          const angle = range(0,Math.PI * 2);
+          const distance = zone.radius * range(.15,.72);
+          forests.push({
+            lat:clamp(zone.lat + Math.sin(angle)*distance,-1.38,1.38),
+            lon:normalizeLon(zone.lon + Math.cos(angle)*distance/Math.max(.36,Math.cos(zone.lat))),
+            size:range(1.5,3.4),
+            tone:index % 3
+          });
+        }
+        if (zoneIndex % 2 === 0) {
+          mountains.push({
+            lat:clamp(zone.lat + range(-.07,.07),-1.34,1.34),
+            lon:normalizeLon(zone.lon + range(-.07,.07)),
+            size:range(4.2,7.2),
+            angle:range(-Math.PI,Math.PI),
+            tone:zoneIndex % 3
+          });
+        }
+      } else {
+        const buildingCount = zone.group === 'center' ? 12 : 4;
+        for (let index = 0; index < buildingCount; index += 1) {
+          const angle = range(0,Math.PI * 2);
+          const distance = zone.radius * range(.08,.58);
+          buildings.push({
+            lat:clamp(zone.lat + Math.sin(angle)*distance,-1.38,1.38),
+            lon:normalizeLon(zone.lon + Math.cos(angle)*distance/Math.max(.36,Math.cos(zone.lat))),
+            size:range(1.4,2.8),
+            angle:range(-Math.PI,Math.PI),
+            tone:index % 4,
+            light:random() > .42
+          });
+        }
+      }
+
+      contours.push(ring(zone.lat,zone.lon,zone.radius*.72,32,.06));
+      if (zone.group === 'rural') {
+        contours.push(ring(zone.lat,zone.lon,zone.radius*.48,28,.05));
       }
     });
 
-    const fields = Array.from({length:128},(_,index) => ({
-      lat:spreadLat(1.06),
-      lon:spreadLon(),
-      size:range(4,12),
-      squash:range(.34,.66),
-      angle:range(-Math.PI,Math.PI),
-      tone:index % 6,
-      alpha:range(.14,.31)
+    const routes = surfaceNodes.map((node,index) => ({
+      group:node.group,
+      primary:index % 4 === 0,
+      path:greatCirclePath(center,nodePoint(node),30)
     }));
 
-    const forests = Array.from({length:190},(_,index) => ({
-      lat:spreadLat(1.08),
-      lon:spreadLon(),
-      size:range(1.1,3.4),
-      tone:index % 4,
-      alpha:range(.20,.50)
-    }));
+    surfaceNodes
+      .filter(node => node.group === 'neighborhood')
+      .forEach((node,index,array) => {
+        const next = array[(index + 1) % array.length];
+        if (next) {
+          localRoads.push(greatCirclePath(nodePoint(node),nodePoint(next),18));
+        }
+      });
 
-    const mountains = Array.from({length:56},(_,index) => ({
-      lat:spreadLat(.94),
-      lon:spreadLon(),
-      size:range(3.4,8.8),
+    const rivers = [
+      Array.from({length:64},(_,index) => {
+        const progress = index / 63;
+        return {
+          lat:-.58 + progress*1.12 + Math.sin(progress*Math.PI*4.2)*.075,
+          lon:-2.75 + progress*5.5 + Math.sin(progress*Math.PI*2.6)*.12
+        };
+      }),
+      Array.from({length:46},(_,index) => {
+        const progress = index / 45;
+        return {
+          lat:.48 - progress*.86 + Math.sin(progress*Math.PI*3.5)*.055,
+          lon:-1.9 + progress*3.8
+        };
+      })
+    ];
+
+    const clouds = Array.from({length:14},(_,index) => ({
+      lat:range(-.92,.92),
+      lon:range(-Math.PI,Math.PI),
+      size:range(12,24),
+      squash:range(.46,.68),
       angle:range(-Math.PI,Math.PI),
+      alpha:range(.07,.15),
       tone:index % 3
     }));
 
-    const buildings = Array.from({length:112},(_,index) => ({
-      lat:spreadLat(.98),
-      lon:spreadLon(),
-      size:range(1.5,3.5),
-      angle:range(-Math.PI,Math.PI),
-      tone:index % 4,
-      light:random() > .38
-    }));
-
-    const roads = Array.from({length:12},(_,roadIndex) => {
-      const baseLat = -.88 + roadIndex * .16;
-      const phase = range(0,Math.PI * 2);
-      const amplitude = range(.06,.15);
-      return Array.from({length:76},(_,pointIndex) => {
-        const progress = pointIndex / 75;
-        return {
-          lat:baseLat + Math.sin(progress * Math.PI * (2.2 + roadIndex % 3) + phase) * amplitude,
-          lon:-Math.PI + progress * Math.PI * 2
-        };
-      });
-    });
-
-    const rivers = Array.from({length:3},(_,riverIndex) =>
-      Array.from({length:92},(_,pointIndex) => {
-        const progress = pointIndex / 91;
-        return {
-          lat:-.36 + riverIndex * .36 +
-            Math.sin(progress * Math.PI * (3.4 + riverIndex) + riverIndex) * .10,
-          lon:-Math.PI + progress * Math.PI * 2
-        };
-      })
-    );
-
-    const contours = Array.from({length:16},(_,contourIndex) => {
-      const baseLat = -.82 + contourIndex * .11;
-      return Array.from({length:66},(_,pointIndex) => {
-        const progress = pointIndex / 65;
-        return {
-          lat:baseLat + Math.sin(progress * Math.PI * 2 + contourIndex * .47) * .035,
-          lon:-Math.PI + progress * Math.PI * 2
-        };
-      });
-    });
-
-    const clouds = Array.from({length:34},(_,index) => ({
-      lat:spreadLat(.92),
-      lon:spreadLon(),
-      size:range(10,27),
-      squash:range(.42,.68),
-      angle:range(-Math.PI,Math.PI),
-      tone:index % 3,
-      alpha:range(.08,.21)
-    }));
-
-    const lights = Array.from({length:86},() => ({
-      lat:spreadLat(.96),
-      lon:spreadLon(),
-      size:range(.55,1.65),
-      alpha:range(.24,.72)
-    }));
-
-    const stars = Array.from({length:116},() => ({
+    const stars = Array.from({length:72},() => ({
       x:random(),
       y:random(),
-      size:range(.35,1.5),
-      alpha:range(.10,.54),
-      phase:range(0,Math.PI * 2)
+      size:range(.35,1.35),
+      alpha:range(.10,.45),
+      phase:range(0,Math.PI*2)
     }));
 
     return {
-      land,
-      fields,
+      center,
+      zones,
+      parcels,
       forests,
-      mountains,
       buildings,
-      roads,
-      rivers,
+      mountains,
       contours,
+      routes,
+      localRoads,
+      rivers,
       clouds,
-      lights,
       stars
     };
   }
@@ -435,6 +515,39 @@
     ctx.stroke();
   }
 
+  function drawTexturePolygon(ctx,polygon,rect,fill,stroke,options = {}) {
+    const projected = polygon.map(point => projectTexturePoint(
+      point.lat,
+      point.lon,
+      rect,
+      options
+    ));
+    const visible = projected.filter(point => point.visible);
+    if (visible.length < Math.max(4,projected.length*.58)) return;
+
+    ctx.beginPath();
+    let started = false;
+    projected.forEach(point => {
+      if (!point.visible) return;
+      if (!started) {
+        ctx.moveTo(point.x,point.y);
+        started = true;
+      } else {
+        ctx.lineTo(point.x,point.y);
+      }
+    });
+    ctx.closePath();
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = options.lineWidth || .8;
+      ctx.stroke();
+    }
+  }
+
   function drawPlanetBackdrop(ctx,rect) {
     const texture = state.villageTexture;
     if (!texture) return;
@@ -469,215 +582,210 @@
   }
 
   function drawPlanetSurface(ctx,rect) {
-    const texture = state.villageTexture;
-    if (!texture) return;
+    const atlas = state.villageTexture;
+    if (!atlas) return;
 
-    const landColors = [
-      'rgba(79,135,82,.64)',
-      'rgba(105,150,82,.59)',
-      'rgba(137,149,82,.52)',
-      'rgba(86,127,101,.58)',
-      'rgba(157,128,77,.48)'
-    ];
-    const fieldColors = [
-      'rgba(168,176,92,.26)',
-      'rgba(188,155,82,.24)',
-      'rgba(88,145,92,.25)',
-      'rgba(204,185,112,.20)',
-      'rgba(117,160,104,.22)',
-      'rgba(154,122,76,.18)'
-    ];
-    const forestColors = [
-      'rgba(28,91,66,.60)',
-      'rgba(39,111,72,.52)',
-      'rgba(46,120,88,.48)',
-      'rgba(24,77,67,.54)'
+    const zoneFill = {
+      center:'rgba(228,205,125,.72)',
+      neighborhood:'rgba(114,145,178,.68)',
+      rural:'rgba(87,139,92,.72)'
+    };
+    const zoneEdge = {
+      center:'rgba(255,239,180,.62)',
+      neighborhood:'rgba(185,211,230,.42)',
+      rural:'rgba(184,218,157,.46)'
+    };
+    const parcelFills = [
+      'rgba(202,184,111,.23)',
+      'rgba(119,158,91,.25)',
+      'rgba(185,151,88,.21)',
+      'rgba(93,139,105,.24)',
+      'rgba(209,196,133,.18)',
+      'rgba(139,171,109,.22)'
     ];
 
-    texture.land.forEach(patch => {
-      const point = projectTexturePoint(patch.lat,patch.lon,rect);
-      if (!point.visible) return;
-      ctx.save();
-      ctx.translate(point.x,point.y);
-      ctx.rotate(patch.angle + state.sphere.rotY * .10);
-      ctx.scale(1,patch.squash);
-      const gradient = ctx.createRadialGradient(
-        -patch.size * .22,
-        -patch.size * .18,
-        1,
-        0,
-        0,
-        patch.size * point.scale
+    atlas.zones.forEach(zone => {
+      drawTexturePolygon(
+        ctx,
+        zone.polygon,
+        rect,
+        zoneFill[zone.group],
+        zoneEdge[zone.group],
+        {lineWidth:zone.group === 'center' ? 1.4 : .9}
       );
-      gradient.addColorStop(0,landColors[patch.tone]);
-      gradient.addColorStop(.72,landColors[(patch.tone + 1) % landColors.length]);
-      gradient.addColorStop(1,'rgba(21,75,69,.18)');
-      ctx.globalAlpha = patch.alpha;
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.ellipse(
-        0,
-        0,
-        patch.size * point.scale,
-        patch.size * .70 * point.scale,
-        0,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-      ctx.restore();
     });
 
-    texture.fields.forEach(field => {
-      const point = projectTexturePoint(field.lat,field.lon,rect);
-      if (!point.visible || point.z < .08) return;
-      ctx.save();
-      ctx.translate(point.x,point.y);
-      ctx.rotate(field.angle + state.sphere.rotY * .12);
-      ctx.scale(1,field.squash);
-      ctx.globalAlpha = field.alpha;
-      ctx.fillStyle = fieldColors[field.tone];
-      ctx.strokeStyle = 'rgba(239,229,188,.13)';
-      ctx.lineWidth = .55;
-      ctx.beginPath();
-      ctx.rect(
-        -field.size * point.scale,
-        -field.size * .62 * point.scale,
-        field.size * 2 * point.scale,
-        field.size * 1.24 * point.scale
+    atlas.parcels.forEach(parcel => {
+      drawTexturePolygon(
+        ctx,
+        parcel.polygon,
+        rect,
+        parcelFills[parcel.tone],
+        'rgba(239,229,188,.14)',
+        {lineWidth:.45}
       );
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
     });
 
-    texture.contours.forEach((contour,index) => {
+    atlas.contours.forEach((contour,index) => {
       drawTexturePath(
         ctx,
         contour,
         rect,
         index % 2
-          ? 'rgba(224,236,203,.055)'
-          : 'rgba(43,104,89,.10)',
-        .55
+          ? 'rgba(229,238,204,.10)'
+          : 'rgba(35,83,65,.14)',
+        .52
       );
     });
 
-    texture.forests.forEach(tree => {
-      const point = projectTexturePoint(tree.lat,tree.lon,rect);
-      if (!point.visible || point.z < .02) return;
+    atlas.forests.forEach(tree => {
+      const point = projectTexturePoint(tree.lat,tree.lon,rect,{altitude:.003});
+      if (!point.visible || point.z < .06) return;
       const size = tree.size * point.scale;
       ctx.beginPath();
-      ctx.fillStyle = forestColors[tree.tone];
-      ctx.globalAlpha = tree.alpha;
-      ctx.arc(point.x,point.y,size,0,Math.PI * 2);
+      ctx.fillStyle = [
+        'rgba(24,87,57,.62)',
+        'rgba(38,107,65,.58)',
+        'rgba(54,121,75,.54)'
+      ][tree.tone];
+      ctx.arc(point.x,point.y,size,0,Math.PI*2);
       ctx.fill();
-      ctx.globalAlpha = 1;
     });
 
-    texture.mountains.forEach(mountain => {
-      const point = projectTexturePoint(mountain.lat,mountain.lon,rect,{altitude:.004});
-      if (!point.visible || point.z < .05) return;
+    atlas.mountains.forEach(mountain => {
+      const point = projectTexturePoint(
+        mountain.lat,
+        mountain.lon,
+        rect,
+        {altitude:.007}
+      );
+      if (!point.visible || point.z < .08) return;
       const size = mountain.size * point.scale;
       ctx.save();
       ctx.translate(point.x,point.y);
-      ctx.rotate(mountain.angle + state.sphere.rotY * .08);
+      ctx.rotate(mountain.angle + state.sphere.rotY*.08);
       ctx.beginPath();
-      ctx.moveTo(-size,size * .60);
+      ctx.moveTo(-size,size*.58);
       ctx.lineTo(0,-size);
-      ctx.lineTo(size,size * .60);
+      ctx.lineTo(size,size*.58);
       ctx.closePath();
       ctx.fillStyle = [
-        'rgba(107,111,88,.42)',
-        'rgba(124,116,89,.39)',
-        'rgba(79,108,91,.40)'
+        'rgba(111,112,86,.50)',
+        'rgba(130,119,88,.46)',
+        'rgba(82,107,89,.48)'
       ][mountain.tone];
       ctx.fill();
       ctx.beginPath();
       ctx.moveTo(0,-size);
-      ctx.lineTo(size,size * .60);
-      ctx.lineTo(size * .22,size * .30);
+      ctx.lineTo(size,size*.58);
+      ctx.lineTo(size*.18,size*.25);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(21,43,47,.22)';
+      ctx.fillStyle = 'rgba(20,35,38,.28)';
       ctx.fill();
       ctx.restore();
     });
 
-    texture.roads.forEach((road,index) => {
+    atlas.routes.forEach(route => {
       drawTexturePath(
         ctx,
-        road,
+        route.path,
         rect,
-        index % 3 === 0
-          ? 'rgba(244,224,177,.34)'
-          : 'rgba(233,214,166,.24)',
-        index % 3 === 0 ? 2.25 : 1.25
+        'rgba(28,54,64,.36)',
+        route.primary ? 3.8 : 2.5
+      );
+      drawTexturePath(
+        ctx,
+        route.path,
+        rect,
+        route.group === 'neighborhood'
+          ? 'rgba(249,221,156,.62)'
+          : 'rgba(233,210,154,.48)',
+        route.primary ? 2.2 : 1.35
       );
     });
 
-    texture.rivers.forEach((river,index) => {
+    atlas.localRoads.forEach(path => {
+      drawTexturePath(
+        ctx,
+        path,
+        rect,
+        'rgba(242,231,199,.32)',
+        .9
+      );
+    });
+
+    atlas.rivers.forEach((river,index) => {
       drawTexturePath(
         ctx,
         river,
         rect,
-        index === 1
-          ? 'rgba(76,205,235,.42)'
-          : 'rgba(84,186,226,.28)',
-        index === 1 ? 2.7 : 1.7
+        index === 0
+          ? 'rgba(91,215,239,.62)'
+          : 'rgba(86,191,226,.42)',
+        index === 0 ? 2.4 : 1.45
       );
     });
 
-    texture.buildings.forEach(building => {
-      const point = projectTexturePoint(building.lat,building.lon,rect,{altitude:.006});
-      if (!point.visible || point.z < .10) return;
+    atlas.buildings.forEach(building => {
+      const point = projectTexturePoint(
+        building.lat,
+        building.lon,
+        rect,
+        {altitude:.009}
+      );
+      if (!point.visible || point.z < .12) return;
       const size = building.size * point.scale;
       const walls = [
-        'rgba(247,238,217,.72)',
-        'rgba(216,231,218,.63)',
-        'rgba(238,219,190,.65)',
-        'rgba(221,228,236,.62)'
+        'rgba(244,238,220,.80)',
+        'rgba(218,229,218,.72)',
+        'rgba(239,219,188,.74)',
+        'rgba(220,228,236,.72)'
       ];
       const roofs = [
-        'rgba(179,77,54,.72)',
-        'rgba(192,112,55,.68)',
-        'rgba(145,69,59,.66)',
-        'rgba(112,91,72,.62)'
+        'rgba(174,70,49,.82)',
+        'rgba(190,105,49,.78)',
+        'rgba(142,65,55,.76)',
+        'rgba(105,83,68,.72)'
       ];
       ctx.save();
       ctx.translate(point.x,point.y);
-      ctx.rotate(building.angle + state.sphere.rotY * .10);
-      ctx.shadowColor = 'rgba(0,0,0,.22)';
-      ctx.shadowBlur = 2.4;
+      ctx.rotate(building.angle + state.sphere.rotY*.08);
+      ctx.shadowColor = 'rgba(0,0,0,.26)';
+      ctx.shadowBlur = 2.2;
       ctx.shadowOffsetY = 1.5;
       ctx.fillStyle = walls[building.tone];
-      ctx.fillRect(-size,-size * .56,size * 2,size * 1.12);
+      ctx.fillRect(-size,-size*.55,size*2,size*1.1);
       ctx.beginPath();
-      ctx.moveTo(-size * 1.16,-size * .56);
-      ctx.lineTo(0,-size * 1.42);
-      ctx.lineTo(size * 1.16,-size * .56);
+      ctx.moveTo(-size*1.12,-size*.55);
+      ctx.lineTo(0,-size*1.38);
+      ctx.lineTo(size*1.12,-size*.55);
       ctx.closePath();
       ctx.fillStyle = roofs[building.tone];
       ctx.fill();
       if (building.light) {
-        ctx.fillStyle = 'rgba(255,220,132,.86)';
-        ctx.fillRect(-size * .38,-size * .16,size * .28,size * .28);
+        ctx.fillStyle = 'rgba(255,221,134,.84)';
+        ctx.fillRect(-size*.35,-size*.12,size*.27,size*.27);
       }
       ctx.restore();
     });
 
-    texture.lights.forEach(light => {
-      const point = projectTexturePoint(light.lat,light.lon,rect,{altitude:.008});
-      if (!point.visible || point.z < .08) return;
-      const sideShadow = Math.max(0,(point.x - point.geometry.centerX) / point.geometry.radius);
-      if (sideShadow < .12) return;
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(255,213,112,${light.alpha * sideShadow})`;
-      ctx.shadowColor = 'rgba(255,190,84,.72)';
-      ctx.shadowBlur = 5;
-      ctx.arc(point.x,point.y,light.size * point.scale,0,Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    });
+    const centerPoint = projectTexturePoint(
+      atlas.center.lat,
+      atlas.center.lon,
+      rect,
+      {altitude:.012}
+    );
+    if (centerPoint.visible && centerPoint.z > .10) {
+      ctx.save();
+      ctx.translate(centerPoint.x,centerPoint.y);
+      ctx.fillStyle = 'rgba(255,247,214,.88)';
+      ctx.font = `900 ${Math.max(8,10*centerPoint.scale)}px "Century Gothic", Arial`;
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,.40)';
+      ctx.shadowBlur = 4;
+      ctx.fillText('SAN PEDRO',0,-12*centerPoint.scale);
+      ctx.restore();
+    }
   }
 
   function drawCloudLayer(ctx,rect) {
@@ -841,8 +949,8 @@
 
             <div class="connected-stage-copy">
               <span>RED TERRITORIAL</span>
-              <strong>Esfera territorial interactiva</strong>
-              <small>Arrastre para girar o seleccione un punto para orientarlo al frente.</small>
+              <strong>Atlas territorial de San Pedro</strong>
+              <small>Un mapa municipal envolvente: gire, filtre y explore cada lugar.</small>
             </div>
 
             <div class="connected-stage-legend">
@@ -853,13 +961,13 @@
 
             <div class="connected-sphere-hint">
               <b>↺</b>
-              <span>Gire el modelo o elija un lugar en la barra lateral.</span>
+              <span>Arrastre el atlas o seleccione un lugar.</span>
             </div>
 
             <div class="connected-render-status" aria-hidden="true">
               <i></i>
-              <span>GLOBO TERRITORIAL</span>
-              <b>RENDER 3D</b>
+              <span id="connectedFilterStatus">ATLAS COMPLETO</span>
+              <b>MAPA 3D</b>
             </div>
 
             <div class="connected-sphere-controls" aria-label="Controles de la esfera">
@@ -963,22 +1071,10 @@
           </aside>
         </div>
 
-        <div class="connected-guide-row">
-          <article>
-            <small>01</small>
-            <strong>Observe el centro</strong>
-            <p>La cabecera municipal funciona como eje de lectura general.</p>
-          </article>
-          <article>
-            <small>02</small>
-            <strong>Gire la esfera</strong>
-            <p>Arrastre el modelo para revelar barrios y corregimientos con profundidad.</p>
-          </article>
-          <article>
-            <small>03</small>
-            <strong>Abra el mapa real</strong>
-            <p>Cuando encuentre el punto, salte a su ubicación cartográfica con un clic.</p>
-          </article>
+        <div class="connected-atlas-strip">
+          <span><i class="is-map"></i><b>Mapa municipal 3D</b> con zonas, vías y relieve.</span>
+          <span><i class="is-filter"></i><b>Filtros funcionales</b> para barrios y corregimientos.</span>
+          <span><i class="is-route"></i><b>Conexión directa</b> con el mapa cartográfico real.</span>
         </div>
 
         <div class="connected-feature-grid connected-feature-grid--rich">
@@ -1358,50 +1454,65 @@
   }
 
   function setFilter(filter) {
-    state.filter = filter;
+    const allowed = new Set(['all','neighborhood','rural']);
+    const nextFilter = allowed.has(filter) ? filter : 'all';
+    state.filter = nextFilter;
 
-    state.root?.querySelectorAll("[data-connected-filter]")
+    state.root?.querySelectorAll('[data-connected-filter]')
       .forEach(button => {
-        const active = button.dataset.connectedFilter === filter;
-        button.classList.toggle("active",active);
-        button.setAttribute("aria-pressed",String(active));
+        const active = button.dataset.connectedFilter === nextFilter;
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-pressed',String(active));
       });
 
-    state.root?.querySelectorAll(".connected-node").forEach(button => {
+    state.root?.querySelectorAll('.connected-node').forEach(button => {
       const group = button.dataset.connectedGroup;
-      const visible =
-        filter === "all" ||
-        group === "center" ||
-        group === filter;
-      button.classList.toggle("filtered-out",!visible);
+      const visible = nextFilter === 'all' || group === nextFilter;
+      button.classList.toggle('filtered-out',!visible);
+      button.setAttribute('aria-hidden',String(!visible));
     });
 
-    state.root?.querySelectorAll(".connected-location-item").forEach(button => {
+    state.root?.querySelectorAll('.connected-location-item').forEach(button => {
       const group = button.dataset.connectedGroup;
-      const visible =
-        filter === "all" ||
-        group === "center" ||
-        group === filter;
-      button.hidden = !visible;
+      button.hidden = !(nextFilter === 'all' || group === nextFilter);
     });
 
-    state.root?.querySelectorAll("[data-picker-section]").forEach(section => {
+    state.root?.querySelectorAll('[data-picker-section]').forEach(section => {
       const group = section.dataset.pickerSection;
-      section.hidden = !(
-        filter === "all" ||
-        group === "center" ||
-        group === filter
-      );
+      section.hidden = !(nextFilter === 'all' || group === nextFilter);
     });
 
+    const status = state.root?.querySelector('#connectedFilterStatus');
+    if (status) {
+      status.textContent = nextFilter === 'neighborhood'
+        ? 'BARRIOS URBANOS'
+        : nextFilter === 'rural'
+          ? 'CORREGIMIENTOS'
+          : 'ATLAS COMPLETO';
+    }
+
+    const candidates = state.nodes.filter(node =>
+      nextFilter === 'all'
+        ? node.group === 'center'
+        : node.group === nextFilter
+    );
+    const selectedStillVisible = state.activeNode && (
+      nextFilter === 'all' || state.activeNode.group === nextFilter
+    );
+    const target = selectedStillVisible
+      ? state.activeNode
+      : candidates[0] || state.nodes[0] || null;
+
+    if (target) updateDetail(target);
     drawNetwork();
+    startNetwork();
   }
 
   function resizeCanvas() {
     if (!state.canvas || !state.networkStage) return;
 
     const rect = state.networkStage.getBoundingClientRect();
-    const ratio = Math.min(window.devicePixelRatio || 1,2);
+    const ratio = Math.min(window.devicePixelRatio || 1,1.55);
     state.canvas.width = Math.max(1,Math.round(rect.width * ratio));
     state.canvas.height = Math.max(1,Math.round(rect.height * ratio));
     state.canvas.style.width = `${rect.width}px`;
@@ -1414,7 +1525,6 @@
   function nodeIsVisible(node) {
     return (
       state.filter === "all" ||
-      node.group === "center" ||
       node.group === state.filter
     );
   }
@@ -1444,22 +1554,6 @@
 
   function projectNode(node,rect) {
     const geometry = sphereGeometry(rect);
-
-    if (node.group === "center") {
-      return {
-        x:geometry.centerX,
-        y:geometry.centerY,
-        z:1,
-        node,
-        radius:geometry.radius,
-        cx:geometry.centerX,
-        cy:geometry.centerY,
-        scale:1.18,
-        opacity:1,
-        visible:true
-      };
-    }
-
     const rotated = rotatedPoint(node);
     const perspective = .68 + (rotated.z + 1) * .27;
     return {
@@ -1470,7 +1564,9 @@
       cy:geometry.centerY,
       x:geometry.centerX + rotated.x * geometry.radius * perspective,
       y:geometry.centerY + rotated.y * geometry.radius * .93 * perspective,
-      scale:.72 + perspective * .30,
+      scale:node.group === 'center'
+        ? .92 + perspective * .28
+        : .72 + perspective * .30,
       opacity:Math.max(.16,.32 + (rotated.z + 1) * .46),
       visible:rotated.z > .018
     };
@@ -1487,7 +1583,7 @@
       button.style.opacity = filtered ? '.04' : String(item.visible ? item.opacity : 0);
       button.style.visibility = item.visible ? 'visible' : 'hidden';
       button.style.pointerEvents = filtered || !item.visible ? 'none' : 'auto';
-      button.style.zIndex = String(item.node.group === 'center' ? 18 : 8 + Math.round((item.z + 1) * 14));
+      button.style.zIndex = String(8 + Math.round((item.z + 1) * 14));
       button.classList.toggle('is-back',item.z <= .035);
       button.classList.toggle('is-front',item.z > .25);
       button.classList.toggle('filtered-out',filtered);
@@ -2244,14 +2340,6 @@
         return;
       }
 
-      const filterButton = event.target.closest(
-        "[data-connected-filter]"
-      );
-      if (filterButton) {
-        setFilter(filterButton.dataset.connectedFilter);
-        return;
-      }
-
       if (event.target.closest("#connectedMapLink")) {
         const id = event.target.closest("#connectedMapLink")
           ?.dataset.locationId;
@@ -2286,8 +2374,22 @@
       }
     });
 
+    state.root?.querySelectorAll('[data-connected-filter]')
+      .forEach(button => {
+        button.addEventListener('pointerdown',event => {
+          event.stopPropagation();
+        });
+        button.addEventListener('click',event => {
+          event.preventDefault();
+          event.stopPropagation();
+          setFilter(button.dataset.connectedFilter || 'all');
+        });
+      });
+
     state.networkStage?.addEventListener("pointerdown",event => {
-      if (event.target.closest('.connected-node')) return;
+      if (event.target.closest(
+        'button,a,input,select,textarea,[role="button"],.connected-location-picker'
+      )) return;
       event.preventDefault();
       window.getSelection?.()?.removeAllRanges?.();
       state.sphere.dragging = true;
@@ -2464,9 +2566,9 @@
     state.initialized = true;
     state.config = getConfigStore();
     state.data = getTerritoryData();
-    state.villageTexture = createVillageTexture();
 
     createSections();
+    state.villageTexture = createTerritoryAtlas(state.nodes);
     bindEvents();
     syncAdmin();
     setupNetworkObserver();
@@ -2500,6 +2602,7 @@
     refresh:() => {
       state.config = getConfigStore();
       state.data = getTerritoryData();
+      state.villageTexture = createTerritoryAtlas(state.nodes);
       refreshContent();
       resizeCanvas();
       resizeClosingCanvas();

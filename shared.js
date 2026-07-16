@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.15-globo-territorial-render";
+  const PORTAL_BUILD = "11.16-atlas-territorial-3d";
 
   /*
    * Arranque visual temprano.
