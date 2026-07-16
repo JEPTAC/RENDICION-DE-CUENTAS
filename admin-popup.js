@@ -31,7 +31,6 @@
     ".followup-summary > article",
     ".request-summary > article",
     ".territory-focus-card",
-    ".territory-story-step",
     ".territory-detail-card"
   ].join(",");
 

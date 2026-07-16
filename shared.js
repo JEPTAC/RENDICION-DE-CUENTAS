@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.19-eliminacion-limpia";
+  const PORTAL_BUILD = "11.20-eliminacion-historia-publica";
 
   /*
    * Arranque visual temprano.

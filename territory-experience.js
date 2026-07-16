@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.18-scroll-inmersivo-funcional";
+  const BUILD = "11.20-territorio-sin-historia-publica";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -324,41 +324,6 @@
     }
   ];
 
-  const STORY_DEFAULTS = [
-    {
-      id:"register",
-      title:"El hecho se registra",
-      caption:"La información inicia con una descripción clara, una fecha y un responsable.",
-      type:"visual",
-      url:"",
-      poster:""
-    },
-    {
-      id:"locate",
-      title:"Se ubica en el territorio",
-      caption:"El registro se conecta con un barrio, vereda, corregimiento o coordenada.",
-      type:"visual",
-      url:"",
-      poster:""
-    },
-    {
-      id:"respond",
-      title:"Se conecta con una respuesta",
-      caption:"La ciudadanía puede seguir responsable, estado, avance y compromisos.",
-      type:"visual",
-      url:"",
-      poster:""
-    },
-    {
-      id:"verify",
-      title:"La evidencia queda visible",
-      caption:"Documentos, fotografías y resultados cierran el ciclo de rendición.",
-      type:"visual",
-      url:"",
-      poster:""
-    }
-  ];
-
   const BASEMAP_LABELS = Object.freeze({
     plano:"Plano",
     relieve:"Relieve",
@@ -369,7 +334,6 @@
   const state = {
     initialized:false,
     section:null,
-    storySection:null,
     map:null,
     mapReady:false,
     leafletPromise:null,
@@ -379,10 +343,8 @@
     activeMode:"territory",
     selectedId:null,
     mapObserver:null,
-    storyObserver:null,
     mapClick:null,
     adminDialog:null,
-    storyAdminDialog:null,
     editingRecordId:null,
     records:[],
     localFallback:null,
@@ -433,10 +395,9 @@
 
   function defaultStore() {
     return {
-      version:2,
+      version:3,
       updatedAt:"",
-      records:[],
-      storyMedia:STORY_DEFAULTS.map(item => ({...item}))
+      records:[]
     };
   }
 
@@ -464,10 +425,6 @@
       }
       if (!Array.isArray(content.territoryExperience.records)) {
         content.territoryExperience.records = [];
-      }
-      if (!Array.isArray(content.territoryExperience.storyMedia)) {
-        content.territoryExperience.storyMedia =
-          STORY_DEFAULTS.map(item => ({...item}));
       }
       return content.territoryExperience;
     }
@@ -542,111 +499,9 @@
     }).join("");
   }
 
-  function safeMediaUrl(value) {
-    const url = String(value || "").trim();
-    if (!url) return "";
-    try {
-      const parsed = new URL(url,location.href);
-      return ["http:","https:","data:"].includes(parsed.protocol)
-        ? parsed.href
-        : "";
-    } catch {
-      return "";
-    }
-  }
-
-  function getStoryMedia() {
-    const store = getStore();
-    return STORY_DEFAULTS.map((fallback,index) => ({
-      ...fallback,
-      ...(store.storyMedia?.[index] || {})
-    }));
-  }
-
-  function visualSceneMarkup(index) {
-    const scenes = [
-      `
-        <div class="territory-media-illustration is-register">
-          <span class="media-sheet sheet-a"></span>
-          <span class="media-sheet sheet-b"></span>
-          <span class="media-sheet sheet-c"></span>
-          <span class="media-writing-line line-a"></span>
-          <span class="media-writing-line line-b"></span>
-          <span class="media-writing-line line-c"></span>
-          <i class="media-cursor"></i>
-        </div>`,
-      `
-        <div class="territory-media-illustration is-locate">
-          <span class="media-map-grid"></span>
-          <span class="media-route route-a"></span>
-          <span class="media-route route-b"></span>
-          <span class="media-pin"><i></i></span>
-          <span class="media-coordinate">3.99557 · -76.22805</span>
-        </div>`,
-      `
-        <div class="territory-media-illustration is-respond">
-          <span class="media-response-wave wave-a"></span>
-          <span class="media-response-wave wave-b"></span>
-          <span class="media-response-card card-a"><i></i><b>Responsable</b></span>
-          <span class="media-response-card card-b"><i></i><b>Avance</b></span>
-          <span class="media-response-card card-c"><i></i><b>Compromiso</b></span>
-        </div>`,
-      `
-        <div class="territory-media-illustration is-verify">
-          <span class="media-evidence evidence-a"></span>
-          <span class="media-evidence evidence-b"></span>
-          <span class="media-scan-line"></span>
-          <span class="media-check"><i></i></span>
-          <span class="media-evidence-label">EVIDENCIA VERIFICADA</span>
-        </div>`
-    ];
-    return scenes[index] || scenes[0];
-  }
-
-  function renderStoryMedia(index = 0) {
-    const holder = state.storySection?.querySelector("#territoryStoryMediaStage");
-    if (!holder) return;
-
-    const item = getStoryMedia()[index] || STORY_DEFAULTS[index];
-    const url = safeMediaUrl(item.url);
-    const poster = safeMediaUrl(item.poster);
-
-    let media = visualSceneMarkup(index);
-    if (item.type === "image" && url) {
-      media = `
-        <img
-          src="${escapeHtml(url)}"
-          alt=""
-          loading="lazy"
-          decoding="async"
-        >`;
-    } else if (item.type === "video" && url) {
-      media = `
-        <video
-          src="${escapeHtml(url)}"
-          ${poster ? `poster="${escapeHtml(poster)}"` : ""}
-          muted
-          loop
-          playsinline
-          autoplay
-          preload="metadata"
-        ></video>`;
-    }
-
-    holder.dataset.mediaType = item.type || "visual";
-    holder.dataset.storyScene = String(index);
-    holder.innerHTML = `
-      <div class="territory-story-media-frame is-active">
-        ${media}
-        <span class="territory-story-media-vignette"></span>
-        <small>${escapeHtml(["REGISTRO","UBICACIÓN","RESPUESTA","EVIDENCIA"][index])}</small>
-      </div>`;
-  }
-
   function createMapSection() {
     if (document.querySelector("#territorioVivo")) {
       state.section = document.querySelector("#territorioVivo");
-      state.storySection = document.querySelector("#territoryStory");
       return;
     }
 
@@ -832,122 +687,6 @@
       </div>
     `;
 
-    const story = document.createElement("section");
-    story.id = "territoryStory";
-    story.className =
-      "home-section home-section--soft territory-story-section";
-    story.innerHTML = `
-      <div class="site-shell territory-story-shell">
-        <div class="home-section__head">
-          <div>
-            <span>DEL TERRITORIO A LA RESPUESTA</span>
-            <h2>Una historia pública que se puede seguir</h2>
-            <button
-              type="button"
-              class="territory-story-admin-button"
-              id="territoryStoryAdminButton"
-              hidden
-            >
-              Gestionar imágenes y videos
-            </button>
-          </div>
-          <p>
-            Cada situación puede convertirse en una secuencia verificable:
-            ubicación, impacto, decisión y evidencia.
-          </p>
-        </div>
-
-        <div class="territory-story-layout">
-          <div class="territory-story-visual">
-            <div
-              class="territory-story-media-stage"
-              id="territoryStoryMediaStage"
-              aria-hidden="true"
-            ></div>
-            <div class="territory-story-world" aria-hidden="true">
-              <span class="territory-story-ring ring-a"></span>
-              <span class="territory-story-ring ring-b"></span>
-              <span class="territory-story-ring ring-c"></span>
-              <span class="territory-story-path"></span>
-              <i class="territory-story-node node-a"></i>
-              <i class="territory-story-node node-b"></i>
-              <i class="territory-story-node node-c"></i>
-              <i class="territory-story-node node-d"></i>
-              <div class="territory-story-core">
-                <small id="territoryStoryIndex">01</small>
-                <strong id="territoryStoryTitle">El hecho se registra</strong>
-              </div>
-            </div>
-            <p id="territoryStoryCaption">
-              La información inicia con una descripción clara y una fecha.
-            </p>
-            <div class="territory-story-progress" aria-label="Pasos de la narrativa">
-              ${STORY_DEFAULTS.map((item,index) => `
-                <button
-                  type="button"
-                  class="${index === 0 ? "active" : ""}"
-                  data-story-jump="${index}"
-                  aria-label="Ir al paso ${index + 1}"
-                >
-                  <i></i><span>0${index + 1}</span>
-                </button>`).join("")}
-            </div>
-          </div>
-
-          <div class="territory-story-steps">
-            <article
-              class="territory-story-step active"
-              data-story-index="0"
-              data-story-title="El hecho se registra"
-              data-story-caption="La información inicia con una descripción clara y una fecha."
-            >
-              <span>01</span>
-              <div>
-                <h3>Registrar</h3>
-                <p>Se documenta qué ocurrió, cuándo ocurrió y quién reporta.</p>
-              </div>
-            </article>
-            <article
-              class="territory-story-step"
-              data-story-index="1"
-              data-story-title="Se ubica en el territorio"
-              data-story-caption="El mapa conecta el registro con un barrio, vereda, corregimiento o coordenada."
-            >
-              <span>02</span>
-              <div>
-                <h3>Ubicar</h3>
-                <p>La situación se vincula con un punto, sector o área territorial.</p>
-              </div>
-            </article>
-            <article
-              class="territory-story-step"
-              data-story-index="2"
-              data-story-title="Se conecta con una respuesta"
-              data-story-caption="La ciudadanía puede identificar responsable, estado y avance."
-            >
-              <span>03</span>
-              <div>
-                <h3>Responder</h3>
-                <p>Se publica la actuación institucional, su estado y los compromisos.</p>
-              </div>
-            </article>
-            <article
-              class="territory-story-step"
-              data-story-index="3"
-              data-story-title="La evidencia queda visible"
-              data-story-caption="Documentos, fotografías y resultados cierran el ciclo de rendición."
-            >
-              <span>04</span>
-              <div>
-                <h3>Verificar</h3>
-                <p>La respuesta se conecta con documentos, fotografías y resultados.</p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </div>
-    `;
-
     const anchor =
       document.querySelector(".explorer-bar") ||
       document.querySelector(".home-hero") ||
@@ -955,14 +694,11 @@
 
     if (anchor) {
       anchor.insertAdjacentElement("afterend",section);
-      section.insertAdjacentElement("afterend",story);
     } else {
-      document.querySelector("main")?.append(section,story);
+      document.querySelector("main")?.append(section);
     }
 
     state.section = section;
-    state.storySection = story;
-    renderStoryMedia(0);
   }
 
   function layerRecords(mode = state.activeMode) {
@@ -1719,177 +1455,6 @@
     state.mapObserver.observe(state.section);
   }
 
-  function ensureStoryAdminDialog() {
-    if (state.storyAdminDialog) return state.storyAdminDialog;
-
-    const dialog = document.createElement("dialog");
-    dialog.id = "territoryStoryAdminDialog";
-    dialog.className = "territory-story-admin-dialog";
-    dialog.innerHTML = `
-      <div class="territory-story-admin-shell">
-        <header>
-          <div>
-            <span>NARRATIVA VISUAL</span>
-            <h2>Imágenes y videos por etapa</h2>
-            <p>
-              Puede conservar la animación integrada o pegar una URL directa
-              de imagen o video. Utilice únicamente material autorizado.
-            </p>
-          </div>
-          <button type="button" data-story-admin-close aria-label="Cerrar">×</button>
-        </header>
-
-        <form id="territoryStoryMediaForm">
-          <div id="territoryStoryMediaRows"></div>
-          <footer>
-            <button type="button" class="button button-secondary" data-story-admin-close>
-              Cancelar
-            </button>
-            <button type="submit" class="button button-primary">
-              Guardar narrativa
-            </button>
-          </footer>
-        </form>
-      </div>`;
-
-    document.body.appendChild(dialog);
-    state.storyAdminDialog = dialog;
-
-    dialog.addEventListener("click",event => {
-      if (event.target === dialog || event.target.closest("[data-story-admin-close]")) {
-        dialog.close();
-      }
-    });
-
-    dialog.querySelector("#territoryStoryMediaForm")
-      .addEventListener("submit",event => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const storyMedia = STORY_DEFAULTS.map((fallback,index) => ({
-          ...fallback,
-          type:String(formData.get(`type-${index}`) || "visual"),
-          url:safeMediaUrl(formData.get(`url-${index}`)),
-          poster:safeMediaUrl(formData.get(`poster-${index}`))
-        }));
-
-        getStore().storyMedia = storyMedia;
-        persistStore();
-        renderStoryMedia(
-          Number(state.storySection?.style.getPropertyValue("--story-step")) || 0
-        );
-        portal()?.helpers?.hideLoading?.(
-          "Narrativa visual actualizada.",
-          {trigger:event.submitter}
-        );
-        dialog.close();
-      });
-
-    return dialog;
-  }
-
-  function renderStoryAdminRows() {
-    const dialog = ensureStoryAdminDialog();
-    const holder = dialog.querySelector("#territoryStoryMediaRows");
-    const media = getStoryMedia();
-
-    holder.innerHTML = media.map((item,index) => `
-      <section class="territory-story-admin-row">
-        <div>
-          <span>0${index + 1}</span>
-          <h3>${escapeHtml(STORY_DEFAULTS[index].title)}</h3>
-        </div>
-        <label>
-          Tipo de contenido
-          <select name="type-${index}">
-            <option value="visual" ${item.type === "visual" ? "selected" : ""}>
-              Animación integrada
-            </option>
-            <option value="image" ${item.type === "image" ? "selected" : ""}>
-              Imagen por URL
-            </option>
-            <option value="video" ${item.type === "video" ? "selected" : ""}>
-              Video por URL
-            </option>
-          </select>
-        </label>
-        <label>
-          URL de imagen o video
-          <input
-            name="url-${index}"
-            type="url"
-            value="${escapeHtml(item.url || "")}"
-            placeholder="https://..."
-          >
-        </label>
-        <label>
-          Póster del video
-          <input
-            name="poster-${index}"
-            type="url"
-            value="${escapeHtml(item.poster || "")}"
-            placeholder="Opcional"
-          >
-        </label>
-      </section>`).join("");
-  }
-
-  function openStoryAdminDialog() {
-    if (!isAdmin()) {
-      portal()?.helpers?.toast?.("Debe iniciar sesión con permisos administrativos.");
-      return;
-    }
-    renderStoryAdminRows();
-    if (!state.storyAdminDialog.open) state.storyAdminDialog.showModal();
-  }
-
-  function setStoryStep(step) {
-    if (!step || !state.storySection) return;
-    const index = Number(step.dataset.storyIndex || 0);
-    state.storySection.style.setProperty("--story-step",String(index));
-    state.storySection.querySelectorAll(".territory-story-step")
-      .forEach(item => item.classList.toggle("active",item === step));
-
-    const indexNode = state.storySection.querySelector("#territoryStoryIndex");
-    const titleNode = state.storySection.querySelector("#territoryStoryTitle");
-    const captionNode = state.storySection.querySelector("#territoryStoryCaption");
-
-    if (indexNode) indexNode.textContent = String(index + 1).padStart(2,"0");
-    if (titleNode) titleNode.textContent = step.dataset.storyTitle || "";
-    if (captionNode) captionNode.textContent = step.dataset.storyCaption || "";
-
-    state.storySection.querySelectorAll("[data-story-jump]").forEach(button => {
-      const active = Number(button.dataset.storyJump) === index;
-      button.classList.toggle("active",active);
-      button.setAttribute("aria-current",active ? "step" : "false");
-    });
-    renderStoryMedia(index);
-  }
-
-  function setupStoryObserver() {
-    if (!state.storySection || state.storyObserver) return;
-    const steps = [...state.storySection.querySelectorAll(".territory-story-step")];
-
-    if (!("IntersectionObserver" in window)) {
-      steps.forEach(step => step.addEventListener("click",() => setStoryStep(step)));
-      return;
-    }
-
-    state.storyObserver = new IntersectionObserver(entries => {
-      const visible = entries
-        .filter(entry => entry.isIntersecting)
-        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (visible) setStoryStep(visible.target);
-    },{
-      threshold:[.24,.48,.72],
-      rootMargin:"-24% 0px -48% 0px"
-    });
-
-    steps.forEach(step => {
-      state.storyObserver.observe(step);
-      step.addEventListener("click",() => setStoryStep(step));
-    });
-  }
-
   function focusCardMotion(card) {
     if (
       matchMedia("(prefers-reduced-motion: reduce)").matches ||
@@ -2210,12 +1775,7 @@
 
   function syncAdminVisibility() {
     const mapButton = state.section?.querySelector("#territoryAdminButton");
-    const storyButton = state.storySection?.querySelector(
-      "#territoryStoryAdminButton"
-    );
-    const hidden = !isAdmin();
-    if (mapButton) mapButton.hidden = hidden;
-    if (storyButton) storyButton.hidden = hidden;
+    if (mapButton) mapButton.hidden = !isAdmin();
   }
 
   function bindEvents() {
@@ -2301,24 +1861,6 @@
     });
 
 
-    state.storySection?.addEventListener("click",event => {
-      const jump = event.target.closest("[data-story-jump]");
-      if (jump) {
-        const step = state.storySection.querySelector(
-          `.territory-story-step[data-story-index="${jump.dataset.storyJump}"]`
-        );
-        if (step) {
-          setStoryStep(step);
-          step.scrollIntoView({behavior:"smooth",block:"center"});
-        }
-        return;
-      }
-
-      if (event.target.closest("#territoryStoryAdminButton")) {
-        openStoryAdminDialog();
-      }
-    });
-
     state.section?.querySelector("#territorySearch")
       ?.addEventListener("input",renderResultList);
 
@@ -2345,9 +1887,6 @@
         renderMetrics();
         renderResultList();
         renderMapLayers();
-        renderStoryMedia(
-          Number(state.storySection?.style.getPropertyValue("--story-step")) || 0
-        );
       });
     });
 
@@ -2375,7 +1914,6 @@
     syncAdminVisibility();
     renderMetrics();
     renderResultList();
-    setupStoryObserver();
     observeMap();
 
     window.dispatchEvent(new CustomEvent("portal:rendered",{
@@ -2425,7 +1963,6 @@
     init,
     setMode,
     openAdmin:openAdminDialog,
-    openStoryAdmin:openStoryAdminDialog,
     switchBasemap,
     resetMap,
     getData:getPublicTerritoryData,
