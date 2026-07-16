@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.21-banner-elegancia";
+  const PORTAL_BUILD = "11.22-home-experiencia-premium";
 
   /*
    * Arranque visual temprano.
@@ -3106,6 +3106,200 @@ helpers.showClickEffect = showClickEffect;
     }
   }
 
+
+  function initHomeExperienceDesign() {
+    const body = document.body;
+    const main = document.querySelector("#main-content");
+    const hero = document.querySelector(".home-hero");
+    const isHome = Boolean(
+      body?.dataset?.page === "home" ||
+      body?.classList.contains("page-home") ||
+      body?.classList.contains("claude-page-home")
+    );
+
+    if (!isHome || !main || !hero) return;
+
+    body.classList.add("home-experience-v1122");
+
+    if (!hero.querySelector(":scope > .home-hero-flow")) {
+      const flow = document.createElement("div");
+      flow.className = "home-hero-flow";
+      flow.setAttribute("aria-hidden","true");
+      flow.innerHTML = `
+        <span class="home-hero-flow__grid"></span>
+        <span class="home-hero-flow__aurora home-hero-flow__aurora--a"></span>
+        <span class="home-hero-flow__aurora home-hero-flow__aurora--b"></span>
+        <svg class="home-hero-flow__waves" viewBox="0 0 1600 900" preserveAspectRatio="none" focusable="false">
+          <path class="home-hero-wave home-hero-wave--back" d="M-120 610 C 180 470 410 690 720 560 C 1020 435 1235 600 1720 445 L 1720 940 L -120 940 Z"></path>
+          <path class="home-hero-wave home-hero-wave--middle" d="M-140 690 C 190 520 430 770 765 625 C 1070 492 1315 675 1740 520 L 1740 950 L -140 950 Z"></path>
+          <path class="home-hero-wave home-hero-wave--front" d="M-160 770 C 210 605 510 835 840 710 C 1160 588 1390 750 1760 630 L 1760 960 L -160 960 Z"></path>
+          <path class="home-hero-wave-line home-hero-wave-line--a" d="M-100 572 C 210 430 440 645 755 525 C 1065 405 1325 575 1710 420"></path>
+          <path class="home-hero-wave-line home-hero-wave-line--b" d="M-110 651 C 205 500 455 724 790 590 C 1105 466 1340 642 1730 505"></path>
+        </svg>
+        <span class="home-hero-flow__contours"></span>
+        <span class="home-hero-flow__light"></span>
+        <span class="home-hero-flow__particles">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </span>`;
+      hero.prepend(flow);
+    }
+
+    const cardSelector = [
+      ".edition-card",
+      ".deal-card",
+      ".editorial-feature",
+      ".trust-card",
+      ".quote-card",
+      ".ideas-cta"
+    ].join(",");
+
+    const designState = window.__spHomeExperienceV1122 || {
+      revealObserver:null,
+      mutationObserver:null,
+      scrollFrame:0,
+      pointerBound:false,
+      mutationFrame:0
+    };
+    window.__spHomeExperienceV1122 = designState;
+
+    if (!designState.revealObserver && "IntersectionObserver" in window) {
+      designState.revealObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("home-in-view","cd-visible");
+          designState.revealObserver.unobserve(entry.target);
+        });
+      },{
+        threshold:.08,
+        rootMargin:"0px 0px -5% 0px"
+      });
+    }
+
+    const bindCardPointer = card => {
+      if (card.dataset.homePointerBound === "1") return;
+      card.dataset.homePointerBound = "1";
+      if (!window.matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+
+      let frame = 0;
+      card.addEventListener("pointermove",event => {
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          const rect = card.getBoundingClientRect();
+          const x = Math.max(0,Math.min(1,(event.clientX - rect.left) / rect.width));
+          const y = Math.max(0,Math.min(1,(event.clientY - rect.top) / rect.height));
+          card.style.setProperty("--home-pointer-x",`${(x * 100).toFixed(1)}%`);
+          card.style.setProperty("--home-pointer-y",`${(y * 100).toFixed(1)}%`);
+        });
+      },{passive:true});
+      card.addEventListener("pointerleave",() => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        card.style.removeProperty("--home-pointer-x");
+        card.style.removeProperty("--home-pointer-y");
+      },{passive:true});
+    };
+
+    const decorate = () => {
+      const sections = [...main.querySelectorAll(".home-section")];
+      sections.forEach((section,index) => {
+        section.classList.add(
+          "home-designed-section",
+          `home-tone-${index % 4}`
+        );
+        section.style.setProperty("--home-section-order",String(index));
+
+        if (!section.querySelector(":scope > .home-section-flow")) {
+          const flow = document.createElement("div");
+          flow.className = "home-section-flow";
+          flow.setAttribute("aria-hidden","true");
+          flow.innerHTML = `
+            <span class="home-section-flow__mesh"></span>
+            <span class="home-section-flow__wave home-section-flow__wave--a"></span>
+            <span class="home-section-flow__wave home-section-flow__wave--b"></span>
+            <span class="home-section-flow__orbit"></span>
+            <span class="home-section-flow__glow"></span>`;
+          section.prepend(flow);
+        }
+
+        const head = section.querySelector(".home-section__head");
+        if (head) {
+          head.classList.add("home-designed-heading","home-reveal-item");
+          if (!head.classList.contains("home-in-view")) {
+            designState.revealObserver?.observe(head);
+          }
+        }
+      });
+
+      const explorer = main.querySelector(".explorer-bar");
+      explorer?.classList.add("home-designed-explorer");
+
+      const newsletter = main.querySelector(".newsletter-bar");
+      newsletter?.classList.add("home-designed-newsletter");
+
+      main.querySelectorAll(cardSelector).forEach((card,index) => {
+        card.classList.add("home-motion-card","home-reveal-item");
+        card.style.setProperty("--home-card-order",String(index % 6));
+        bindCardPointer(card);
+        if (!card.classList.contains("home-in-view")) {
+          designState.revealObserver?.observe(card);
+        }
+      });
+
+      if (!designState.revealObserver) {
+        main.querySelectorAll(".home-reveal-item")
+          .forEach(item => item.classList.add("home-in-view","cd-visible"));
+      }
+    };
+
+    decorate();
+
+    if (!designState.mutationObserver) {
+      designState.mutationObserver = new MutationObserver(() => {
+        if (designState.mutationFrame) return;
+        designState.mutationFrame = requestAnimationFrame(() => {
+          designState.mutationFrame = 0;
+          decorate();
+        });
+      });
+      designState.mutationObserver.observe(main,{subtree:true,childList:true});
+    }
+
+    if (!designState.pointerBound) {
+      designState.pointerBound = true;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
+      const finePointer = window.matchMedia("(hover:hover) and (pointer:fine)");
+
+      hero.addEventListener("pointermove",event => {
+        if (reduceMotion.matches || !finePointer.matches) return;
+        const rect = hero.getBoundingClientRect();
+        const x = Math.max(0,Math.min(1,(event.clientX - rect.left) / rect.width));
+        const y = Math.max(0,Math.min(1,(event.clientY - rect.top) / rect.height));
+        hero.style.setProperty("--home-hero-x",`${((x - .5) * 2).toFixed(3)}`);
+        hero.style.setProperty("--home-hero-y",`${((y - .5) * 2).toFixed(3)}`);
+      },{passive:true});
+
+      hero.addEventListener("pointerleave",() => {
+        hero.style.setProperty("--home-hero-x","0");
+        hero.style.setProperty("--home-hero-y","0");
+      },{passive:true});
+
+      const updateScroll = () => {
+        if (designState.scrollFrame) return;
+        designState.scrollFrame = requestAnimationFrame(() => {
+          designState.scrollFrame = 0;
+          const rect = hero.getBoundingClientRect();
+          const travel = Math.max(0,Math.min(1,-rect.top / Math.max(rect.height,1)));
+          hero.style.setProperty("--home-hero-scroll",travel.toFixed(4));
+        });
+      };
+
+      updateScroll();
+      window.addEventListener("scroll",updateScroll,{passive:true});
+      window.addEventListener("resize",updateScroll,{passive:true});
+    }
+  }
+
   function init() {
     refreshStylesheetVersion();
     applyEarlyPageClass();
@@ -3124,6 +3318,7 @@ helpers.showClickEffect = showClickEffect;
     loadAdminPopup();
     syncAdmin();
     initReveal();
+    initHomeExperienceDesign();
 
     const progress = document.createElement("div");
     progress.className = "reading-progress";
