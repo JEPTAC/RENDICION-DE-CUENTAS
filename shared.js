@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.18-scroll-inmersivo-funcional";
+  const PORTAL_BUILD = "11.19-eliminacion-limpia";
 
   /*
    * Arranque visual temprano.
@@ -2761,13 +2761,45 @@ helpers.showClickEffect = showClickEffect;
   }
 
 
+  function removeRetiredConnectedExperience() {
+    const retiredSections = [
+      "sanPedroConnected",
+      "spDevelopmentJourney",
+      "spPublicWorksCorridor",
+      "connectedCompare",
+      "connectedClosing",
+      "connectedAdminDialog"
+    ];
+
+    retiredSections.forEach(id => {
+      document.getElementById(id)?.remove();
+    });
+
+    [
+      "sanPedroConnectedStyles",
+      "sanPedroConnectedScript"
+    ].forEach(id => {
+      document.getElementById(id)?.remove();
+    });
+
+    document.querySelectorAll(
+      'link[href*="san-pedro-connected.css"],script[src*="san-pedro-connected.js"]'
+    ).forEach(element => element.remove());
+
+    try {
+      delete window.SanPedroConnected;
+    } catch {
+      window.SanPedroConnected = undefined;
+    }
+  }
+
   function loadClaudeStudio() {
     const cssId = "claudeStudioStyles";
     const scriptId = "claudeStudioScript";
     const motionId = "motionStudioScript";
     const territoryId = "territoryExperienceScript";
-    const connectedCssId = "sanPedroConnectedStyles";
-    const connectedId = "sanPedroConnectedScript";
+
+    removeRetiredConnectedExperience();
 
     let link = document.getElementById(cssId) || visualBoot.link;
     if (!link) {
@@ -2778,43 +2810,9 @@ helpers.showClickEffect = showClickEffect;
       document.head.appendChild(link);
     }
 
-    const loadConnectedExperience = () => {
-      const mountScript = () => {
-        if (document.getElementById(connectedId)) {
-          window.SanPedroConnected?.init?.();
-          return;
-        }
-
-        const connected = document.createElement("script");
-        connected.id = connectedId;
-        connected.src = `san-pedro-connected.js?v=${PORTAL_BUILD}`;
-        connected.defer = true;
-        connected.onload = () => window.SanPedroConnected?.init?.();
-        document.head.appendChild(connected);
-      };
-
-      let connectedCss = document.getElementById(connectedCssId);
-      if (!connectedCss) {
-        connectedCss = document.createElement("link");
-        connectedCss.id = connectedCssId;
-        connectedCss.rel = "stylesheet";
-        connectedCss.href =
-          `san-pedro-connected.css?v=${PORTAL_BUILD}`;
-        connectedCss.onload = mountScript;
-        connectedCss.onerror = mountScript;
-        document.head.appendChild(connectedCss);
-      } else if (connectedCss.sheet) {
-        mountScript();
-      } else {
-        connectedCss.addEventListener("load",mountScript,{once:true});
-        connectedCss.addEventListener("error",mountScript,{once:true});
-      }
-    };
-
     const loadTerritoryExperience = () => {
       if (document.getElementById(territoryId)) {
         window.TerritoryExperience?.init?.();
-        loadConnectedExperience();
         return;
       }
 
@@ -2824,9 +2822,7 @@ helpers.showClickEffect = showClickEffect;
       territory.defer = true;
       territory.onload = () => {
         window.TerritoryExperience?.init?.();
-        loadConnectedExperience();
       };
-      territory.onerror = loadConnectedExperience;
       document.head.appendChild(territory);
     };
 
@@ -2859,6 +2855,7 @@ helpers.showClickEffect = showClickEffect;
         window.ClaudeStudio?.init?.();
         loadMotion();
       };
+      script.onerror = loadMotion;
       document.head.appendChild(script);
     } else if (window.ClaudeStudio?.init) {
       window.ClaudeStudio.init();
@@ -2868,6 +2865,7 @@ helpers.showClickEffect = showClickEffect;
         window.ClaudeStudio?.init?.();
         loadMotion();
       },{once:true});
+      existingStudio.addEventListener("error",loadMotion,{once:true});
     }
   }
 
