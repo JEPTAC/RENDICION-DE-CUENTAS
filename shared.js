@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.10-san-pedro-conectado-plus";
+  const PORTAL_BUILD = "11.11-esfera-3d-interactiva";
 
   /*
    * Arranque visual temprano.

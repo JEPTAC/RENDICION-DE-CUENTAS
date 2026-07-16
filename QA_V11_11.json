@@ -1,0 +1,23 @@
+{
+  "version": "11.11",
+  "name": "Esfera 3D interactiva",
+  "base": "V11.10",
+  "replace_files": [
+    "shared.js",
+    "san-pedro-connected.js",
+    "san-pedro-connected.css"
+  ],
+  "highlights": [
+    "Modelo esfera con sensación 3D",
+    "Giro por arrastre",
+    "Selección desde barra lateral",
+    "Rotación automática al punto seleccionado",
+    "Tarjetas 01-02-03 fuera del modelo",
+    "Más claridad y mejor uso del espacio"
+  ],
+  "preserved": [
+    "Mapa real existente",
+    "popup de carga loading-spinner / ok-hand / notification",
+    "resto de módulos"
+  ]
+}

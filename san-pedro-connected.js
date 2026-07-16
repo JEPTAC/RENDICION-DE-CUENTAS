@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.10-san-pedro-conectado-plus";
+  const BUILD = "11.11-esfera-3d-interactiva";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -39,6 +39,17 @@
     pointer:{x:.5,y:.5},
     time:0,
     config:null,
+    sphere:{
+      rotX:-0.18,
+      rotY:0.24,
+      targetX:-0.18,
+      targetY:0.24,
+      dragging:false,
+      pointerId:null,
+      lastX:0,
+      lastY:0,
+      spin:0.0018
+    },
     adminDialog:null,
     compareValue:50,
     data:null
@@ -144,42 +155,71 @@
       data.territory.find(item => item.id === "cabecera") ||
       data.territory[0];
 
-    const neighborhoods = data.neighborhoods.map((item,index,array) => {
-      const angle = -Math.PI / 2 + index * Math.PI * 2 / array.length;
+    const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
+    const deg = Math.PI / 180;
+
+    function fallbackAngles(index,total,group) {
+      const count = Math.max(total,1);
+      const base = (index / count) * Math.PI * 2 - Math.PI / 2;
+      if (group === "neighborhood") {
+        return {
+          lon:base,
+          lat:Math.sin(index * 1.7) * .12
+        };
+      }
       return {
-        ...item,
-        group:"neighborhood",
-        angle,
-        radius:.235,
-        x:.5 + Math.cos(angle) * .235,
-        y:.5 + Math.sin(angle) * .235
+        lon:base,
+        lat:-.34 + Math.sin(index * 1.35) * .22
       };
+    }
+
+    function geoAngles(node,index,total,group) {
+      if (
+        cabecera &&
+        Number.isFinite(node.lat) &&
+        Number.isFinite(node.lng) &&
+        Number.isFinite(cabecera.lat) &&
+        Number.isFinite(cabecera.lng) &&
+        node.id !== cabecera.id
+      ) {
+        const dx = (node.lng - cabecera.lng) * Math.cos((cabecera.lat || 0) * deg);
+        const dy = node.lat - cabecera.lat;
+        const spread = group === "neighborhood" ? 22 : 15;
+        return {
+          lon:clamp(dx * spread,-1.12,1.12),
+          lat:clamp(-dy * spread + (group === "rural" ? -.18 : 0),-.68,.56)
+        };
+      }
+      return fallbackAngles(index,total,group);
+    }
+
+    function withSphere(node,lat,lon,group) {
+      const cosLat = Math.cos(lat);
+      return {
+        ...node,
+        group,
+        sphereLat:lat,
+        sphereLon:lon,
+        sphereX:Math.sin(lon) * cosLat,
+        sphereY:Math.sin(lat),
+        sphereZ:Math.cos(lon) * cosLat
+      };
+    }
+
+    const neighborhoods = data.neighborhoods.map((item,index,array) => {
+      const ang = geoAngles(item,index,array.length,"neighborhood");
+      return withSphere(item,ang.lat,ang.lon,"neighborhood");
     });
 
     const rural = data.territory
       .filter(item => item.id !== cabecera?.id)
       .map((item,index,array) => {
-        const angle =
-          -Math.PI / 2 + .16 + index * Math.PI * 2 / array.length;
-        return {
-          ...item,
-          group:"rural",
-          angle,
-          radius:.405,
-          x:.5 + Math.cos(angle) * .405,
-          y:.5 + Math.sin(angle) * .405
-        };
+        const ang = geoAngles(item,index,array.length,"rural");
+        return withSphere(item,ang.lat,ang.lon,"rural");
       });
 
     const center = cabecera
-      ? [{
-          ...cabecera,
-          group:"center",
-          angle:0,
-          radius:0,
-          x:.5,
-          y:.5
-        }]
+      ? [withSphere(cabecera,0,0,"center")]
       : [];
 
     return [...center,...neighborhoods,...rural];
@@ -270,42 +310,33 @@
             <h2>${escapeHtml(config.networkTitle)}</h2>
             <div class="connected-title-summary">
               <article>
-                <small>Puntos visibles</small>
+                <small>PUNTOS VISIBLES</small>
                 <strong>${nodes.length}</strong>
                 <p>Entre cabecera, barrios y corregimientos.</p>
               </article>
               <article>
-                <small>Lectura de la red</small>
-                <strong>Centro → urbano → rural</strong>
-                <p>La organización espacial ayuda a leer el territorio.</p>
+                <small>INTERACCIÓN</small>
+                <strong>Gire, seleccione y abra el mapa</strong>
+                <p>La esfera responde al arrastre y orienta cada punto al frente.</p>
               </article>
             </div>
           </div>
 
           <div class="connected-intro-panel">
             <article class="connected-intro-card">
-              <small>CÓMO LEERLO</small>
-              <strong>El centro es la cabecera</strong>
-              <p>
-                El nodo principal agrupa la referencia municipal y conecta
-                con los anillos de barrios y corregimientos.
-              </p>
+              <small>01 · ORIENTACIÓN</small>
+              <strong>Una esfera para leer mejor el territorio</strong>
+              <p>La visual organiza la cabecera, los barrios y los corregimientos como una sola red navegable.</p>
             </article>
             <article class="connected-intro-card">
-              <small>CAPA URBANA</small>
-              <strong>Barrios más cerca del núcleo</strong>
-              <p>
-                El anillo interior resume la cabecera municipal y facilita
-                una lectura rápida de sus sectores urbanos.
-              </p>
+              <small>02 · ACCIÓN</small>
+              <strong>Seleccione un punto o gire manualmente</strong>
+              <p>Puede usar el modelo interactivo o la barra lateral para llevar cada lugar al frente.</p>
             </article>
             <article class="connected-intro-card">
-              <small>CAPA RURAL</small>
-              <strong>Corregimientos en el anillo exterior</strong>
-              <p>
-                El borde territorial ubica los corregimientos como puntos de
-                lectura más amplios y conectados con el mapa real.
-              </p>
+              <small>03 · CONTINUIDAD</small>
+              <strong>Salte al mapa real cuando lo necesite</strong>
+              <p>La experiencia inmersiva no reemplaza el mapa: lo complementa y lo hace más entendible.</p>
             </article>
           </div>
 
@@ -322,18 +353,13 @@
         </header>
 
         <div class="connected-network-layout connected-network-layout--rich">
-          <div class="connected-network-stage" id="connectedNetworkStage">
-            <canvas
-              id="connectedNetworkCanvas"
-              aria-hidden="true"
-            ></canvas>
+          <div class="connected-network-stage connected-network-stage--globe" id="connectedNetworkStage">
+            <canvas id="connectedNetworkCanvas" aria-hidden="true"></canvas>
 
             <div class="connected-stage-copy">
               <span>RED TERRITORIAL</span>
-              <strong>Todo se conecta</strong>
-              <small>
-                Explore un nodo o utilice los filtros para entender la red.
-              </small>
+              <strong>Esfera territorial interactiva</strong>
+              <small>Arrastre para girar o seleccione un punto para orientarlo al frente.</small>
             </div>
 
             <div class="connected-stage-legend">
@@ -342,22 +368,9 @@
               <span><i class="is-rural"></i> Corregimientos</span>
             </div>
 
-            <div class="connected-stage-guide">
-              <article>
-                <small>01</small>
-                <strong>Observe el centro</strong>
-                <p>La cabecera municipal funciona como eje de referencia.</p>
-              </article>
-              <article>
-                <small>02</small>
-                <strong>Lea los anillos</strong>
-                <p>El anillo interior concentra barrios y el exterior corregimientos.</p>
-              </article>
-              <article>
-                <small>03</small>
-                <strong>Salte al mapa</strong>
-                <p>Cada nodo puede abrir su ubicación dentro del mapa real.</p>
-              </article>
+            <div class="connected-sphere-hint">
+              <b>↺</b>
+              <span>Gire el modelo o elija un lugar en la barra lateral.</span>
             </div>
 
             <div class="connected-network-nodes">
@@ -367,11 +380,7 @@
                   class="connected-node is-${node.group}"
                   data-connected-node="${escapeHtml(node.id)}"
                   data-connected-group="${node.group}"
-                  style="
-                    --node-x:${(node.x * 100).toFixed(3)}%;
-                    --node-y:${(node.y * 100).toFixed(3)}%;
-                    --node-delay:${index * 24}ms;
-                  "
+                  data-connected-order="${index}"
                   aria-label="Abrir ${escapeHtml(node.name)}"
                 >
                   <i>${node.group === "neighborhood"
@@ -384,19 +393,9 @@
             </div>
 
             <div class="connected-network-toolbar">
-              <button
-                type="button"
-                class="active"
-                data-connected-filter="all"
-              >
-                Todo
-              </button>
-              <button type="button" data-connected-filter="neighborhood">
-                Barrios
-              </button>
-              <button type="button" data-connected-filter="rural">
-                Corregimientos
-              </button>
+              <button type="button" class="active" data-connected-filter="all">Todo</button>
+              <button type="button" data-connected-filter="neighborhood">Barrios</button>
+              <button type="button" data-connected-filter="rural">Corregimientos</button>
             </div>
           </div>
 
@@ -409,45 +408,39 @@
             <div class="connected-detail-copy">
               <span id="connectedDetailEyebrow">SAN PEDRO</span>
               <h3 id="connectedDetailTitle">Seleccione un territorio</h3>
-              <p id="connectedDetailText">
-                La red permite recorrer la cabecera, los barrios y los
-                corregimientos sin sustituir el mapa real.
-              </p>
+              <p id="connectedDetailText">La red permite recorrer la cabecera, los barrios y los corregimientos sin sustituir el mapa real.</p>
               <div id="connectedDetailMeta"></div>
             </div>
 
             <div class="connected-detail-facts" id="connectedDetailFacts">
-              <article>
-                <small>Nivel</small>
-                <strong>Red territorial</strong>
-              </article>
-              <article>
-                <small>Relación</small>
-                <strong>Centro, urbano y rural</strong>
-              </article>
-              <article>
-                <small>Acción</small>
-                <strong>Seleccione un nodo</strong>
-              </article>
+              <article><small>Nivel</small><strong>Red territorial</strong></article>
+              <article><small>Relación</small><strong>Centro, urbano y rural</strong></article>
+              <article><small>Acción</small><strong>Seleccione un nodo</strong></article>
             </div>
 
             <div class="connected-detail-read">
               <small>LECTURA RÁPIDA</small>
-              <p id="connectedDetailSupport">
-                Use los filtros, seleccione un punto y luego abra su
-                ubicación en el mapa para continuar la navegación.
-              </p>
+              <p id="connectedDetailSupport">Use los filtros, seleccione un punto y luego abra su ubicación en el mapa para continuar la navegación.</p>
             </div>
 
-            <button
-              type="button"
-              class="connected-map-link"
-              id="connectedMapLink"
-              disabled
-            >
+            <button type="button" class="connected-map-link" id="connectedMapLink" disabled>
               Ver ubicación en el mapa
               <b aria-hidden="true">↗</b>
             </button>
+
+            <div class="connected-location-picker">
+              <div class="connected-location-picker-head">
+                <small>SELECCIÓN RÁPIDA</small>
+                <strong>Barra lateral de lugares</strong>
+              </div>
+              <div class="connected-location-list" id="connectedLocationList">
+                ${nodes.filter(node => node.group !== "center").map(node => `
+                  <button type="button" class="connected-location-item" data-connected-pick="${escapeHtml(node.id)}" data-connected-group="${node.group}">
+                    <i class="is-${node.group}"></i>
+                    <span>${escapeHtml(node.name)}</span>
+                  </button>`).join("")}
+              </div>
+            </div>
 
             <div class="connected-network-metrics">
               ${metricMarkup(data)}
@@ -455,13 +448,27 @@
           </aside>
         </div>
 
+        <div class="connected-guide-row">
+          <article>
+            <small>01</small>
+            <strong>Observe el centro</strong>
+            <p>La cabecera municipal funciona como eje de lectura general.</p>
+          </article>
+          <article>
+            <small>02</small>
+            <strong>Gire la esfera</strong>
+            <p>Arrastre el modelo para revelar barrios y corregimientos con profundidad.</p>
+          </article>
+          <article>
+            <small>03</small>
+            <strong>Abra el mapa real</strong>
+            <p>Cuando encuentre el punto, salte a su ubicación cartográfica con un clic.</p>
+          </article>
+        </div>
+
         <div class="connected-feature-grid connected-feature-grid--rich">
           ${featureCards().map(card => `
-            <article
-              class="connected-feature-card"
-              data-connected-feature="${card.key}"
-              tabindex="0"
-            >
+            <article class="connected-feature-card" data-connected-feature="${card.key}" tabindex="0">
               <div class="connected-feature-top">
                 <span>${card.index}</span>
                 <i>${card.icon}</i>
@@ -469,9 +476,7 @@
               <small>${card.eyebrow}</small>
               <h3>${card.title}</h3>
               <p>${card.text}</p>
-              <button type="button" tabindex="-1">
-                ${card.action} <b>↗</b>
-              </button>
+              <button type="button" tabindex="-1">${card.action} <b>↗</b></button>
             </article>`).join("")}
         </div>
       </div>
@@ -740,6 +745,11 @@
       const active = node && button.dataset.connectedNode === node.id;
       button.classList.toggle("active",Boolean(active));
     });
+    state.root?.querySelectorAll(".connected-location-item").forEach(button => {
+      const active = node && button.dataset.connectedPick === node.id;
+      button.classList.toggle("active",Boolean(active));
+    });
+    if (node) rotateToNode(node);
 
     const eyebrow = state.root?.querySelector("#connectedDetailEyebrow");
     const title = state.root?.querySelector("#connectedDetailTitle");
@@ -851,6 +861,13 @@
       button.classList.toggle("filtered-out",!visible);
     });
 
+    state.root?.querySelectorAll(".connected-location-item").forEach(button => {
+      const group = button.dataset.connectedGroup;
+      const visible =
+        filter === "all" || group === filter;
+      button.hidden = !visible;
+    });
+
     drawNetwork();
   }
 
@@ -868,31 +885,122 @@
     drawNetwork();
   }
 
-  function nodePoint(node,rect) {
-    const pointerX = finePointer.matches
-      ? (state.pointer.x - .5) * 9
-      : 0;
-    const pointerY = finePointer.matches
-      ? (state.pointer.y - .5) * 7
-      : 0;
-    const depth = node.group === "rural"
-      ? 1
-      : node.group === "neighborhood"
-        ? .65
-        : .2;
-
-    return {
-      x:node.x * rect.width + pointerX * depth,
-      y:node.y * rect.height + pointerY * depth
-    };
-  }
-
   function nodeIsVisible(node) {
     return (
       state.filter === "all" ||
       node.group === "center" ||
       node.group === state.filter
     );
+  }
+
+  function normalizeAngle(angle) {
+    while (angle > Math.PI) angle -= Math.PI * 2;
+    while (angle < -Math.PI) angle += Math.PI * 2;
+    return angle;
+  }
+
+  function rotateToNode(node) {
+    if (!node) return;
+    state.sphere.targetY = normalizeAngle(-node.sphereLon);
+    state.sphere.targetX = Math.max(-.85,Math.min(.85,node.sphereLat));
+  }
+
+  function rotatedPoint(node) {
+    const rotY = state.sphere.rotY;
+    const rotX = state.sphere.rotX;
+
+    const x1 = node.sphereX * Math.cos(rotY) + node.sphereZ * Math.sin(rotY);
+    const z1 = -node.sphereX * Math.sin(rotY) + node.sphereZ * Math.cos(rotY);
+    const y2 = node.sphereY * Math.cos(rotX) - z1 * Math.sin(rotX);
+    const z2 = node.sphereY * Math.sin(rotX) + z1 * Math.cos(rotX);
+
+    return {x:x1,y:y2,z:z2};
+  }
+
+  function projectNode(node,rect) {
+    const rotated = rotatedPoint(node);
+    const sphereRadius = Math.min(rect.width,rect.height) * .34;
+    const centerX = rect.width * .5;
+    const centerY = rect.height * .49;
+    const perspective = .66 + (rotated.z + 1) * .28;
+    return {
+      ...rotated,
+      node,
+      radius:sphereRadius,
+      cx:centerX,
+      cy:centerY,
+      x:centerX + rotated.x * sphereRadius * perspective,
+      y:centerY + rotated.y * sphereRadius * .92 * perspective,
+      scale:node.group === "center"
+        ? 1.08 + perspective * .12
+        : .74 + perspective * .28,
+      opacity:node.group === "center"
+        ? 1
+        : Math.max(.14,.36 + (rotated.z + 1) * .42),
+      visible:node.group === "center" || rotated.z > -0.58
+    };
+  }
+
+  function updateNodeButtons(projected) {
+    state.root?.querySelectorAll('.connected-node').forEach(button => {
+      const item = projected.find(entry => entry.node.id === button.dataset.connectedNode);
+      if (!item) return;
+      const filtered = !nodeIsVisible(item.node);
+      button.style.left = `${item.x}px`;
+      button.style.top = `${item.y}px`;
+      button.style.transform = `translate(-50%,-50%) scale(${item.scale})`;
+      button.style.opacity = filtered ? '.06' : String(item.visible ? item.opacity : .08);
+      button.style.zIndex = String(item.node.group === 'center' ? 16 : 8 + Math.round((item.z + 1) * 12));
+      button.classList.toggle('is-back',item.z < -0.08);
+      button.classList.toggle('is-front',item.z > .25);
+      button.classList.toggle('filtered-out',filtered);
+    });
+  }
+
+  function drawCurve(ctx,points,strokeStyle,lineWidth) {
+    let started = false;
+    ctx.beginPath();
+    points.forEach(point => {
+      if (point.visible) {
+        if (!started) {
+          ctx.moveTo(point.x,point.y);
+          started = true;
+        } else {
+          ctx.lineTo(point.x,point.y);
+        }
+      } else {
+        started = false;
+      }
+    });
+    if (lineWidth) ctx.lineWidth = lineWidth;
+    if (strokeStyle) ctx.strokeStyle = strokeStyle;
+    ctx.stroke();
+  }
+
+  function sampleSphereLine(type,fixed,rect) {
+    const points = [];
+    for (let step = 0; step <= 72; step += 1) {
+      const t = -Math.PI + (Math.PI * 2 * step / 72);
+      const lat = type === 'lon' ? t / 2 : fixed;
+      const lon = type === 'lon' ? fixed : t;
+      const cosLat = Math.cos(lat);
+      const pseudo = {
+        sphereX:Math.sin(lon) * cosLat,
+        sphereY:Math.sin(lat),
+        sphereZ:Math.cos(lon) * cosLat
+      };
+      const rotated = rotatedPoint(pseudo);
+      const sphereRadius = Math.min(rect.width,rect.height) * .34;
+      const centerX = rect.width * .5;
+      const centerY = rect.height * .49;
+      const perspective = .66 + (rotated.z + 1) * .28;
+      points.push({
+        x:centerX + rotated.x * sphereRadius * perspective,
+        y:centerY + rotated.y * sphereRadius * .92 * perspective,
+        visible:rotated.z > -0.05
+      });
+    }
+    return points;
   }
 
   function drawNetwork() {
@@ -903,104 +1011,103 @@
     const rect = stage.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
-    const center = state.nodes.find(node => node.group === "center");
-    if (!center) return;
+    const rotDeltaY = normalizeAngle(state.sphere.targetY - state.sphere.rotY);
+    const rotDeltaX = state.sphere.targetX - state.sphere.rotX;
+    if (!state.sphere.dragging) {
+      state.sphere.rotY += rotDeltaY * .075;
+      state.sphere.rotX += rotDeltaX * .085;
+      if (!state.activeNode && Math.abs(rotDeltaY) < .0025 && Math.abs(rotDeltaX) < .0025) {
+        state.sphere.rotY = normalizeAngle(state.sphere.rotY + state.sphere.spin);
+        state.sphere.targetY = state.sphere.rotY;
+      }
+    }
 
-    const centerPoint = nodePoint(center,rect);
-    const selected = state.activeNode;
+    const centerX = rect.width * .5;
+    const centerY = rect.height * .49;
+    const sphereRadius = Math.min(rect.width,rect.height) * .34;
 
     ctx.save();
 
-    const glow = ctx.createRadialGradient(
-      centerPoint.x,
-      centerPoint.y,
-      10,
-      centerPoint.x,
-      centerPoint.y,
-      Math.min(rect.width,rect.height) * .48
-    );
-    glow.addColorStop(0,"rgba(67,195,232,.18)");
-    glow.addColorStop(.48,"rgba(37,139,213,.075)");
-    glow.addColorStop(1,"rgba(6,29,59,0)");
-    ctx.fillStyle = glow;
+    const bgGlow = ctx.createRadialGradient(centerX,centerY,18,centerX,centerY,sphereRadius * 1.24);
+    bgGlow.addColorStop(0,'rgba(67,195,232,.20)');
+    bgGlow.addColorStop(.45,'rgba(37,139,213,.08)');
+    bgGlow.addColorStop(1,'rgba(6,29,59,0)');
+    ctx.fillStyle = bgGlow;
     ctx.fillRect(0,0,rect.width,rect.height);
 
-    [0.16,0.235,0.32,0.405].forEach((radius,index) => {
-      ctx.beginPath();
-      ctx.strokeStyle =
-        `rgba(116,199,243,${.13 - index * .018})`;
-      ctx.lineWidth = 1;
-      ctx.ellipse(
-        centerPoint.x,
-        centerPoint.y,
-        rect.width * radius,
-        rect.height * radius,
-        Math.sin(state.time * .00008 + index) * .045,
-        0,
-        Math.PI * 2
-      );
-      ctx.stroke();
+    const globe = ctx.createRadialGradient(centerX - sphereRadius * .18,centerY - sphereRadius * .22,sphereRadius * .12,centerX,centerY,sphereRadius * 1.12);
+    globe.addColorStop(0,'rgba(29,120,205,.26)');
+    globe.addColorStop(.52,'rgba(8,72,139,.18)');
+    globe.addColorStop(1,'rgba(3,27,57,.08)');
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
+    ctx.fillStyle = globe;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.08)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
+    ctx.clip();
+
+    [-1.1,-.55,0,.55,1.1].forEach(lon => {
+      drawCurve(ctx,sampleSphereLine('lon',lon,rect),'rgba(116,199,243,.12)',1);
+    });
+    [-.85,-.42,0,.42,.85].forEach(lat => {
+      drawCurve(ctx,sampleSphereLine('lat',lat,rect),'rgba(116,199,243,.10)',1);
     });
 
-    state.nodes
-      .filter(node => node.group !== "center")
-      .forEach((node,index) => {
-        if (!nodeIsVisible(node)) return;
+    const projected = state.nodes.map(node => projectNode(node,rect));
 
-        const point = nodePoint(node,rect);
-        const isSelected = selected?.id === node.id;
-        const faded = selected && !isSelected;
+    const selected = projected.find(item => item.node.id === state.activeNode?.id);
+    if (selected) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(101,226,176,.34)';
+      ctx.lineWidth = 1.6;
+      ctx.arc(centerX,centerY,sphereRadius * .96,0,Math.PI * 2);
+      ctx.stroke();
 
+      ctx.beginPath();
+      ctx.moveTo(centerX,centerY);
+      ctx.quadraticCurveTo(
+        (centerX + selected.x) / 2,
+        centerY - sphereRadius * .22,
+        selected.x,
+        selected.y
+      );
+      ctx.strokeStyle = 'rgba(101,226,176,.78)';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+    }
+
+    projected
+      .filter(item => nodeIsVisible(item.node) && item.visible)
+      .sort((a,b) => a.z - b.z)
+      .forEach(item => {
+        if (item.node.group === 'center') return;
+        const halo = ctx.createRadialGradient(item.x,item.y,1,item.x,item.y,18 * item.scale);
+        halo.addColorStop(0,item.node.group === 'neighborhood' ? 'rgba(143,122,227,.34)' : 'rgba(67,195,232,.28)');
+        halo.addColorStop(1,'rgba(0,0,0,0)');
         ctx.beginPath();
-        ctx.moveTo(centerPoint.x,centerPoint.y);
-
-        const bend = node.group === "neighborhood" ? .16 : .24;
-        const controlX =
-          (centerPoint.x + point.x) / 2 +
-          Math.sin(node.angle) * rect.width * bend * .12;
-        const controlY =
-          (centerPoint.y + point.y) / 2 -
-          Math.cos(node.angle) * rect.height * bend * .12;
-
-        ctx.quadraticCurveTo(controlX,controlY,point.x,point.y);
-        ctx.lineWidth = isSelected ? 2.2 : 1;
-        ctx.strokeStyle = isSelected
-          ? "rgba(101,226,176,.92)"
-          : faded
-            ? "rgba(116,199,243,.05)"
-            : node.group === "neighborhood"
-              ? "rgba(143,122,227,.24)"
-              : "rgba(67,195,232,.20)";
-        ctx.stroke();
-
-        if (!reducedMotion.matches && (!selected || isSelected)) {
-          const phase =
-            (state.time * .00012 + index * .083) % 1;
-          const inv = 1 - phase;
-          const particleX =
-            inv * inv * centerPoint.x +
-            2 * inv * phase * controlX +
-            phase * phase * point.x;
-          const particleY =
-            inv * inv * centerPoint.y +
-            2 * inv * phase * controlY +
-            phase * phase * point.y;
-
-          ctx.beginPath();
-          ctx.fillStyle = isSelected
-            ? "rgba(101,226,176,.95)"
-            : "rgba(255,255,255,.72)";
-          ctx.arc(
-            particleX,
-            particleY,
-            isSelected ? 3.1 : 1.8,
-            0,
-            Math.PI * 2
-          );
-          ctx.fill();
-        }
+        ctx.fillStyle = halo;
+        ctx.arc(item.x,item.y,18 * item.scale,0,Math.PI * 2);
+        ctx.fill();
       });
 
+    ctx.restore();
+
+    if (selected && !reducedMotion.matches) {
+      const pulse = 10 + Math.sin(state.time * .005) * 3;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(101,226,176,.42)';
+      ctx.lineWidth = 1.3;
+      ctx.arc(selected.x,selected.y,pulse,0,Math.PI * 2);
+      ctx.stroke();
+    }
+
+    updateNodeButtons(projected);
     ctx.restore();
   }
 
@@ -1464,6 +1571,13 @@
         return;
       }
 
+      const pickButton = event.target.closest('[data-connected-pick]');
+      if (pickButton) {
+        updateDetail(selectedData(pickButton.dataset.connectedPick));
+        startNetwork();
+        return;
+      }
+
       const filterButton = event.target.closest(
         "[data-connected-filter]"
       );
@@ -1506,15 +1620,43 @@
       }
     });
 
+    state.networkStage?.addEventListener("pointerdown",event => {
+      if (event.target.closest('.connected-node')) return;
+      state.sphere.dragging = true;
+      state.sphere.pointerId = event.pointerId;
+      state.sphere.lastX = event.clientX;
+      state.sphere.lastY = event.clientY;
+      state.networkStage.setPointerCapture?.(event.pointerId);
+      state.networkStage.classList.add('is-dragging');
+    });
+
     state.networkStage?.addEventListener("pointermove",event => {
-      if (!finePointer.matches) return;
       const rect = state.networkStage.getBoundingClientRect();
       state.pointer.x =
         Math.max(0,Math.min(1,(event.clientX - rect.left) / rect.width));
       state.pointer.y =
         Math.max(0,Math.min(1,(event.clientY - rect.top) / rect.height));
+
+      if (!state.sphere.dragging || state.sphere.pointerId !== event.pointerId) return;
+      const dx = event.clientX - state.sphere.lastX;
+      const dy = event.clientY - state.sphere.lastY;
+      state.sphere.lastX = event.clientX;
+      state.sphere.lastY = event.clientY;
+      state.sphere.rotY = normalizeAngle(state.sphere.rotY + dx * .0082);
+      state.sphere.rotX = Math.max(-.95,Math.min(.95,state.sphere.rotX + dy * .0064));
+      state.sphere.targetY = state.sphere.rotY;
+      state.sphere.targetX = state.sphere.rotX;
+      drawNetwork();
     },{passive:true});
 
+    const releaseSphere = () => {
+      state.sphere.dragging = false;
+      state.sphere.pointerId = null;
+      state.networkStage?.classList.remove('is-dragging');
+    };
+
+    state.networkStage?.addEventListener('pointerup',releaseSphere,{passive:true});
+    state.networkStage?.addEventListener('pointercancel',releaseSphere,{passive:true});
     state.networkStage?.addEventListener("pointerleave",() => {
       state.pointer.x = .5;
       state.pointer.y = .5;
