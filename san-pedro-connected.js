@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.12-esfera-amplia-solida";
+  const BUILD = "11.13-esfera-completa-popup-restaurado";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -155,96 +155,60 @@
       data.territory.find(item => item.id === "cabecera") ||
       data.territory[0];
 
-    const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
-    const normalizeAngle = angle => {
-      while (angle > Math.PI) angle -= Math.PI * 2;
-      while (angle < -Math.PI) angle += Math.PI * 2;
-      return angle;
-    };
-    const deg = Math.PI / 180;
-    const golden = Math.PI * (3 - Math.sqrt(5));
-
-    function geoBearing(node) {
-      if (
-        cabecera &&
-        Number.isFinite(node.lat) &&
-        Number.isFinite(node.lng) &&
-        Number.isFinite(cabecera.lat) &&
-        Number.isFinite(cabecera.lng) &&
-        node.id !== cabecera.id
-      ) {
-        const dx = (node.lng - cabecera.lng) * Math.cos((cabecera.lat || 0) * deg);
-        const dy = node.lat - cabecera.lat;
-        return Math.atan2(dx,-dy || 0.0001);
-      }
-      return null;
-    }
-
-    function distributedAngles(node,index,total,group) {
-      const count = Math.max(total,1);
-      const t = (index + .5) / count;
-      const orderedLon = -Math.PI + (Math.PI * 2 * t);
-      const spiralLon = normalizeAngle((index * golden) - Math.PI * .82);
-      const bearing = geoBearing(node);
-
-      const lon = normalizeAngle(
-        (bearing ?? orderedLon) * .32 +
-        orderedLon * .28 +
-        spiralLon * .40
+    const neighborhoods = [...data.neighborhoods].sort((a,b) =>
+      String(a.name || "").localeCompare(String(b.name || ""),"es")
+    );
+    const rural = data.territory
+      .filter(item => item.id !== cabecera?.id)
+      .sort((a,b) =>
+        String(a.name || "").localeCompare(String(b.name || ""),"es")
       );
 
-      const latRange = group === 'neighborhood'
-        ? {min:-.68,max:.68}
-        : {min:-.92,max:.82};
-      const latMix = latRange.min + (latRange.max - latRange.min) * t;
-      const latWave = Math.sin(index * 1.43 + (group === 'rural' ? .6 : 0)) * (group === 'neighborhood' ? .14 : .18);
-      const lat = clamp(latMix + latWave,latRange.min,latRange.max);
-
-      return {lon,lat};
+    const combined = [];
+    const longest = Math.max(neighborhoods.length,rural.length);
+    for (let index = 0; index < longest; index += 1) {
+      if (index < neighborhoods.length) {
+        combined.push({...neighborhoods[index],group:"neighborhood"});
+      }
+      if (index < rural.length) {
+        combined.push({...rural[index],group:"rural"});
+      }
     }
 
-    function withSphere(node,lat,lon,group) {
-      const cosLat = Math.cos(lat);
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    const surface = combined.map((item,index,array) => {
+      const total = Math.max(array.length,1);
+      const y = 1 - 2 * ((index + .5) / total);
+      const radial = Math.sqrt(Math.max(0,1 - y * y));
+      const angle = index * goldenAngle + .58;
+      const x = Math.cos(angle) * radial;
+      const z = Math.sin(angle) * radial;
+      const lat = Math.asin(y);
+      const lon = Math.atan2(x,z);
+
       return {
-        ...node,
-        group,
+        ...item,
         sphereLat:lat,
         sphereLon:lon,
-        sphereX:Math.sin(lon) * cosLat,
-        sphereY:Math.sin(lat),
-        sphereZ:Math.cos(lon) * cosLat
+        sphereX:x,
+        sphereY:y,
+        sphereZ:z
       };
-    }
-
-    const neighborhoodSource = [...data.neighborhoods].sort((a,b) => {
-      const aBearing = geoBearing(a) ?? 0;
-      const bBearing = geoBearing(b) ?? 0;
-      return aBearing - bBearing;
-    });
-
-    const ruralSource = data.territory
-      .filter(item => item.id !== cabecera?.id)
-      .sort((a,b) => {
-        const aBearing = geoBearing(a) ?? 0;
-        const bBearing = geoBearing(b) ?? 0;
-        return aBearing - bBearing;
-      });
-
-    const neighborhoods = neighborhoodSource.map((item,index,array) => {
-      const ang = distributedAngles(item,index,array.length,"neighborhood");
-      return withSphere(item,ang.lat,ang.lon,"neighborhood");
-    });
-
-    const rural = ruralSource.map((item,index,array) => {
-      const ang = distributedAngles(item,index,array.length,"rural");
-      return withSphere(item,ang.lat,ang.lon,"rural");
     });
 
     const center = cabecera
-      ? [withSphere(cabecera,0,0,"center")]
+      ? [{
+          ...cabecera,
+          group:"center",
+          sphereLat:0,
+          sphereLon:0,
+          sphereX:0,
+          sphereY:0,
+          sphereZ:1
+        }]
       : [];
 
-    return [...center,...neighborhoods,...rural];
+    return [...center,...surface];
   }
 
   function metricMarkup(data) {
@@ -456,11 +420,30 @@
                 <strong>Barra lateral de lugares</strong>
               </div>
               <div class="connected-location-list" id="connectedLocationList">
-                ${nodes.filter(node => node.group !== "center").map(node => `
-                  <button type="button" class="connected-location-item" data-connected-pick="${escapeHtml(node.id)}" data-connected-group="${node.group}">
-                    <i class="is-${node.group}"></i>
-                    <span>${escapeHtml(node.name)}</span>
-                  </button>`).join("")}
+                <section class="connected-location-group" data-picker-section="center">
+                  <header><span>Cabecera</span><b>1</b></header>
+                  ${nodes.filter(node => node.group === "center").map(node => `
+                    <button type="button" class="connected-location-item" data-connected-pick="${escapeHtml(node.id)}" data-connected-group="${node.group}">
+                      <i class="is-${node.group}"></i>
+                      <span>${escapeHtml(node.name)}</span>
+                    </button>`).join("")}
+                </section>
+                <section class="connected-location-group" data-picker-section="neighborhood">
+                  <header><span>Barrios</span><b>${nodes.filter(node => node.group === "neighborhood").length}</b></header>
+                  ${nodes.filter(node => node.group === "neighborhood").map(node => `
+                    <button type="button" class="connected-location-item" data-connected-pick="${escapeHtml(node.id)}" data-connected-group="${node.group}">
+                      <i class="is-${node.group}"></i>
+                      <span>${escapeHtml(node.name)}</span>
+                    </button>`).join("")}
+                </section>
+                <section class="connected-location-group" data-picker-section="rural">
+                  <header><span>Corregimientos</span><b>${nodes.filter(node => node.group === "rural").length}</b></header>
+                  ${nodes.filter(node => node.group === "rural").map(node => `
+                    <button type="button" class="connected-location-item" data-connected-pick="${escapeHtml(node.id)}" data-connected-group="${node.group}">
+                      <i class="is-${node.group}"></i>
+                      <span>${escapeHtml(node.name)}</span>
+                    </button>`).join("")}
+                </section>
               </div>
             </div>
 
@@ -886,8 +869,19 @@
     state.root?.querySelectorAll(".connected-location-item").forEach(button => {
       const group = button.dataset.connectedGroup;
       const visible =
-        filter === "all" || group === filter;
+        filter === "all" ||
+        group === "center" ||
+        group === filter;
       button.hidden = !visible;
+    });
+
+    state.root?.querySelectorAll("[data-picker-section]").forEach(section => {
+      const group = section.dataset.pickerSection;
+      section.hidden = !(
+        filter === "all" ||
+        group === "center" ||
+        group === filter
+      );
     });
 
     drawNetwork();
@@ -940,10 +934,26 @@
   }
 
   function projectNode(node,rect) {
-    const rotated = rotatedPoint(node);
-    const sphereRadius = Math.min(rect.width,rect.height) * .34;
+    const sphereRadius = Math.min(rect.width,rect.height) * .385;
     const centerX = rect.width * .5;
     const centerY = rect.height * .49;
+
+    if (node.group === "center") {
+      return {
+        x:centerX,
+        y:centerY,
+        z:1,
+        node,
+        radius:sphereRadius,
+        cx:centerX,
+        cy:centerY,
+        scale:1.18,
+        opacity:1,
+        visible:true
+      };
+    }
+
+    const rotated = rotatedPoint(node);
     const perspective = .66 + (rotated.z + 1) * .28;
     return {
       ...rotated,
@@ -972,9 +982,10 @@
       button.style.top = `${item.y}px`;
       button.style.transform = `translate(-50%,-50%) scale(${item.scale})`;
       button.style.opacity = filtered ? '.04' : String(item.visible ? item.opacity : 0);
+      button.style.visibility = item.visible ? 'visible' : 'hidden';
       button.style.pointerEvents = filtered || !item.visible ? 'none' : 'auto';
       button.style.zIndex = String(item.node.group === 'center' ? 18 : 8 + Math.round((item.z + 1) * 14));
-      button.classList.toggle('is-back',item.z < .02);
+      button.classList.toggle('is-back',item.z <= .035);
       button.classList.toggle('is-front',item.z > .25);
       button.classList.toggle('filtered-out',filtered);
     });
@@ -1013,14 +1024,14 @@
         sphereZ:Math.cos(lon) * cosLat
       };
       const rotated = rotatedPoint(pseudo);
-      const sphereRadius = Math.min(rect.width,rect.height) * .34;
+      const sphereRadius = Math.min(rect.width,rect.height) * .385;
       const centerX = rect.width * .5;
       const centerY = rect.height * .49;
       const perspective = .66 + (rotated.z + 1) * .28;
       points.push({
         x:centerX + rotated.x * sphereRadius * perspective,
         y:centerY + rotated.y * sphereRadius * .92 * perspective,
-        visible:rotated.z > 0.02
+        visible:rotated.z > .035
       });
     }
     return points;
@@ -1047,56 +1058,56 @@
 
     const centerX = rect.width * .5;
     const centerY = rect.height * .49;
-    const sphereRadius = Math.min(rect.width,rect.height) * .39;
+    const sphereRadius = Math.min(rect.width,rect.height) * .385;
 
     ctx.save();
 
-    const bgGlow = ctx.createRadialGradient(centerX,centerY,18,centerX,centerY,sphereRadius * 1.34);
-    bgGlow.addColorStop(0,'rgba(67,195,232,.24)');
-    bgGlow.addColorStop(.48,'rgba(37,139,213,.10)');
+    const bgGlow = ctx.createRadialGradient(centerX,centerY,18,centerX,centerY,sphereRadius * 1.24);
+    bgGlow.addColorStop(0,'rgba(67,195,232,.20)');
+    bgGlow.addColorStop(.45,'rgba(37,139,213,.08)');
     bgGlow.addColorStop(1,'rgba(6,29,59,0)');
     ctx.fillStyle = bgGlow;
     ctx.fillRect(0,0,rect.width,rect.height);
 
-    ctx.shadowColor = 'rgba(2,14,33,.52)';
-    ctx.shadowBlur = 48;
-    ctx.shadowOffsetY = 18;
+    ctx.save();
+    ctx.shadowColor = 'rgba(1,10,28,.60)';
+    ctx.shadowBlur = 52;
+    ctx.shadowOffsetY = 22;
 
     const globe = ctx.createRadialGradient(
-      centerX - sphereRadius * .28,
-      centerY - sphereRadius * .32,
-      sphereRadius * .10,
+      centerX - sphereRadius * .30,
+      centerY - sphereRadius * .34,
+      sphereRadius * .08,
       centerX,
       centerY,
       sphereRadius * 1.18
     );
-    globe.addColorStop(0,'rgba(34,145,233,.42)');
-    globe.addColorStop(.42,'rgba(8,85,162,.78)');
-    globe.addColorStop(.76,'rgba(4,54,111,.96)');
-    globe.addColorStop(1,'rgba(2,26,60,1)');
+    globe.addColorStop(0,'rgba(46,163,246,.48)');
+    globe.addColorStop(.38,'rgba(12,100,184,.85)');
+    globe.addColorStop(.72,'rgba(4,58,120,.98)');
+    globe.addColorStop(1,'rgba(2,22,55,1)');
     ctx.beginPath();
     ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
     ctx.fillStyle = globe;
     ctx.fill();
+    ctx.restore();
 
-    const shadow = ctx.createLinearGradient(
+    const solidShade = ctx.createLinearGradient(
       centerX - sphereRadius,
-      centerY - sphereRadius * .12,
+      centerY - sphereRadius * .45,
       centerX + sphereRadius,
-      centerY + sphereRadius * .32
+      centerY + sphereRadius * .55
     );
-    shadow.addColorStop(0,'rgba(255,255,255,.06)');
-    shadow.addColorStop(.34,'rgba(255,255,255,.015)');
-    shadow.addColorStop(.62,'rgba(0,0,0,.18)');
-    shadow.addColorStop(1,'rgba(0,0,0,.42)');
+    solidShade.addColorStop(0,'rgba(255,255,255,.09)');
+    solidShade.addColorStop(.38,'rgba(255,255,255,.015)');
+    solidShade.addColorStop(.65,'rgba(0,0,0,.17)');
+    solidShade.addColorStop(1,'rgba(0,0,0,.46)');
     ctx.beginPath();
     ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
-    ctx.fillStyle = shadow;
+    ctx.fillStyle = solidShade;
     ctx.fill();
-
-    ctx.shadowColor = 'transparent';
-    ctx.strokeStyle = 'rgba(255,255,255,.12)';
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(255,255,255,.13)';
+    ctx.lineWidth = 1.25;
     ctx.stroke();
 
     ctx.save();

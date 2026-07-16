@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.12-esfera-amplia-solida";
+  const PORTAL_BUILD = "11.13-esfera-completa-popup-restaurado";
 
   /*
    * Arranque visual temprano.
@@ -456,6 +456,112 @@ let loadingPopupMessage = null;
 let loadingPopupActive = false;
 let notificationAudio = null;
 
+function ensureFeedbackStyles() {
+  if (document.getElementById("spLoadingPopupCoreStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "spLoadingPopupCoreStyles";
+  style.textContent = `
+    #globalLoadingPopup,
+    .ui-loader,
+    .ui-loading-popup,
+    .loading-popup,
+    .global-loading-popup{
+      display:none!important;
+    }
+    .sp-loading-popup{
+      position:fixed;
+      z-index:2147483000;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .2s ease,visibility .2s ease;
+    }
+    .sp-loading-popup.is-visible{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+    .sp-loading-popup__backdrop{
+      position:absolute;
+      inset:0;
+      background:rgba(3,20,42,.52);
+      backdrop-filter:blur(7px);
+    }
+    .sp-loading-popup__card{
+      position:relative;
+      z-index:2;
+      display:grid;
+      justify-items:center;
+      gap:8px;
+      width:min(260px,calc(100vw - 36px));
+      min-height:250px;
+      padding:24px 22px 22px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.24);
+      border-radius:30px;
+      color:#fff;
+      text-align:center;
+      background:
+        radial-gradient(circle at 50% 18%,rgba(67,195,232,.20),transparent 34%),
+        linear-gradient(155deg,#061d3b,#0a376c 60%,#126ab6);
+      box-shadow:0 34px 95px rgba(3,20,42,.44),
+        inset 0 1px 0 rgba(255,255,255,.18);
+      transform:translateY(10px) scale(.97);
+      transition:transform .28s cubic-bezier(.2,.8,.2,1),background .28s ease;
+    }
+    .sp-loading-popup.is-visible .sp-loading-popup__card{
+      transform:none;
+    }
+    .sp-loading-popup.is-success .sp-loading-popup__card{
+      background:
+        radial-gradient(circle at 50% 18%,rgba(101,226,176,.19),transparent 34%),
+        linear-gradient(155deg,#062f2a,#08725f 62%,#39b980);
+    }
+    .sp-loading-popup.is-error .sp-loading-popup__card{
+      background:
+        radial-gradient(circle at 50% 18%,rgba(255,173,142,.18),transparent 34%),
+        linear-gradient(155deg,#4b1d20,#8a312c 62%,#c8513d);
+    }
+    .sp-loading-popup__gif{
+      display:block;
+      width:146px;
+      height:146px;
+      object-fit:contain;
+      background:transparent;
+      filter:drop-shadow(0 14px 24px rgba(0,0,0,.25));
+    }
+    .sp-loading-popup__title{
+      color:#fff;
+      font:800 21px/1.05 "Century Gothic",Arial,sans-serif;
+      letter-spacing:-.035em;
+    }
+    .sp-loading-popup__message{
+      max-width:205px;
+      color:rgba(255,255,255,.80);
+      font:600 10px/1.48 "Century Gothic",Arial,sans-serif;
+    }
+    html.has-sp-loading-popup{
+      overflow:hidden;
+    }
+    @media (max-width:580px){
+      .sp-loading-popup__card{
+        width:min(240px,calc(100vw - 30px));
+        min-height:236px;
+      }
+      .sp-loading-popup__gif{
+        width:134px;
+        height:134px;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 function removeLegacyLoadingPopups() {
   document.querySelectorAll(
     "#globalLoadingPopup," +
@@ -471,6 +577,7 @@ function removeLegacyLoadingPopups() {
 function ensureFeedbackUi() {
   if (!document.body) return;
 
+  ensureFeedbackStyles();
   removeLegacyLoadingPopups();
 
   loadingPopup = document.querySelector("#spLoadingPopup");
@@ -658,6 +765,24 @@ function initInteractiveFeedback() {
   ensureFeedbackUi();
   closeLoadingPopup();
 }
+
+function isClientBlockedFailure(value) {
+  const message = String(
+    value?.message || value?.reason?.message || value || ""
+  ).toLowerCase();
+  return (
+    message.includes("err_blocked_by_client") ||
+    (
+      message.includes("firestore.googleapis.com") &&
+      message.includes("blocked")
+    )
+  );
+}
+
+window.addEventListener("unhandledrejection",event => {
+  if (!isClientBlockedFailure(event.reason)) return;
+  event.preventDefault();
+});
 
   const state = {
     years: loadArray(KEYS.years, DEFAULT_YEARS),
