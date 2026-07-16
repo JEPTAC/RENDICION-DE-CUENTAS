@@ -1,0 +1,16 @@
+{
+  "version": "11.12",
+  "name": "Esfera más amplia y sólida",
+  "base": "V11.11",
+  "replace_files": [
+    "shared.js",
+    "san-pedro-connected.js",
+    "san-pedro-connected.css"
+  ],
+  "changes": [
+    "Puntos repartidos con mayor separación en toda la esfera",
+    "Ocultamiento real del semicírculo trasero para obligar a girar la esfera",
+    "Esfera más sólida con sombras y profundidad",
+    "Alturas igualadas entre el modelo izquierdo y el panel derecho"
+  ]
+}

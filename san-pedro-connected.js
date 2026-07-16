@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.11-esfera-3d-interactiva";
+  const BUILD = "11.12-esfera-amplia-solida";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -156,24 +156,15 @@
       data.territory[0];
 
     const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
+    const normalizeAngle = angle => {
+      while (angle > Math.PI) angle -= Math.PI * 2;
+      while (angle < -Math.PI) angle += Math.PI * 2;
+      return angle;
+    };
     const deg = Math.PI / 180;
+    const golden = Math.PI * (3 - Math.sqrt(5));
 
-    function fallbackAngles(index,total,group) {
-      const count = Math.max(total,1);
-      const base = (index / count) * Math.PI * 2 - Math.PI / 2;
-      if (group === "neighborhood") {
-        return {
-          lon:base,
-          lat:Math.sin(index * 1.7) * .12
-        };
-      }
-      return {
-        lon:base,
-        lat:-.34 + Math.sin(index * 1.35) * .22
-      };
-    }
-
-    function geoAngles(node,index,total,group) {
+    function geoBearing(node) {
       if (
         cabecera &&
         Number.isFinite(node.lat) &&
@@ -184,13 +175,32 @@
       ) {
         const dx = (node.lng - cabecera.lng) * Math.cos((cabecera.lat || 0) * deg);
         const dy = node.lat - cabecera.lat;
-        const spread = group === "neighborhood" ? 22 : 15;
-        return {
-          lon:clamp(dx * spread,-1.12,1.12),
-          lat:clamp(-dy * spread + (group === "rural" ? -.18 : 0),-.68,.56)
-        };
+        return Math.atan2(dx,-dy || 0.0001);
       }
-      return fallbackAngles(index,total,group);
+      return null;
+    }
+
+    function distributedAngles(node,index,total,group) {
+      const count = Math.max(total,1);
+      const t = (index + .5) / count;
+      const orderedLon = -Math.PI + (Math.PI * 2 * t);
+      const spiralLon = normalizeAngle((index * golden) - Math.PI * .82);
+      const bearing = geoBearing(node);
+
+      const lon = normalizeAngle(
+        (bearing ?? orderedLon) * .32 +
+        orderedLon * .28 +
+        spiralLon * .40
+      );
+
+      const latRange = group === 'neighborhood'
+        ? {min:-.68,max:.68}
+        : {min:-.92,max:.82};
+      const latMix = latRange.min + (latRange.max - latRange.min) * t;
+      const latWave = Math.sin(index * 1.43 + (group === 'rural' ? .6 : 0)) * (group === 'neighborhood' ? .14 : .18);
+      const lat = clamp(latMix + latWave,latRange.min,latRange.max);
+
+      return {lon,lat};
     }
 
     function withSphere(node,lat,lon,group) {
@@ -206,17 +216,29 @@
       };
     }
 
-    const neighborhoods = data.neighborhoods.map((item,index,array) => {
-      const ang = geoAngles(item,index,array.length,"neighborhood");
+    const neighborhoodSource = [...data.neighborhoods].sort((a,b) => {
+      const aBearing = geoBearing(a) ?? 0;
+      const bBearing = geoBearing(b) ?? 0;
+      return aBearing - bBearing;
+    });
+
+    const ruralSource = data.territory
+      .filter(item => item.id !== cabecera?.id)
+      .sort((a,b) => {
+        const aBearing = geoBearing(a) ?? 0;
+        const bBearing = geoBearing(b) ?? 0;
+        return aBearing - bBearing;
+      });
+
+    const neighborhoods = neighborhoodSource.map((item,index,array) => {
+      const ang = distributedAngles(item,index,array.length,"neighborhood");
       return withSphere(item,ang.lat,ang.lon,"neighborhood");
     });
 
-    const rural = data.territory
-      .filter(item => item.id !== cabecera?.id)
-      .map((item,index,array) => {
-        const ang = geoAngles(item,index,array.length,"rural");
-        return withSphere(item,ang.lat,ang.lon,"rural");
-      });
+    const rural = ruralSource.map((item,index,array) => {
+      const ang = distributedAngles(item,index,array.length,"rural");
+      return withSphere(item,ang.lat,ang.lon,"rural");
+    });
 
     const center = cabecera
       ? [withSphere(cabecera,0,0,"center")]
@@ -949,9 +971,10 @@
       button.style.left = `${item.x}px`;
       button.style.top = `${item.y}px`;
       button.style.transform = `translate(-50%,-50%) scale(${item.scale})`;
-      button.style.opacity = filtered ? '.06' : String(item.visible ? item.opacity : .08);
-      button.style.zIndex = String(item.node.group === 'center' ? 16 : 8 + Math.round((item.z + 1) * 12));
-      button.classList.toggle('is-back',item.z < -0.08);
+      button.style.opacity = filtered ? '.04' : String(item.visible ? item.opacity : 0);
+      button.style.pointerEvents = filtered || !item.visible ? 'none' : 'auto';
+      button.style.zIndex = String(item.node.group === 'center' ? 18 : 8 + Math.round((item.z + 1) * 14));
+      button.classList.toggle('is-back',item.z < .02);
       button.classList.toggle('is-front',item.z > .25);
       button.classList.toggle('filtered-out',filtered);
     });
@@ -997,7 +1020,7 @@
       points.push({
         x:centerX + rotated.x * sphereRadius * perspective,
         y:centerY + rotated.y * sphereRadius * .92 * perspective,
-        visible:rotated.z > -0.05
+        visible:rotated.z > 0.02
       });
     }
     return points;
@@ -1024,26 +1047,55 @@
 
     const centerX = rect.width * .5;
     const centerY = rect.height * .49;
-    const sphereRadius = Math.min(rect.width,rect.height) * .34;
+    const sphereRadius = Math.min(rect.width,rect.height) * .39;
 
     ctx.save();
 
-    const bgGlow = ctx.createRadialGradient(centerX,centerY,18,centerX,centerY,sphereRadius * 1.24);
-    bgGlow.addColorStop(0,'rgba(67,195,232,.20)');
-    bgGlow.addColorStop(.45,'rgba(37,139,213,.08)');
+    const bgGlow = ctx.createRadialGradient(centerX,centerY,18,centerX,centerY,sphereRadius * 1.34);
+    bgGlow.addColorStop(0,'rgba(67,195,232,.24)');
+    bgGlow.addColorStop(.48,'rgba(37,139,213,.10)');
     bgGlow.addColorStop(1,'rgba(6,29,59,0)');
     ctx.fillStyle = bgGlow;
     ctx.fillRect(0,0,rect.width,rect.height);
 
-    const globe = ctx.createRadialGradient(centerX - sphereRadius * .18,centerY - sphereRadius * .22,sphereRadius * .12,centerX,centerY,sphereRadius * 1.12);
-    globe.addColorStop(0,'rgba(29,120,205,.26)');
-    globe.addColorStop(.52,'rgba(8,72,139,.18)');
-    globe.addColorStop(1,'rgba(3,27,57,.08)');
+    ctx.shadowColor = 'rgba(2,14,33,.52)';
+    ctx.shadowBlur = 48;
+    ctx.shadowOffsetY = 18;
+
+    const globe = ctx.createRadialGradient(
+      centerX - sphereRadius * .28,
+      centerY - sphereRadius * .32,
+      sphereRadius * .10,
+      centerX,
+      centerY,
+      sphereRadius * 1.18
+    );
+    globe.addColorStop(0,'rgba(34,145,233,.42)');
+    globe.addColorStop(.42,'rgba(8,85,162,.78)');
+    globe.addColorStop(.76,'rgba(4,54,111,.96)');
+    globe.addColorStop(1,'rgba(2,26,60,1)');
     ctx.beginPath();
     ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
     ctx.fillStyle = globe;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.08)';
+
+    const shadow = ctx.createLinearGradient(
+      centerX - sphereRadius,
+      centerY - sphereRadius * .12,
+      centerX + sphereRadius,
+      centerY + sphereRadius * .32
+    );
+    shadow.addColorStop(0,'rgba(255,255,255,.06)');
+    shadow.addColorStop(.34,'rgba(255,255,255,.015)');
+    shadow.addColorStop(.62,'rgba(0,0,0,.18)');
+    shadow.addColorStop(1,'rgba(0,0,0,.42)');
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
+    ctx.fillStyle = shadow;
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
     ctx.lineWidth = 1.2;
     ctx.stroke();
 

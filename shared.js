@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.11-esfera-3d-interactiva";
+  const PORTAL_BUILD = "11.12-esfera-amplia-solida";
 
   /*
    * Arranque visual temprano.
