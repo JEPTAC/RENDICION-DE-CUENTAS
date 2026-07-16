@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.13-esfera-completa-popup-restaurado";
+  const PORTAL_BUILD = "11.14-popup-diagnosticado-textura-esfera";
 
   /*
    * Arranque visual temprano.
@@ -29,40 +29,16 @@
         html.portal-visual-booting body {
           overflow:hidden!important;
         }
-        html.portal-visual-booting body > :not(script):not(style) {
+        html.portal-visual-booting body > :not(script):not(style):not(#spLoadingPopup) {
           opacity:0!important;
         }
         html.portal-visual-booting::before {
-          content:"SAN PEDRO · RENDICIÓN DE CUENTAS";
-          position:fixed;
-          z-index:2147483646;
-          inset:0;
-          display:grid;
-          place-items:center;
-          padding:24px;
-          color:#0b4e91;
-          font:700 clamp(12px,1.1vw,16px)/1.2 "Century Gothic",Arial,sans-serif;
-          letter-spacing:.17em;
-          text-align:center;
-          background:
-            radial-gradient(circle at 78% 20%,rgba(118,213,255,.32),transparent 24%),
-            linear-gradient(135deg,#f8fcff,#e2f1ff 56%,#cbe7fb);
-          opacity:1;
-          transition:opacity .34s ease,visibility .34s ease;
+          content:none!important;
+          display:none!important;
         }
         html.portal-visual-booting::after {
-          content:"";
-          position:fixed;
-          z-index:2147483647;
-          left:50%;
-          top:calc(50% + 34px);
-          width:min(240px,55vw);
-          height:2px;
-          border-radius:999px;
-          background:linear-gradient(90deg,transparent,#258bd5,#43c3e8,transparent);
-          transform:translateX(-50%) scaleX(.22);
-          transform-origin:center;
-          animation:portalVisualBootLine 1.15s cubic-bezier(.2,.8,.2,1) infinite;
+          content:none!important;
+          display:none!important;
         }
         html.portal-visual-ready body > :not(script):not(style) {
           animation:portalVisualInitialReveal .52s cubic-bezier(.2,.8,.2,1) both;
@@ -443,10 +419,20 @@
   }
 
 
+const PORTAL_ASSET_BASE = (() => {
+  const script = document.currentScript ||
+    [...document.scripts].find(item => /(?:^|\/)shared\.js(?:\?|$)/.test(item.src));
+  try {
+    return new URL("./",script?.src || location.href);
+  } catch {
+    return new URL("./",location.href);
+  }
+})();
+
 const UI_ASSETS = Object.freeze({
-  loading:"ui-gifs/loading-spinner.gif",
-  success:"ui-gifs/ok-hand.gif",
-  notification:"ui-sounds/notification.mp3"
+  loading:new URL("ui-gifs/loading-spinner.gif",PORTAL_ASSET_BASE).href,
+  success:new URL("ui-gifs/ok-hand.gif",PORTAL_ASSET_BASE).href,
+  notification:new URL("ui-sounds/notification.mp3",PORTAL_ASSET_BASE).href
 });
 
 let loadingPopup = null;
@@ -455,6 +441,9 @@ let loadingPopupTitle = null;
 let loadingPopupMessage = null;
 let loadingPopupActive = false;
 let notificationAudio = null;
+let initialLoadingStartedAt = 0;
+let initialLoadingPending = false;
+let initialLoadingFinished = false;
 
 function ensureFeedbackStyles() {
   if (document.getElementById("spLoadingPopupCoreStyles")) return;
@@ -471,7 +460,7 @@ function ensureFeedbackStyles() {
     }
     .sp-loading-popup{
       position:fixed;
-      z-index:2147483000;
+      z-index:2147483646;
       inset:0;
       display:grid;
       place-items:center;
@@ -614,6 +603,16 @@ function ensureFeedbackUi() {
     loadingPopup.querySelector(".sp-loading-popup__title");
   loadingPopupMessage =
     loadingPopup.querySelector(".sp-loading-popup__message");
+
+  if (loadingPopupGif && !loadingPopupGif.dataset.fallbackReady) {
+    loadingPopupGif.dataset.fallbackReady = "true";
+    loadingPopupGif.addEventListener("error",() => {
+      loadingPopupGif.style.opacity = ".18";
+    });
+    loadingPopupGif.addEventListener("load",() => {
+      loadingPopupGif.style.opacity = "1";
+    });
+  }
 }
 
 function restartPopupGif(source) {
@@ -763,7 +762,60 @@ function mountNewsHoverCat() {
 
 function initInteractiveFeedback() {
   ensureFeedbackUi();
-  closeLoadingPopup();
+}
+
+function startInitialPageLoading() {
+  if (initialLoadingPending || initialLoadingFinished) return;
+  initialLoadingPending = true;
+  initialLoadingStartedAt = performance.now();
+  showLoading(
+    "Preparando la información y las animaciones del portal…",
+    {title:"Cargando"}
+  );
+}
+
+function finishInitialPageLoading() {
+  if (!initialLoadingPending || initialLoadingFinished) return;
+  const elapsed = performance.now() - initialLoadingStartedAt;
+  const remaining = Math.max(0,850 - elapsed);
+
+  window.setTimeout(() => {
+    initialLoadingFinished = true;
+    initialLoadingPending = false;
+    hideLoading(
+      "El portal terminó de cargar correctamente.",
+      {title:"Listo",delay:1450,force:true}
+    );
+  },remaining);
+}
+
+function shouldShowNavigationLoader(event,link) {
+  if (!link || event.defaultPrevented || event.button > 0) return false;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+  if (link.target && link.target !== "_self") return false;
+  if (link.hasAttribute("download")) return false;
+  if (!link.href || link.href.startsWith("javascript:")) return false;
+
+  try {
+    const destination = new URL(link.href,location.href);
+    if (destination.origin !== location.origin) return false;
+    if (
+      destination.pathname === location.pathname &&
+      destination.search === location.search &&
+      destination.hash
+    ) return false;
+    return destination.href !== location.href;
+  } catch {
+    return false;
+  }
+}
+
+function bindLoadingNavigationFeedback() {
+  document.addEventListener("click",event => {
+    const link = event.target.closest?.("a[href]");
+    if (!shouldShowNavigationLoader(event,link)) return;
+    showLoading("Abriendo el contenido solicitado…",{title:"Cargando"});
+  },true);
 }
 
 function isClientBlockedFailure(value) {
@@ -2864,13 +2916,28 @@ helpers.showClickEffect = showClickEffect;
   }
 
 
-document.addEventListener("DOMContentLoaded",() => {
+const initializeLoadingFeedback = () => {
   applyEarlyPageClass();
   initInteractiveFeedback();
-},{once:true});
+  bindLoadingNavigationFeedback();
+  startInitialPageLoading();
+};
 
-window.addEventListener("pageshow",() => {
-  closeLoadingPopup();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded",initializeLoadingFeedback,{once:true});
+} else {
+  queueMicrotask(initializeLoadingFeedback);
+}
+
+window.addEventListener("load",finishInitialPageLoading,{once:true});
+
+window.addEventListener("pageshow",event => {
+  if (event.persisted) {
+    initialLoadingFinished = false;
+    initialLoadingPending = false;
+    startInitialPageLoading();
+    window.setTimeout(finishInitialPageLoading,90);
+  }
   window.AdminPopup?.sync?.();
 });
 

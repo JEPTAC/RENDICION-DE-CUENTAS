@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.13-esfera-completa-popup-restaurado";
+  const BUILD = "11.14-popup-diagnosticado-textura-esfera";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -52,7 +52,8 @@
     },
     adminDialog:null,
     compareValue:50,
-    data:null
+    data:null,
+    villageTexture:null
   };
 
   const portal = () => window.Portal;
@@ -209,6 +210,180 @@
       : [];
 
     return [...center,...surface];
+  }
+
+  function createVillageTexture() {
+    let seed = 20260715;
+    const random = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    const spreadLat = () => Math.asin(random() * 1.72 - .86);
+    const spreadLon = () => random() * Math.PI * 2 - Math.PI;
+
+    const fields = Array.from({length:76},(_,index) => ({
+      lat:spreadLat(),
+      lon:spreadLon(),
+      size:5 + random() * 14,
+      angle:random() * Math.PI,
+      tone:index % 4
+    }));
+
+    const buildings = Array.from({length:68},(_,index) => ({
+      lat:Math.max(-1.05,Math.min(1.05,spreadLat() * .82)),
+      lon:spreadLon(),
+      size:2.1 + random() * 3.4,
+      angle:random() * Math.PI,
+      tone:index % 3
+    }));
+
+    const roads = Array.from({length:8},(_,roadIndex) => {
+      const baseLat = -.76 + roadIndex * .21;
+      const phase = random() * Math.PI * 2;
+      return Array.from({length:58},(_,pointIndex) => {
+        const progress = pointIndex / 57;
+        const lon = -Math.PI + progress * Math.PI * 2;
+        return {
+          lat:baseLat + Math.sin(progress * Math.PI * 2 + phase) * .12,
+          lon
+        };
+      });
+    });
+
+    const river = Array.from({length:72},(_,pointIndex) => {
+      const progress = pointIndex / 71;
+      return {
+        lat:.30 + Math.sin(progress * Math.PI * 3.2) * .13,
+        lon:-Math.PI + progress * Math.PI * 2
+      };
+    });
+
+    return {fields,buildings,roads,river};
+  }
+
+  function projectTexturePoint(lat,lon,rect) {
+    const cosLat = Math.cos(lat);
+    const rotated = rotatedPoint({
+      sphereX:Math.sin(lon) * cosLat,
+      sphereY:Math.sin(lat),
+      sphereZ:Math.cos(lon) * cosLat
+    });
+    const sphereRadius = Math.min(rect.width,rect.height) * .385;
+    const centerX = rect.width * .5;
+    const centerY = rect.height * .49;
+    const perspective = .66 + (rotated.z + 1) * .28;
+    return {
+      ...rotated,
+      x:centerX + rotated.x * sphereRadius * perspective,
+      y:centerY + rotated.y * sphereRadius * .92 * perspective,
+      scale:.58 + perspective * .46,
+      visible:rotated.z > .035
+    };
+  }
+
+  function drawTexturePath(ctx,path,rect,color,width) {
+    let started = false;
+    ctx.beginPath();
+    path.forEach(point => {
+      const projected = projectTexturePoint(point.lat,point.lon,rect);
+      if (!projected.visible) {
+        started = false;
+        return;
+      }
+      if (!started) {
+        ctx.moveTo(projected.x,projected.y);
+        started = true;
+      } else {
+        ctx.lineTo(projected.x,projected.y);
+      }
+    });
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.stroke();
+  }
+
+  function drawVillageTexture(ctx,rect) {
+    const texture = state.villageTexture;
+    if (!texture) return;
+
+    texture.fields.forEach(field => {
+      const point = projectTexturePoint(field.lat,field.lon,rect);
+      if (!point.visible) return;
+      const colors = [
+        "rgba(95,150,105,.25)",
+        "rgba(145,179,105,.20)",
+        "rgba(177,150,94,.18)",
+        "rgba(71,129,117,.20)"
+      ];
+      ctx.save();
+      ctx.translate(point.x,point.y);
+      ctx.rotate(field.angle + state.sphere.rotY * .18);
+      ctx.scale(1,0.56 + point.scale * .13);
+      ctx.fillStyle = colors[field.tone];
+      ctx.beginPath();
+      ctx.ellipse(
+        0,
+        0,
+        field.size * point.scale,
+        field.size * .62 * point.scale,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      ctx.restore();
+    });
+
+    texture.roads.forEach((road,index) => {
+      drawTexturePath(
+        ctx,
+        road,
+        rect,
+        index % 2
+          ? "rgba(233,214,166,.20)"
+          : "rgba(244,231,196,.25)",
+        index % 3 === 0 ? 2.2 : 1.35
+      );
+    });
+
+    drawTexturePath(
+      ctx,
+      texture.river,
+      rect,
+      "rgba(78,196,226,.30)",
+      2.4
+    );
+
+    texture.buildings.forEach(building => {
+      const point = projectTexturePoint(building.lat,building.lon,rect);
+      if (!point.visible || point.z < .08) return;
+      const size = building.size * point.scale;
+      const walls = [
+        "rgba(248,239,218,.48)",
+        "rgba(222,232,221,.43)",
+        "rgba(242,224,199,.42)"
+      ];
+      const roofs = [
+        "rgba(183,92,62,.48)",
+        "rgba(195,124,63,.44)",
+        "rgba(151,74,65,.42)"
+      ];
+      ctx.save();
+      ctx.translate(point.x,point.y);
+      ctx.rotate(building.angle + state.sphere.rotY * .12);
+      ctx.fillStyle = walls[building.tone];
+      ctx.fillRect(-size,-size * .62,size * 2,size * 1.24);
+      ctx.beginPath();
+      ctx.moveTo(-size * 1.18,-size * .62);
+      ctx.lineTo(0,-size * 1.45);
+      ctx.lineTo(size * 1.18,-size * .62);
+      ctx.closePath();
+      ctx.fillStyle = roofs[building.tone];
+      ctx.fill();
+      ctx.restore();
+    });
   }
 
   function metricMarkup(data) {
@@ -1115,6 +1290,8 @@
     ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
     ctx.clip();
 
+    drawVillageTexture(ctx,rect);
+
     [-1.1,-.55,0,.55,1.1].forEach(lon => {
       drawCurve(ctx,sampleSphereLine('lon',lon,rect),'rgba(116,199,243,.12)',1);
     });
@@ -1685,12 +1862,15 @@
 
     state.networkStage?.addEventListener("pointerdown",event => {
       if (event.target.closest('.connected-node')) return;
+      event.preventDefault();
+      window.getSelection?.()?.removeAllRanges?.();
       state.sphere.dragging = true;
       state.sphere.pointerId = event.pointerId;
       state.sphere.lastX = event.clientX;
       state.sphere.lastY = event.clientY;
       state.networkStage.setPointerCapture?.(event.pointerId);
       state.networkStage.classList.add('is-dragging');
+      document.documentElement.classList.add('is-connected-sphere-dragging');
     });
 
     state.networkStage?.addEventListener("pointermove",event => {
@@ -1701,6 +1881,8 @@
         Math.max(0,Math.min(1,(event.clientY - rect.top) / rect.height));
 
       if (!state.sphere.dragging || state.sphere.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      window.getSelection?.()?.removeAllRanges?.();
       const dx = event.clientX - state.sphere.lastX;
       const dy = event.clientY - state.sphere.lastY;
       state.sphere.lastX = event.clientX;
@@ -1710,12 +1892,14 @@
       state.sphere.targetY = state.sphere.rotY;
       state.sphere.targetX = state.sphere.rotX;
       drawNetwork();
-    },{passive:true});
+    },{passive:false});
 
     const releaseSphere = () => {
       state.sphere.dragging = false;
       state.sphere.pointerId = null;
       state.networkStage?.classList.remove('is-dragging');
+      document.documentElement.classList.remove('is-connected-sphere-dragging');
+      window.getSelection?.()?.removeAllRanges?.();
     };
 
     state.networkStage?.addEventListener('pointerup',releaseSphere,{passive:true});
@@ -1788,6 +1972,7 @@
     state.initialized = true;
     state.config = getConfigStore();
     state.data = getTerritoryData();
+    state.villageTexture = createVillageTexture();
 
     createSections();
     bindEvents();
