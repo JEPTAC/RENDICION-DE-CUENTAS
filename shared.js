@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.20-eliminacion-historia-publica";
+  const PORTAL_BUILD = "11.21-banner-elegancia";
 
   /*
    * Arranque visual temprano.
@@ -394,6 +394,10 @@
     showTourismLogo:true,
     headerCrest:"",
     headerBrand:"",
+    heroImage:"",
+    heroImageAlt:"Vista panorámica institucional de San Pedro, Valle del Cauca",
+    heroImagePosition:"center center",
+    heroImageOverlay:58,
     animationMode:"smooth",
     contentWidth:1200
   };
@@ -944,6 +948,135 @@ helpers.closeLoading = closeLoadingPopup;
 helpers.withLoading = withLoading;
 helpers.showClickEffect = showClickEffect;
 
+  function applyHeroPresentation() {
+    const hero = document.querySelector(".home-hero");
+    if (!hero) return;
+
+    let media = hero.querySelector(":scope > .home-hero__media");
+    if (!media) {
+      media = document.createElement("figure");
+      media.className = "home-hero__media";
+      media.innerHTML = `
+        <img class="home-hero__media-image" alt="" loading="eager" decoding="async" fetchpriority="high">
+        <span class="home-hero__media-overlay" aria-hidden="true"></span>
+        <span class="home-hero__media-light" aria-hidden="true"></span>`;
+      hero.prepend(media);
+    }
+
+    const image = media.querySelector(".home-hero__media-image");
+    const source = String(state.settings.heroImage || "").trim();
+    const overlay = Math.max(20,Math.min(82,Number(state.settings.heroImageOverlay || 58)));
+    const position = String(state.settings.heroImagePosition || "center center");
+
+    hero.style.setProperty("--hero-image-position",position);
+    hero.style.setProperty("--hero-overlay-strength",String(overlay / 100));
+
+    image.onload = () => {
+      media.hidden = false;
+      hero.classList.add("has-custom-hero-image");
+      hero.classList.remove("has-hero-image-error");
+    };
+    image.onerror = () => {
+      media.hidden = true;
+      hero.classList.remove("has-custom-hero-image");
+      hero.classList.add("has-hero-image-error");
+    };
+
+    if (source) {
+      image.alt = String(state.settings.heroImageAlt || "").trim();
+      media.hidden = false;
+      hero.classList.add("has-custom-hero-image");
+      hero.classList.remove("has-hero-image-error");
+      if (image.getAttribute("src") !== source) image.src = source;
+    } else {
+      image.removeAttribute("src");
+      image.alt = "";
+      media.hidden = true;
+      hero.classList.remove("has-custom-hero-image","has-hero-image-error");
+    }
+  }
+
+  function updateHeroAdminPreview(source = state.settings.heroImage) {
+    const preview = document.querySelector("#adminHeroPreview");
+    const image = preview?.querySelector("img");
+    const empty = preview?.querySelector("span");
+    const value = String(source || "").trim();
+    if (!preview || !image || !empty) return;
+
+    const clearPreview = message => {
+      preview.classList.remove("has-image");
+      image.hidden = true;
+      image.removeAttribute("src");
+      empty.hidden = false;
+      empty.textContent = message;
+    };
+
+    if (!value) {
+      clearPreview("Sin fotografía personalizada");
+      return;
+    }
+
+    image.onload = () => {
+      preview.classList.add("has-image");
+      image.hidden = false;
+      empty.hidden = true;
+    };
+    image.onerror = () => clearPreview("No se pudo cargar la imagen");
+    image.hidden = false;
+    image.src = value;
+  }
+
+  async function compressHeroImage(file) {
+    if (!file?.type?.startsWith("image/")) {
+      throw new Error("Seleccione un archivo de imagen válido.");
+    }
+    if (file.size > 12_000_000) {
+      throw new Error("La fotografía supera 12 MB. Comprímala antes de subirla.");
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const image = await new Promise((resolve,reject) => {
+        const element = new Image();
+        element.onload = () => resolve(element);
+        element.onerror = () => reject(new Error("No fue posible leer la fotografía."));
+        element.src = objectUrl;
+      });
+
+      const maxWidth = 1600;
+      const maxHeight = 900;
+      let ratio = Math.min(1,maxWidth / image.naturalWidth,maxHeight / image.naturalHeight);
+      let quality = .82;
+      let result = "";
+
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        const width = Math.max(1,Math.round(image.naturalWidth * ratio));
+        const height = Math.max(1,Math.round(image.naturalHeight * ratio));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d",{alpha:false});
+        if (!context) throw new Error("El navegador no pudo preparar la imagen.");
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        context.fillStyle = "#eaf4fb";
+        context.fillRect(0,0,width,height);
+        context.drawImage(image,0,0,width,height);
+        result = canvas.toDataURL("image/jpeg",quality);
+        if (result.length <= 900_000) return result;
+        ratio *= .84;
+        quality = Math.max(.62,quality - .07);
+      }
+
+      if (result.length > 1_000_000) {
+        throw new Error("La fotografía sigue siendo muy pesada. Use una imagen panorámica más liviana.");
+      }
+      return result;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
   function applySettings() {
     const root = document.documentElement;
     const s = state.settings;
@@ -960,6 +1093,7 @@ helpers.showClickEffect = showClickEffect;
     root.style.setProperty("--crest-size", `${Number(s.crestSize || 46)}px`);
     root.style.setProperty("--brand-logo-size", `${Number(s.brandSize || 132)}px`);
     document.body.dataset.animationMode = s.animationMode || "smooth";
+    applyHeroPresentation();
   }
 
   function renderHeader() {
@@ -1274,6 +1408,47 @@ helpers.showClickEffect = showClickEffect;
                   <label class="range-label">Redondeado <output id="adminRadiusOutput"></output><input id="adminRadius" type="range" min="0" max="30"></label>
                 </div>
               </div>
+
+              <div class="admin-card admin-hero-media-card">
+                <div class="admin-hero-media-head">
+                  <div>
+                    <span>BANNER PRINCIPAL</span>
+                    <h3>Fotografía institucional</h3>
+                    <p>Cargue una imagen panorámica. El portal la optimiza y la integra sin modificar el contenido del banner.</p>
+                  </div>
+                  <div class="admin-hero-preview" id="adminHeroPreview">
+                    <img alt="Vista previa de la fotografía del banner" hidden>
+                    <span>Sin fotografía personalizada</span>
+                  </div>
+                </div>
+                <div class="admin-hero-fields">
+                  <label class="admin-hero-url">Dirección o ruta de la imagen
+                    <input id="adminHeroImageUrl" type="text" placeholder="assets/banner-san-pedro.jpg o https://...">
+                  </label>
+                  <label>Texto alternativo
+                    <input id="adminHeroImageAlt" type="text" maxlength="180" placeholder="Vista panorámica de San Pedro">
+                  </label>
+                  <label>Subir fotografía
+                    <input id="adminHeroImageFile" type="file" accept="image/jpeg,image/png,image/webp">
+                  </label>
+                  <label>Encuadre
+                    <select id="adminHeroImagePosition">
+                      <option value="center center">Centrado</option>
+                      <option value="center 35%">Priorizar parte superior</option>
+                      <option value="center 65%">Priorizar parte inferior</option>
+                      <option value="left center">Priorizar lado izquierdo</option>
+                      <option value="right center">Priorizar lado derecho</option>
+                    </select>
+                  </label>
+                  <label class="range-label admin-hero-overlay-label">Protección del texto <output id="adminHeroOverlayOutput"></output>
+                    <input id="adminHeroOverlay" type="range" min="25" max="82" step="1">
+                  </label>
+                </div>
+                <div class="admin-card-actions admin-hero-actions">
+                  <button class="button button-primary" type="button" id="applyAdminHero">Guardar fotografía</button>
+                  <button class="button button-secondary" type="button" id="removeAdminHero">Quitar fotografía</button>
+                </div>
+              </div>
             </div>
 
             <div class="admin-tab" data-admin-panel="years">
@@ -1423,6 +1598,18 @@ helpers.showClickEffect = showClickEffect;
     if (radius) radius.value = s.radius;
     if (document.querySelector("#adminFontOutput")) document.querySelector("#adminFontOutput").value = `${s.fontScale}%`;
     if (document.querySelector("#adminRadiusOutput")) document.querySelector("#adminRadiusOutput").value = `${s.radius}px`;
+
+    const heroUrl = document.querySelector("#adminHeroImageUrl");
+    const heroAlt = document.querySelector("#adminHeroImageAlt");
+    const heroPosition = document.querySelector("#adminHeroImagePosition");
+    const heroOverlay = document.querySelector("#adminHeroOverlay");
+    const heroOverlayOutput = document.querySelector("#adminHeroOverlayOutput");
+    if (heroUrl) heroUrl.value = s.heroImage || "";
+    if (heroAlt) heroAlt.value = s.heroImageAlt || "";
+    if (heroPosition) heroPosition.value = s.heroImagePosition || "center center";
+    if (heroOverlay) heroOverlay.value = Number(s.heroImageOverlay || 58);
+    if (heroOverlayOutput) heroOverlayOutput.value = `${Number(s.heroImageOverlay || 58)}%`;
+    updateHeroAdminPreview(s.heroImage);
 
     const yearSelect = document.querySelector("#adminResourceYear");
     if (yearSelect) {
@@ -1983,6 +2170,56 @@ helpers.showClickEffect = showClickEffect;
       state.settings.radius = Number(event.target.value);
       document.querySelector("#adminRadiusOutput").value = `${event.target.value}px`;
       helpers.save(); applySettings();
+    });
+
+    document.querySelector("#adminHeroOverlay")?.addEventListener("input", event => {
+      const output = document.querySelector("#adminHeroOverlayOutput");
+      if (output) output.value = `${event.target.value}%`;
+    });
+
+    document.querySelector("#adminHeroImageUrl")?.addEventListener("input", event => {
+      updateHeroAdminPreview(event.target.value);
+    });
+
+    document.querySelector("#adminHeroImageFile")?.addEventListener("change", async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        helpers.showLoading("Optimizando fotografía del banner…");
+        const optimized = await compressHeroImage(file);
+        const input = document.querySelector("#adminHeroImageUrl");
+        if (input) input.value = optimized;
+        updateHeroAdminPreview(optimized);
+        helpers.hideLoading("Fotografía preparada.");
+      } catch (error) {
+        helpers.failLoading(error?.message || "No fue posible procesar la fotografía.");
+      } finally {
+        event.target.value = "";
+      }
+    });
+
+    document.querySelector("#applyAdminHero")?.addEventListener("click", () => {
+      state.settings.heroImage = document.querySelector("#adminHeroImageUrl")?.value.trim() || "";
+      state.settings.heroImageAlt = document.querySelector("#adminHeroImageAlt")?.value.trim()
+        || "Vista panorámica institucional de San Pedro, Valle del Cauca";
+      state.settings.heroImagePosition = document.querySelector("#adminHeroImagePosition")?.value || "center center";
+      state.settings.heroImageOverlay = Number(document.querySelector("#adminHeroOverlay")?.value || 58);
+      try {
+        helpers.save();
+        applySettings();
+        syncAdmin();
+        helpers.toast("Fotografía del banner actualizada.");
+      } catch (error) {
+        helpers.toast("No fue posible guardar la fotografía. Use una imagen más liviana o una ruta externa.");
+      }
+    });
+
+    document.querySelector("#removeAdminHero")?.addEventListener("click", () => {
+      state.settings.heroImage = "";
+      helpers.save();
+      applySettings();
+      syncAdmin();
+      helpers.toast("Fotografía personalizada retirada.");
     });
 
     document.querySelector("#createYearForm")?.addEventListener("submit", event => {
