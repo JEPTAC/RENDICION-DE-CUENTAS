@@ -1,0 +1,24 @@
+{
+  "version": "11.10",
+  "name": "San Pedro Conectado Plus",
+  "base": "V11.9",
+  "replace_files": [
+    "shared.js",
+    "san-pedro-connected.js",
+    "san-pedro-connected.css"
+  ],
+  "preserved": [
+    "Mapa real Leaflet",
+    "Popup de carga loading-spinner / ok-hand / notification",
+    "Resto de módulos V11.9"
+  ],
+  "improvements": [
+    "Cabecera del módulo más explicativa",
+    "Panel lateral con más lectura rápida",
+    "Leyenda visual de nodos",
+    "Guía de interpretación dentro del lienzo",
+    "Mejor distribución del espacio",
+    "Selección inicial de la cabecera",
+    "Más animación ambiental y tarjetas más trabajadas"
+  ]
+}

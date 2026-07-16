@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.9-san-pedro-conectado";
+  const BUILD = "11.10-san-pedro-conectado-plus";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -264,23 +264,64 @@
     network.className = "connected-experience";
     network.innerHTML = `
       <div class="connected-shell">
-        <header class="connected-heading">
-          <div>
+        <header class="connected-heading connected-heading--premium">
+          <div class="connected-title-block">
             <span>EXPERIENCIA TERRITORIAL</span>
             <h2>${escapeHtml(config.networkTitle)}</h2>
+            <div class="connected-title-summary">
+              <article>
+                <small>Puntos visibles</small>
+                <strong>${nodes.length}</strong>
+                <p>Entre cabecera, barrios y corregimientos.</p>
+              </article>
+              <article>
+                <small>Lectura de la red</small>
+                <strong>Centro → urbano → rural</strong>
+                <p>La organización espacial ayuda a leer el territorio.</p>
+              </article>
+            </div>
           </div>
-          <p>${escapeHtml(config.networkLead)}</p>
-          <button
-            type="button"
-            class="connected-admin-button"
-            id="connectedAdminButton"
-            hidden
-          >
-            Gestionar experiencia
-          </button>
+
+          <div class="connected-intro-panel">
+            <article class="connected-intro-card">
+              <small>CÓMO LEERLO</small>
+              <strong>El centro es la cabecera</strong>
+              <p>
+                El nodo principal agrupa la referencia municipal y conecta
+                con los anillos de barrios y corregimientos.
+              </p>
+            </article>
+            <article class="connected-intro-card">
+              <small>CAPA URBANA</small>
+              <strong>Barrios más cerca del núcleo</strong>
+              <p>
+                El anillo interior resume la cabecera municipal y facilita
+                una lectura rápida de sus sectores urbanos.
+              </p>
+            </article>
+            <article class="connected-intro-card">
+              <small>CAPA RURAL</small>
+              <strong>Corregimientos en el anillo exterior</strong>
+              <p>
+                El borde territorial ubica los corregimientos como puntos de
+                lectura más amplios y conectados con el mapa real.
+              </p>
+            </article>
+          </div>
+
+          <div class="connected-heading-actions">
+            <button
+              type="button"
+              class="connected-admin-button"
+              id="connectedAdminButton"
+              hidden
+            >
+              Gestionar experiencia
+            </button>
+          </div>
         </header>
 
-        <div class="connected-network-layout">
+        <div class="connected-network-layout connected-network-layout--rich">
           <div class="connected-network-stage" id="connectedNetworkStage">
             <canvas
               id="connectedNetworkCanvas"
@@ -291,8 +332,32 @@
               <span>RED TERRITORIAL</span>
               <strong>Todo se conecta</strong>
               <small>
-                Pase el cursor o seleccione un nodo para conocerlo.
+                Explore un nodo o utilice los filtros para entender la red.
               </small>
+            </div>
+
+            <div class="connected-stage-legend">
+              <span><i class="is-center"></i> Cabecera</span>
+              <span><i class="is-neighborhood"></i> Barrios</span>
+              <span><i class="is-rural"></i> Corregimientos</span>
+            </div>
+
+            <div class="connected-stage-guide">
+              <article>
+                <small>01</small>
+                <strong>Observe el centro</strong>
+                <p>La cabecera municipal funciona como eje de referencia.</p>
+              </article>
+              <article>
+                <small>02</small>
+                <strong>Lea los anillos</strong>
+                <p>El anillo interior concentra barrios y el exterior corregimientos.</p>
+              </article>
+              <article>
+                <small>03</small>
+                <strong>Salte al mapa</strong>
+                <p>Cada nodo puede abrir su ubicación dentro del mapa real.</p>
+              </article>
             </div>
 
             <div class="connected-network-nodes">
@@ -335,7 +400,7 @@
             </div>
           </div>
 
-          <aside class="connected-detail-panel">
+          <aside class="connected-detail-panel connected-detail-panel--rich">
             <div class="connected-detail-status">
               <i></i>
               <span>Red territorial activa</span>
@@ -349,6 +414,29 @@
                 corregimientos sin sustituir el mapa real.
               </p>
               <div id="connectedDetailMeta"></div>
+            </div>
+
+            <div class="connected-detail-facts" id="connectedDetailFacts">
+              <article>
+                <small>Nivel</small>
+                <strong>Red territorial</strong>
+              </article>
+              <article>
+                <small>Relación</small>
+                <strong>Centro, urbano y rural</strong>
+              </article>
+              <article>
+                <small>Acción</small>
+                <strong>Seleccione un nodo</strong>
+              </article>
+            </div>
+
+            <div class="connected-detail-read">
+              <small>LECTURA RÁPIDA</small>
+              <p id="connectedDetailSupport">
+                Use los filtros, seleccione un punto y luego abra su
+                ubicación en el mapa para continuar la navegación.
+              </p>
             </div>
 
             <button
@@ -367,7 +455,7 @@
           </aside>
         </div>
 
-        <div class="connected-feature-grid">
+        <div class="connected-feature-grid connected-feature-grid--rich">
           ${featureCards().map(card => `
             <article
               class="connected-feature-card"
@@ -659,12 +747,25 @@
     const meta = state.root?.querySelector("#connectedDetailMeta");
     const mapLink = state.root?.querySelector("#connectedMapLink");
 
+    const facts = state.root?.querySelector("#connectedDetailFacts");
+    const support = state.root?.querySelector("#connectedDetailSupport");
+
     if (!node) {
       eyebrow.textContent = "SAN PEDRO";
       title.textContent = "Seleccione un territorio";
       text.textContent =
         "La red permite recorrer la cabecera, los barrios y los corregimientos sin sustituir el mapa real.";
       meta.innerHTML = "";
+      if (facts) {
+        facts.innerHTML = `
+          <article><small>Nivel</small><strong>Red territorial</strong></article>
+          <article><small>Relación</small><strong>Centro, urbano y rural</strong></article>
+          <article><small>Acción</small><strong>Seleccione un nodo</strong></article>`;
+      }
+      if (support) {
+        support.textContent =
+          "Use los filtros, seleccione un punto y luego abra su ubicación en el mapa para continuar la navegación.";
+      }
       mapLink.disabled = true;
       mapLink.removeAttribute("data-location-id");
       return;
@@ -695,6 +796,37 @@
     meta.innerHTML = chips.map(chip =>
       `<span>${escapeHtml(chip)}</span>`
     ).join("");
+
+    if (facts) {
+      const coverage = node.group === "rural"
+        ? (node.veredas?.length
+            ? `${node.veredas.length} veredas`
+            : "Cobertura rural")
+        : node.group === "neighborhood"
+          ? (node.sector || "Sector urbano")
+          : "Núcleo municipal";
+      const altitude = node.altitude
+        ? `${node.altitude} m s. n. m.`
+        : "Sin altitud registrada";
+      const relation = node.group === "center"
+        ? "Cabecera"
+        : node.group === "neighborhood"
+          ? "Barrio"
+          : "Corregimiento";
+      facts.innerHTML = `
+        <article><small>Tipo</small><strong>${escapeHtml(relation)}</strong></article>
+        <article><small>Cobertura</small><strong>${escapeHtml(coverage)}</strong></article>
+        <article><small>Altitud</small><strong>${escapeHtml(altitude)}</strong></article>`;
+    }
+
+    if (support) {
+      support.textContent =
+        node.group === "center"
+          ? "La cabecera municipal actúa como punto de referencia para los barrios urbanos y las conexiones generales del municipio."
+          : node.group === "neighborhood"
+            ? "Este barrio pertenece al anillo urbano y puede abrirse en el mapa real para revisar su localización con mayor detalle."
+            : "Este corregimiento aparece en el anillo exterior para facilitar la lectura del territorio rural y su conexión con la cartografía principal.";
+    }
 
     mapLink.disabled = false;
     mapLink.dataset.locationId = node.id;
@@ -1473,6 +1605,7 @@
     resizeCanvas();
     resizeClosingCanvas();
     drawNetwork();
+    updateDetail(state.nodes.find(node => node.group === "center") || state.nodes[0] || null);
 
     window.dispatchEvent(new CustomEvent("portal:rendered",{
       detail:{source:"san-pedro-connected",build:BUILD}
@@ -1488,6 +1621,7 @@
       refreshContent();
       resizeCanvas();
       resizeClosingCanvas();
+      updateDetail(state.activeNode || state.nodes.find(node => node.group === "center") || state.nodes[0] || null);
     }
   };
 
