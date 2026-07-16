@@ -29,7 +29,10 @@
     ".method-step",
     ".commitment-row",
     ".followup-summary > article",
-    ".request-summary > article"
+    ".request-summary > article",
+    ".territory-focus-card",
+    ".territory-story-step",
+    ".territory-detail-card"
   ].join(",");
 
   const state = {

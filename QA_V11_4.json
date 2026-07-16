@@ -1,0 +1,47 @@
+{
+  "version": "11.4",
+  "name": "Territorio Vivo",
+  "replace_files": [
+    "shared.js",
+    "claude-design.js",
+    "claude-design.css",
+    "admin-popup.js",
+    "motion-studio.js"
+  ],
+  "new_files": [
+    "territory-experience.js"
+  ],
+  "new_modules": [
+    "Mapa interactivo de San Pedro con zoom y desplazamiento.",
+    "Filtros de territorio, afectaciones, obras/respuestas y participación.",
+    "Buscador local de corregimientos, veredas, sectores y registros.",
+    "Tarjetas con enfoque y difuminado progresivo.",
+    "Narrativa por desplazamiento Del territorio a la respuesta.",
+    "Editor administrativo emergente para registrar puntos.",
+    "Exportación de datos territoriales en JSON.",
+    "Vista de respaldo si el proveedor cartográfico no carga."
+  ],
+  "data_integrity": [
+    "No se inventan cifras de población afectada.",
+    "Las capas de afectaciones, obras y participación comienzan vacías.",
+    "Guaqueros queda identificado como pendiente de georreferenciación oficial.",
+    "El mapa advierte que nombres y límites deben validarse con información oficial."
+  ],
+  "performance": [
+    "El motor del mapa se carga solo al acercarse a la sección.",
+    "Leaflet se solicita de forma diferida.",
+    "No se incorpora Three.js ni un motor 3D pesado.",
+    "Las animaciones respetan prefers-reduced-motion.",
+    "Existe una experiencia visual de respaldo sin dependencia cartográfica."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK",
+      "territory-experience.js": "OK"
+    },
+    "css_braces": "865/865"
+  }
+}

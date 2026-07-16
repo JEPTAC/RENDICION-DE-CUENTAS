@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.3-cinematic-motion";
+  const PORTAL_BUILD = "11.4-territorio-vivo";
 
   /*
    * Arranque visual temprano.
@@ -2435,6 +2435,7 @@ helpers.showClickEffect = showClickEffect;
     const cssId = "claudeStudioStyles";
     const scriptId = "claudeStudioScript";
     const motionId = "motionStudioScript";
+    const territoryId = "territoryExperienceScript";
 
     let link = document.getElementById(cssId) || visualBoot.link;
     if (!link) {
@@ -2445,9 +2446,24 @@ helpers.showClickEffect = showClickEffect;
       document.head.appendChild(link);
     }
 
+    const loadTerritoryExperience = () => {
+      if (document.getElementById(territoryId)) {
+        window.TerritoryExperience?.init?.();
+        return;
+      }
+
+      const territory = document.createElement("script");
+      territory.id = territoryId;
+      territory.src = `territory-experience.js?v=${PORTAL_BUILD}`;
+      territory.defer = true;
+      territory.onload = () => window.TerritoryExperience?.init?.();
+      document.head.appendChild(territory);
+    };
+
     const loadMotion = () => {
       if (document.getElementById(motionId)) {
         window.MotionStudio?.init?.();
+        loadTerritoryExperience();
         return;
       }
 
@@ -2455,7 +2471,11 @@ helpers.showClickEffect = showClickEffect;
       motion.id = motionId;
       motion.src = `motion-studio.js?v=${PORTAL_BUILD}`;
       motion.defer = true;
-      motion.onload = () => window.MotionStudio?.init?.();
+      motion.onload = () => {
+        window.MotionStudio?.init?.();
+        loadTerritoryExperience();
+      };
+      motion.onerror = loadTerritoryExperience;
       document.head.appendChild(motion);
     };
 
