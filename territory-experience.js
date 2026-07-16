@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.6-maplibre-territory";
+  const BUILD = "11.7-real-map-loader";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -625,15 +625,19 @@
             </div>
 
             <div class="territory-map-fallback" id="territoryMapFallback">
-              <div class="territory-contours" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
-              <div class="territory-fallback-orbit" aria-hidden="true"></div>
-              ${createFallbackNodes()}
-              <div class="territory-map-loading">
-                <span></span>
-                <strong>Preparando el mapa territorial</strong>
-                <small>La experiencia interactiva se carga únicamente al acercarse a esta sección.</small>
+              <div class="territory-real-map-loading">
+                <img
+                  src="ui-gifs/loading-spinner.gif"
+                  alt=""
+                  decoding="async"
+                >
+                <strong>Cargando mapa real</strong>
+                <small>
+                  Preparando calles, carreras, corregimientos y vista satelital.
+                </small>
+                <button type="button" id="territoryRetryMap" hidden>
+                  Reintentar
+                </button>
               </div>
             </div>
 
@@ -966,7 +970,7 @@
 
     if (
       fly &&
-      (state.mapReady || window.TerritoryMapEngine?.isReady?.()) &&
+      state.mapReady &&
       Number.isFinite(item.lat) &&
       Number.isFinite(item.lng)
     ) {
@@ -1088,20 +1092,6 @@
   }
 
   function switchBasemap(name,button = null) {
-    if (window.TerritoryMapEngine?.isReady?.()) {
-      window.TerritoryMapEngine.switchBasemap(name,button);
-      state.activeBaseName = name;
-      state.section?.querySelectorAll("[data-territory-basemap]")
-        .forEach(control => {
-          const active = control.dataset.territoryBasemap === name;
-          control.classList.toggle("active",active);
-          control.setAttribute("aria-pressed",String(active));
-        });
-      const shell = state.section?.querySelector(".territory-map-shell");
-      if (shell) shell.dataset.basemap = name;
-      return;
-    }
-
     if (!state.mapReady || !state.baseLayers?.[name]) return;
     if (name === state.activeBaseName) return;
 
@@ -1142,17 +1132,6 @@
   }
 
   function cinematicFlyTo(item) {
-    if (window.TerritoryMapEngine?.isReady?.()) {
-      const shell = state.section?.querySelector(".territory-map-shell");
-      shell?.classList.add("is-cinematic-zoom");
-      window.TerritoryMapEngine.flyTo(item);
-      window.setTimeout(
-        () => shell?.classList.remove("is-cinematic-zoom"),
-        2150
-      );
-      return;
-    }
-
     if (!state.mapReady || !state.map) return;
 
     const shell = state.section?.querySelector(".territory-map-shell");
@@ -1163,12 +1142,17 @@
 
     setMapCameraStatus(`Acercando la vista a ${item.name}`,true);
 
-    const currentZoom = state.map.getZoom();
-    const targetZoom = Math.max(14.25,Math.min(16,currentZoom + 2.25));
+    const isUrban =
+      item.id === "cabecera" ||
+      /cabecera|barrio|carrera|calle/i.test(
+        `${item.name} ${item.kind || ""} ${item.sector || ""}`
+      );
+    const targetZoom = isUrban ? 17 : 15;
+
     state.map.flyTo([item.lat,item.lng],targetZoom,{
       animate:true,
-      duration:1.35,
-      easeLinearity:.18,
+      duration:1.65,
+      easeLinearity:.15,
       noMoveStart:false
     });
 
@@ -1185,14 +1169,6 @@
   }
 
   function renderMapLayers() {
-    if (window.TerritoryMapEngine?.isReady?.()) {
-      window.TerritoryMapEngine.render(
-        layerRecords(),
-        state.activeMode
-      );
-      return;
-    }
-
     if (!state.mapReady || !window.L) return;
 
     if (!state.markerLayer) {
@@ -1251,18 +1227,6 @@
   }
 
   function resetMap() {
-    if (window.TerritoryMapEngine?.isReady?.()) {
-      const shell = state.section?.querySelector(".territory-map-shell");
-      shell?.classList.add("is-cinematic-zoom");
-      setMapCameraStatus("Regresando a la vista general",true);
-      window.TerritoryMapEngine.reset();
-      window.setTimeout(() => {
-        shell?.classList.remove("is-cinematic-zoom");
-        setMapCameraStatus("Vista general preparada",false);
-      },1850);
-      return;
-    }
-
     if (!state.mapReady) return;
     const shell = state.section?.querySelector(".territory-map-shell");
     shell?.classList.add("is-cinematic-zoom");
@@ -1274,9 +1238,9 @@
     if (positions.length) {
       state.map.fitBounds(positions,{
         padding:[38,38],
-        maxZoom:13,
+        maxZoom:12.7,
         animate:true,
-        duration:.8
+        duration:1.15
       });
     } else {
       state.map.flyTo(CENTER,12,{duration:1.1,easeLinearity:.2});
@@ -1288,40 +1252,99 @@
     });
   }
 
-  function loadLeaflet() {
-    if (window.L?.map) return Promise.resolve(window.L);
-    if (state.leafletPromise) return state.leafletPromise;
-
-    state.leafletPromise = new Promise((resolve,reject) => {
-      let css = document.querySelector("#territoryLeafletCss");
-      if (!css) {
-        css = document.createElement("link");
-        css.id = "territoryLeafletCss";
-        css.rel = "stylesheet";
-        css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        css.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
-        css.crossOrigin = "";
-        document.head.appendChild(css);
+  function loadExternalStylesheet(url,id) {
+    return new Promise((resolve,reject) => {
+      const previous = document.getElementById(id);
+      if (previous) {
+        if (previous.sheet) {
+          resolve(previous);
+          return;
+        }
+        previous.remove();
       }
 
-      const existing = document.querySelector("#territoryLeafletScript");
-      if (existing) {
-        existing.addEventListener("load",() => resolve(window.L),{once:true});
-        existing.addEventListener("error",reject,{once:true});
-        return;
-      }
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = url;
+      link.onload = () => resolve(link);
+      link.onerror = () => {
+        link.remove();
+        reject(new Error(`No se pudo cargar ${url}`));
+      };
+      document.head.appendChild(link);
+    });
+  }
+
+  function loadExternalScript(url,id) {
+    return new Promise((resolve,reject) => {
+      const previous = document.getElementById(id);
+      if (previous) previous.remove();
 
       const script = document.createElement("script");
-      script.id = "territoryLeafletScript";
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
-      script.crossOrigin = "";
-      script.onload = () => resolve(window.L);
-      script.onerror = reject;
+      script.id = id;
+      script.src = url;
+      script.defer = true;
+      script.onload = () => resolve(script);
+      script.onerror = () => {
+        script.remove();
+        reject(new Error(`No se pudo cargar ${url}`));
+      };
       document.head.appendChild(script);
     });
+  }
 
-    return state.leafletPromise;
+  async function loadLeaflet() {
+    if (window.L?.map) return window.L;
+    if (state.leafletPromise) return state.leafletPromise;
+
+    const cssUrls = [
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css",
+      "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css",
+      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    ];
+
+    const scriptUrls = [
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js",
+      "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ];
+
+    state.leafletPromise = (async () => {
+      let cssLoaded = false;
+
+      for (const url of cssUrls) {
+        try {
+          await loadExternalStylesheet(url,"territoryLeafletCss");
+          cssLoaded = true;
+          break;
+        } catch {
+          // Probar el siguiente proveedor.
+        }
+      }
+
+      if (!cssLoaded) {
+        throw new Error("No se pudo cargar el estilo del mapa.");
+      }
+
+      for (const url of scriptUrls) {
+        try {
+          await loadExternalScript(url,"territoryLeafletScript");
+          if (window.L?.map) return window.L;
+        } catch {
+          // Probar el siguiente proveedor.
+        }
+      }
+
+      throw new Error("No se pudo cargar el motor del mapa.");
+    })();
+
+    try {
+      return await state.leafletPromise;
+    } catch (error) {
+      state.leafletPromise = null;
+      throw error;
+    }
   }
 
   async function initMap() {
@@ -1332,67 +1355,12 @@
     if (!mapNode) return;
 
     try {
-      if (window.TerritoryMapEngine) {
-        await window.TerritoryMapEngine.init({
-          container:mapNode,
-          fallback,
-          center:[CENTER[1],CENTER[0]],
-          items:layerRecords(),
-          allTerritory:TERRITORY,
-          mode:state.activeMode,
-          onSelect:item => selectItem(item,{fly:false}),
-          onMapClick:({lat,lng}) => {
-            state.mapClick = {lat,lng};
-            const text = state.section?.querySelector(
-              "#territoryCoordinateText"
-            );
-            if (text) {
-              text.textContent =
-                `Punto seleccionado: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-            }
-
-            if (state.adminDialog?.open) {
-              const form = state.adminDialog.querySelector(
-                "#territoryRecordForm"
-              );
-              if (form) {
-                form.elements.lat.value = lat.toFixed(6);
-                form.elements.lng.value = lng.toFixed(6);
-              }
-            }
-          },
-          onMove:({lat,lng,zoom,pitch}) => {
-            const text = state.section?.querySelector(
-              "#territoryCoordinateText"
-            );
-            if (text && !state.mapClick) {
-              text.textContent =
-                `Centro: ${lat.toFixed(5)}, ${lng.toFixed(5)} · ` +
-                `zoom ${zoom.toFixed(2)} · inclinación ${Math.round(pitch)}°`;
-            }
-          },
-          onStatus:(message,active) => {
-            setMapCameraStatus(message,active);
-          },
-          onReady:() => {
-            state.mapReady = true;
-            mapNode.classList.add("is-ready","is-maplibre");
-            fallback?.classList.add("is-hidden");
-          }
-        });
-
-        state.mapReady = true;
-        state.map = window.TerritoryMapEngine;
-        renderMapLayers();
-        return;
-      }
-
       await loadLeaflet();
       if (!window.L?.map) throw new Error("Leaflet no disponible.");
 
       state.map = window.L.map(mapNode,{
         center:CENTER,
-        zoom:12,
+        zoom:13,
         zoomControl:false,
         scrollWheelZoom:true,
         doubleClickZoom:true,
@@ -1416,6 +1384,13 @@
       state.activeBaseName = "plano";
       state.activeBaseLayer = state.baseLayers.plano;
       state.activeBaseLayer.addTo(state.map);
+
+      state.activeBaseLayer.on("tileerror",() => {
+        setMapCameraStatus(
+          "Algunas partes del mapa están tardando. Reintentando…",
+          true
+        );
+      });
       state.section.querySelector(".territory-map-shell").dataset.basemap =
         state.activeBaseName;
 
@@ -1470,17 +1445,28 @@
 
       window.setTimeout(() => state.map.invalidateSize({animate:false}),120);
     } catch (error) {
+      fallback?.classList.remove("is-hidden");
       fallback?.classList.add("has-error");
-      const loading = fallback?.querySelector(".territory-map-loading");
+      const loading = fallback?.querySelector(
+        ".territory-real-map-loading"
+      );
+      const retry = fallback?.querySelector("#territoryRetryMap");
+
       if (loading) {
-        loading.innerHTML = `
-          <strong>Mapa base no disponible</strong>
-          <small>
-            La vista territorial de respaldo sigue activa. Revise la conexión
-            para habilitar zoom, desplazamiento y cartografía abierta.
-          </small>`;
+        const title = loading.querySelector("strong");
+        const detail = loading.querySelector("small");
+        if (title) title.textContent = "No se pudo cargar el mapa real";
+        if (detail) {
+          detail.textContent =
+            "Revise la conexión y pulse Reintentar. No se mostrará un mapa simulado.";
+        }
       }
-      console.warn("TerritoryExperience: Leaflet no pudo cargarse.",error);
+      if (retry) retry.hidden = false;
+
+      console.warn(
+        "TerritoryExperience: no se pudo cargar Leaflet.",
+        error
+      );
     }
   }
 
@@ -1700,27 +1686,6 @@
     },{passive:true});
   }
 
-  function getActiveMapCenter() {
-    const engineCenter = window.TerritoryMapEngine?.getCenter?.();
-    if (
-      engineCenter &&
-      Number.isFinite(engineCenter.lat) &&
-      Number.isFinite(engineCenter.lng)
-    ) {
-      return engineCenter;
-    }
-
-    if (state.mapReady && state.map?.getCenter) {
-      const center = state.map.getCenter();
-      return {
-        lat:center.lat,
-        lng:center.lng
-      };
-    }
-
-    return {lat:CENTER[0],lng:CENTER[1]};
-  }
-
   function ensureAdminDialog() {
     if (state.adminDialog) return state.adminDialog;
 
@@ -1843,7 +1808,9 @@
 
     dialog.querySelector(".territory-use-map-center")
       .addEventListener("click",() => {
-        const center = getActiveMapCenter();
+        const center = state.mapReady
+          ? state.map.getCenter()
+          : {lat:CENTER[0],lng:CENTER[1]};
         const form = dialog.querySelector("#territoryRecordForm");
         form.elements.lat.value = center.lat.toFixed(6);
         form.elements.lng.value = center.lng.toFixed(6);
@@ -1873,7 +1840,9 @@
     form.elements.recordId.value = "";
     state.editingRecordId = null;
 
-    const center = getActiveMapCenter();
+    const center = state.mapReady
+      ? state.map.getCenter()
+      : {lat:CENTER[0],lng:CENTER[1]};
     form.elements.lat.value = center.lat.toFixed(6);
     form.elements.lng.value = center.lng.toFixed(6);
   }
@@ -2064,6 +2033,33 @@
         return;
       }
 
+      if (event.target.closest("#territoryRetryMap")) {
+        state.leafletPromise = null;
+        state.mapReady = false;
+
+        const fallback = state.section?.querySelector(
+          "#territoryMapFallback"
+        );
+        const retry = fallback?.querySelector("#territoryRetryMap");
+        const title = fallback?.querySelector(
+          ".territory-real-map-loading strong"
+        );
+        const detail = fallback?.querySelector(
+          ".territory-real-map-loading small"
+        );
+
+        fallback?.classList.remove("has-error");
+        if (retry) retry.hidden = true;
+        if (title) title.textContent = "Cargando mapa real";
+        if (detail) {
+          detail.textContent =
+            "Preparando calles, carreras, corregimientos y vista satelital.";
+        }
+
+        initMap();
+        return;
+      }
+
       if (event.target.closest("#territoryAdminButton")) {
         openAdminDialog();
       }
@@ -2129,13 +2125,7 @@
 
     window.addEventListener("resize",() => {
       if (!state.mapReady) return;
-      requestAnimationFrame(() => {
-        if (window.TerritoryMapEngine?.isReady?.()) {
-          window.TerritoryMapEngine.resize();
-          return;
-        }
-        state.map?.invalidateSize?.({animate:false});
-      });
+      requestAnimationFrame(() => state.map.invalidateSize({animate:false}));
     },{passive:true});
   }
 

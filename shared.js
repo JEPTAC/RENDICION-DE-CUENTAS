@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.6-maplibre-territory";
+  const PORTAL_BUILD = "11.7-real-map-loader";
 
   /*
    * Arranque visual temprano.
@@ -445,187 +445,200 @@
 
 const UI_ASSETS = Object.freeze({
   loading:"ui-gifs/loading-spinner.gif",
-  success:"ui-gifs/ok-hand.gif"
+  success:"ui-gifs/ok-hand.gif",
+  notification:"ui-sounds/notification.mp3"
 });
 
-let loaderPanel = null;
-let loaderGif = null;
-let loaderTitle = null;
-let loaderText = null;
-let loaderActiveButton = null;
+let loadingPopup = null;
+let loadingPopupGif = null;
+let loadingPopupTitle = null;
+let loadingPopupMessage = null;
+let loadingPopupActive = false;
+let notificationAudio = null;
+
+function removeLegacyLoadingPopups() {
+  document.querySelectorAll(
+    "#globalLoadingPopup," +
+    ".ui-loader," +
+    ".ui-loading-popup," +
+    ".loading-popup," +
+    ".global-loading-popup"
+  ).forEach(node => {
+    if (node.id !== "spLoadingPopup") node.remove();
+  });
+}
 
 function ensureFeedbackUi() {
   if (!document.body) return;
 
-  loaderPanel = loaderPanel || document.querySelector("#globalLoadingPopup");
-  if (!loaderPanel) {
-    loaderPanel = document.createElement("div");
-    loaderPanel.id = "globalLoadingPopup";
-    loaderPanel.className = "ui-loader ui-loader--gif";
-    loaderPanel.setAttribute("aria-hidden","true");
-    loaderPanel.innerHTML = `
-      <div class="ui-loader__backdrop"></div>
-      <div class="ui-loader__panel" role="status" aria-live="polite">
-        <div class="ui-loader__media" aria-hidden="true">
-          <img
-            class="ui-loader__gif"
-            src="${UI_ASSETS.loading}"
-            alt=""
-            decoding="async"
-          >
-          <span class="ui-loader__orbit"></span>
-        </div>
-        <div class="ui-loader__copy">
-          <small class="ui-loader__eyebrow">PORTAL INSTITUCIONAL</small>
-          <strong class="ui-loader__title">Cargando contenido</strong>
-          <span class="ui-loader__text">
-            Estamos preparando la información…
-          </span>
-          <span class="ui-loader__progress" aria-hidden="true"><i></i></span>
-        </div>
+  removeLegacyLoadingPopups();
+
+  loadingPopup = document.querySelector("#spLoadingPopup");
+  if (!loadingPopup) {
+    loadingPopup = document.createElement("div");
+    loadingPopup.id = "spLoadingPopup";
+    loadingPopup.className = "sp-loading-popup";
+    loadingPopup.setAttribute("aria-hidden","true");
+    loadingPopup.innerHTML = `
+      <div class="sp-loading-popup__backdrop"></div>
+      <div
+        class="sp-loading-popup__card"
+        role="status"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <img
+          class="sp-loading-popup__gif"
+          src="${UI_ASSETS.loading}"
+          alt=""
+          decoding="async"
+        >
+        <strong class="sp-loading-popup__title">Cargando</strong>
+        <span class="sp-loading-popup__message">
+          Espere un momento…
+        </span>
       </div>`;
-    document.body.appendChild(loaderPanel);
+    document.body.appendChild(loadingPopup);
   }
 
-  loaderGif = loaderPanel.querySelector(".ui-loader__gif");
-  loaderTitle = loaderPanel.querySelector(".ui-loader__title");
-  loaderText = loaderPanel.querySelector(".ui-loader__text");
+  loadingPopupGif =
+    loadingPopup.querySelector(".sp-loading-popup__gif");
+  loadingPopupTitle =
+    loadingPopup.querySelector(".sp-loading-popup__title");
+  loadingPopupMessage =
+    loadingPopup.querySelector(".sp-loading-popup__message");
 }
 
-function setLoadingButton(button,stateName) {
-  if (!(button instanceof HTMLElement)) return;
-
-  button.classList.remove("is-loading-action","is-loaded-action");
-  button.removeAttribute("aria-busy");
-
-  if (stateName === "loading") {
-    loaderActiveButton = button;
-    button.classList.add("is-loading-action");
-    button.setAttribute("aria-busy","true");
-  } else if (stateName === "success") {
-    button.classList.add("is-loaded-action");
-    window.setTimeout(() => {
-      button.classList.remove("is-loaded-action");
-    },1200);
-    if (loaderActiveButton === button) loaderActiveButton = null;
-  } else if (loaderActiveButton === button) {
-    loaderActiveButton = null;
-  }
+function restartPopupGif(source) {
+  if (!loadingPopupGif) return;
+  loadingPopupGif.removeAttribute("src");
+  void loadingPopupGif.offsetWidth;
+  loadingPopupGif.src = source;
 }
-
-function resolveLoadingTrigger(trigger) {
-  if (trigger instanceof HTMLElement) return trigger;
-  const active = document.activeElement;
-  return active instanceof HTMLElement &&
-    active.matches("button,.button,a") ? active : null;
-}
-
-let notificationAudio = null;
 
 function playNotification() {
   try {
     if (!notificationAudio) {
-      notificationAudio = new Audio("ui-sounds/notification.mp3");
+      notificationAudio = new Audio(UI_ASSETS.notification);
       notificationAudio.preload = "auto";
       notificationAudio.volume = .72;
     }
+
     notificationAudio.pause();
     notificationAudio.currentTime = 0;
     const playback = notificationAudio.play();
     playback?.catch?.(() => null);
   } catch {
-    // La confirmación visual permanece aunque el navegador bloquee el audio.
+    // El popup de confirmación permanece aunque el navegador bloquee audio.
   }
+}
+
+function closeLoadingPopup() {
+  clearTimeout(window.__spLoadingTimer);
+  clearTimeout(window.__spLoadingFailSafe);
+  loadingPopupActive = false;
+
+  loadingPopup?.classList.remove(
+    "is-visible",
+    "is-loading",
+    "is-success",
+    "is-error"
+  );
+  loadingPopup?.setAttribute("aria-hidden","true");
+  document.documentElement.classList.remove("has-sp-loading-popup");
 }
 
 function showLoading(
-  message = "Estamos cargando el contenido solicitado…",
+  message = "Espere un momento…",
   options = {}
 ) {
   ensureFeedbackUi();
-  if (!loaderPanel) return;
+  if (!loadingPopup) return;
 
-  const trigger = resolveLoadingTrigger(options.trigger);
-  if (trigger) setLoadingButton(trigger,"loading");
+  clearTimeout(window.__spLoadingTimer);
+  clearTimeout(window.__spLoadingFailSafe);
 
-  loaderPanel.classList.remove("is-success","is-error");
-  loaderPanel.classList.add("is-visible","is-loading");
-  loaderPanel.setAttribute("aria-hidden","false");
+  loadingPopupActive = true;
+  loadingPopup.classList.remove("is-success","is-error");
+  loadingPopup.classList.add("is-visible","is-loading");
+  loadingPopup.setAttribute("aria-hidden","false");
+  document.documentElement.classList.add("has-sp-loading-popup");
 
-  if (loaderGif) {
-    loaderGif.src = `${UI_ASSETS.loading}?v=${Date.now()}`;
-  }
-  if (loaderTitle) loaderTitle.textContent = options.title || "Cargando contenido";
-  if (loaderText) loaderText.textContent = message;
+  restartPopupGif(UI_ASSETS.loading);
+  loadingPopupTitle.textContent = options.title || "Cargando";
+  loadingPopupMessage.textContent = message;
 
-  clearTimeout(window.__globalLoadingTimer);
-  clearTimeout(window.__globalLoadingFailSafe);
-  window.__globalLoadingFailSafe = window.setTimeout(() => {
-    hideLoading("La operación terminó.");
-  },10000);
+  window.__spLoadingFailSafe = window.setTimeout(() => {
+    failLoading("La operación está tardando más de lo esperado.");
+  },15000);
 }
 
 function hideLoading(
-  message = "Contenido cargado correctamente",
+  message = "La información se cargó correctamente.",
   options = {}
 ) {
   ensureFeedbackUi();
-  if (!loaderPanel) return;
+  if (!loadingPopup) return;
 
-  const trigger = resolveLoadingTrigger(options.trigger) || loaderActiveButton;
-  if (trigger) setLoadingButton(trigger,"success");
-
-  clearTimeout(window.__globalLoadingFailSafe);
-  loaderPanel.classList.remove("is-loading","is-error");
-  loaderPanel.classList.add("is-visible","is-success");
-  loaderPanel.setAttribute("aria-hidden","false");
-
-  if (loaderGif) {
-    loaderGif.src = `${UI_ASSETS.success}?v=${Date.now()}`;
+  if (!loadingPopupActive && options.force !== true) {
+    closeLoadingPopup();
+    return;
   }
-  if (loaderTitle) loaderTitle.textContent = options.title || "Listo";
-  if (loaderText) loaderText.textContent = message;
 
+  clearTimeout(window.__spLoadingFailSafe);
+  loadingPopupActive = true;
+  loadingPopup.classList.remove("is-loading","is-error");
+  loadingPopup.classList.add("is-visible","is-success");
+  loadingPopup.setAttribute("aria-hidden","false");
+
+  restartPopupGif(UI_ASSETS.success);
+  loadingPopupTitle.textContent = options.title || "Listo";
+  loadingPopupMessage.textContent = message;
   playNotification();
 
-  clearTimeout(window.__globalLoadingTimer);
-  window.__globalLoadingTimer = window.setTimeout(() => {
-    loaderPanel?.classList.remove("is-visible","is-success");
-    loaderPanel?.setAttribute("aria-hidden","true");
-  },Math.max(650,Number(options.delay) || 1050));
+  clearTimeout(window.__spLoadingTimer);
+  window.__spLoadingTimer = window.setTimeout(
+    closeLoadingPopup,
+    maxPopupDelay(options.delay)
+  );
 }
 
-function failLoading(message = "No fue posible completar la operación.") {
+function maxPopupDelay(value) {
+  return Math.max(1100,Number(value) || 1550);
+}
+
+function failLoading(
+  message = "No fue posible completar la operación."
+) {
   ensureFeedbackUi();
-  if (!loaderPanel) return;
+  if (!loadingPopup) return;
 
-  clearTimeout(window.__globalLoadingFailSafe);
-  setLoadingButton(loaderActiveButton,"idle");
-  loaderPanel.classList.remove("is-loading","is-success");
-  loaderPanel.classList.add("is-visible","is-error");
-  loaderPanel.setAttribute("aria-hidden","false");
+  clearTimeout(window.__spLoadingFailSafe);
+  loadingPopupActive = true;
+  loadingPopup.classList.remove("is-loading","is-success");
+  loadingPopup.classList.add("is-visible","is-error");
+  loadingPopup.setAttribute("aria-hidden","false");
 
-  if (loaderGif) loaderGif.src = UI_ASSETS.loading;
-  if (loaderTitle) loaderTitle.textContent = "Revise la operación";
-  if (loaderText) loaderText.textContent = message;
+  restartPopupGif(UI_ASSETS.loading);
+  loadingPopupTitle.textContent = "No se pudo completar";
+  loadingPopupMessage.textContent = message;
 
-  clearTimeout(window.__globalLoadingTimer);
-  window.__globalLoadingTimer = window.setTimeout(() => {
-    loaderPanel?.classList.remove("is-visible","is-error");
-    loaderPanel?.setAttribute("aria-hidden","true");
-  },1600);
+  clearTimeout(window.__spLoadingTimer);
+  window.__spLoadingTimer = window.setTimeout(
+    closeLoadingPopup,
+    2200
+  );
 }
 
 async function withLoading(task,{
   loadingMessage = "Procesando información…",
   successMessage = "Operación completada.",
-  errorMessage = "No fue posible completar la operación.",
-  trigger = null
+  errorMessage = "No fue posible completar la operación."
 } = {}) {
-  showLoading(loadingMessage,{trigger});
+  showLoading(loadingMessage);
   try {
     const result = await (typeof task === "function" ? task() : task);
-    hideLoading(successMessage,{trigger});
+    hideLoading(successMessage);
     return result;
   } catch (error) {
     failLoading(error?.message || errorMessage);
@@ -634,7 +647,7 @@ async function withLoading(task,{
 }
 
 function showClickEffect() {
-  // Se mantiene desactivado para evitar nodos en cada interacción.
+  return null;
 }
 
 function mountNewsHoverCat() {
@@ -643,6 +656,7 @@ function mountNewsHoverCat() {
 
 function initInteractiveFeedback() {
   ensureFeedbackUi();
+  closeLoadingPopup();
 }
 
   const state = {
@@ -748,6 +762,9 @@ function initInteractiveFeedback() {
 helpers.playNotification = playNotification;
 helpers.showLoading = showLoading;
 helpers.hideLoading = hideLoading;
+helpers.failLoading = failLoading;
+helpers.closeLoading = closeLoadingPopup;
+helpers.withLoading = withLoading;
 helpers.showClickEffect = showClickEffect;
 
   function applySettings() {
@@ -1743,8 +1760,12 @@ helpers.showClickEffect = showClickEffect;
         helpers.hideLoading("Sincronización solicitada.");
         helpers.toast("Sincronización solicitada.");
       } catch (error) {
-        helpers.hideLoading();
-        helpers.toast(error?.message || "No fue posible sincronizar Firebase.");
+        helpers.failLoading(
+          error?.message || "No fue posible sincronizar Firebase."
+        );
+        helpers.toast(
+          error?.message || "No fue posible sincronizar Firebase."
+        );
       }
     });
 
@@ -2567,7 +2588,6 @@ helpers.showClickEffect = showClickEffect;
     const cssId = "claudeStudioStyles";
     const scriptId = "claudeStudioScript";
     const motionId = "motionStudioScript";
-    const territoryMapEngineId = "territoryMapEngineScript";
     const territoryId = "territoryExperienceScript";
 
     let link = document.getElementById(cssId) || visualBoot.link;
@@ -2579,7 +2599,7 @@ helpers.showClickEffect = showClickEffect;
       document.head.appendChild(link);
     }
 
-    const mountTerritoryExperience = () => {
+    const loadTerritoryExperience = () => {
       if (document.getElementById(territoryId)) {
         window.TerritoryExperience?.init?.();
         return;
@@ -2591,26 +2611,6 @@ helpers.showClickEffect = showClickEffect;
       territory.defer = true;
       territory.onload = () => window.TerritoryExperience?.init?.();
       document.head.appendChild(territory);
-    };
-
-    const loadTerritoryExperience = () => {
-      if (document.getElementById(territoryMapEngineId)) {
-        if (window.TerritoryMapEngine) {
-          mountTerritoryExperience();
-        } else {
-          document.getElementById(territoryMapEngineId)
-            ?.addEventListener("load",mountTerritoryExperience,{once:true});
-        }
-        return;
-      }
-
-      const mapEngine = document.createElement("script");
-      mapEngine.id = territoryMapEngineId;
-      mapEngine.src = `territory-map-engine.js?v=${PORTAL_BUILD}`;
-      mapEngine.defer = true;
-      mapEngine.onload = mountTerritoryExperience;
-      mapEngine.onerror = mountTerritoryExperience;
-      document.head.appendChild(mapEngine);
     };
 
     const loadMotion = () => {
@@ -2704,8 +2704,8 @@ document.addEventListener("DOMContentLoaded",() => {
   initInteractiveFeedback();
 },{once:true});
 
-window.addEventListener("pageshow", () => {
-  hideLoading();
+window.addEventListener("pageshow",() => {
+  closeLoadingPopup();
   window.AdminPopup?.sync?.();
 });
 

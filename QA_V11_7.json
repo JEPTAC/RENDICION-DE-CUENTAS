@@ -1,0 +1,44 @@
+{
+  "version": "11.7",
+  "name": "Mapa real y popup nuevo",
+  "base": "V11.5 estable",
+  "removed": [
+    "MapLibre GL y todo uso de WebGL.",
+    "territory-map-engine.js.",
+    "Mapa radial o simulado.",
+    "Popup globalLoadingPopup/ui-loader.",
+    "GIF dentro de botones.",
+    "View Transitions de navegación."
+  ],
+  "map": [
+    "Leaflet es el único motor.",
+    "Mapa callejero real con calles y carreras.",
+    "Relieve, satélite e híbrido.",
+    "Tres proveedores CDN de respaldo para Leaflet.",
+    "Zoom 17 en cabecera y 15 en zona rural.",
+    "Si falla, solo se muestra Reintentar; nunca un mapa simulado."
+  ],
+  "popup": [
+    "Único popup spLoadingPopup.",
+    "loading-spinner.gif durante carga.",
+    "ok-hand.gif al terminar.",
+    "notification.mp3 al terminar.",
+    "No muestra Listo automáticamente al abrir la página."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK",
+      "territory-experience.js": "OK"
+    },
+    "css_braces": "1111/1111",
+    "maplibre_removed": true,
+    "fake_map_removed": true,
+    "new_popup_only": true,
+    "loading_gif_bytes": 158532,
+    "success_gif_bytes": 43210,
+    "notification_bytes": 78576
+  }
+}
