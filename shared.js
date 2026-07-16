@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.16-atlas-territorial-3d";
+  const PORTAL_BUILD = "11.17-scroll-gubernamental";
 
   /*
    * Arranque visual temprano.

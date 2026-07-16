@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.16-atlas-territorial-3d";
+  const BUILD = "11.17-scroll-gubernamental";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -1095,114 +1095,152 @@
 
     const route = document.createElement("section");
     route.id = "connectedRoute";
-    route.className = "connected-route";
+    route.className = "connected-route gov-investment-route";
     route.innerHTML = `
-      <div class="connected-shell">
-        <header class="connected-heading connected-heading--light">
+      <div class="connected-shell gov-investment-shell">
+        <header class="connected-heading connected-heading--light gov-investment-heading">
           <div>
-            <span>RUTA DE LA GESTIÓN</span>
-            <h2>Así transforma San Pedro su territorio</h2>
+            <span>RUTA DE LA INVERSIÓN PÚBLICA</span>
+            <h2>De la prioridad territorial al resultado ciudadano</h2>
           </div>
           <p>
-            Una secuencia pública que conecta necesidad, decisión,
-            ejecución y evidencia.
+            Una secuencia clara para comprender cómo una necesidad se convierte
+            en planeación, ejecución, seguimiento y evidencia pública.
           </p>
         </header>
 
-        <div class="connected-route-layout">
-          <div class="connected-route-visual">
-            <div class="connected-route-world">
-              <span class="connected-route-orbit orbit-a"></span>
-              <span class="connected-route-orbit orbit-b"></span>
-              <span class="connected-route-orbit orbit-c"></span>
-              <span class="connected-route-beam"></span>
-              <i class="connected-route-point point-a"></i>
-              <i class="connected-route-point point-b"></i>
-              <i class="connected-route-point point-c"></i>
-              <i class="connected-route-point point-d"></i>
-              <div class="connected-route-core">
-                <small id="connectedRouteNumber">01</small>
-                <strong id="connectedRouteTitle">
-                  Escuchar el territorio
-                </strong>
+        <div class="connected-route-layout gov-investment-layout">
+          <aside class="connected-route-visual gov-investment-visual">
+            <div class="gov-investment-topline">
+              <span>FLUJO INSTITUCIONAL</span>
+              <strong>GESTIÓN · DESARROLLO · RESULTADO</strong>
+            </div>
+
+            <div class="gov-investment-map">
+              <svg viewBox="0 0 640 470" role="presentation" aria-hidden="true">
+                <defs>
+                  <linearGradient id="govRouteGradient" x1="0" x2="1">
+                    <stop offset="0" stop-color="#39a7e1" />
+                    <stop offset=".55" stop-color="#1b77bd" />
+                    <stop offset="1" stop-color="#48c998" />
+                  </linearGradient>
+                </defs>
+                <path
+                  class="gov-investment-boundary"
+                  d="M93 80C153 35 222 48 275 70C330 94 380 54 442 82C512 113 553 174 538 240C524 301 483 353 421 369C355 386 314 420 246 402C176 384 126 339 95 286C65 235 44 117 93 80Z"
+                />
+                <path class="gov-investment-contour contour-a" d="M112 142C182 116 237 130 295 163C359 200 420 194 503 150" />
+                <path class="gov-investment-contour contour-b" d="M112 323C168 292 215 266 284 267C361 269 421 317 501 285" />
+                <path
+                  class="gov-investment-main-path"
+                  pathLength="100"
+                  d="M119 327C171 295 175 218 239 193C298 170 329 230 388 218C447 206 461 137 520 125"
+                />
+                <g class="gov-investment-map-nodes">
+                  <circle data-route-map-node="0" cx="119" cy="327" r="13" />
+                  <circle data-route-map-node="1" cx="239" cy="193" r="13" />
+                  <circle data-route-map-node="2" cx="388" cy="218" r="13" />
+                  <circle data-route-map-node="3" cx="520" cy="125" r="13" />
+                </g>
+              </svg>
+
+              <div class="gov-investment-stage-card">
+                <div>
+                  <small id="connectedRouteNumber">01</small>
+                  <span>ETAPA ACTIVA</span>
+                </div>
+                <strong id="connectedRouteTitle">Prioridad territorial</strong>
+                <p id="connectedRouteCaption">
+                  La gestión comienza con una necesidad identificada y localizada.
+                </p>
               </div>
             </div>
 
-            <p id="connectedRouteCaption">
-              El proceso comienza con una necesidad, una idea o un reporte.
-            </p>
-
-            <div class="connected-route-progress">
+            <div class="connected-route-progress gov-investment-progress">
               <i></i><i></i><i></i><i></i>
             </div>
-          </div>
 
-          <div class="connected-route-steps">
+            <div class="gov-investment-kpis">
+              <article><small>Entrada</small><strong>Necesidad</strong></article>
+              <article><small>Proceso</small><strong>Gestión</strong></article>
+              <article><small>Salida</small><strong>Evidencia</strong></article>
+            </div>
+          </aside>
+
+          <div class="connected-route-steps gov-investment-steps">
             <article
-              class="connected-route-step active"
+              class="connected-route-step gov-investment-step active"
               data-route-index="0"
-              data-route-title="Escuchar el territorio"
-              data-route-caption="El proceso comienza con una necesidad, una idea o un reporte."
+              data-route-title="Prioridad territorial"
+              data-route-caption="La gestión comienza con una necesidad identificada, descrita y localizada."
+              style="--gov-route-index:0"
             >
-              <span>01</span>
-              <div>
-                <small>ESCUCHAR</small>
-                <h3>La necesidad aparece</h3>
-                <p>
-                  La comunidad, los equipos técnicos o los indicadores
-                  identifican una situación que requiere respuesta.
-                </p>
+              <header><span>01</span><small>DIAGNÓSTICO</small></header>
+              <h3>Identificar y priorizar</h3>
+              <p>
+                Se reconoce la necesidad, su ubicación, población relacionada,
+                urgencia y aporte esperado al desarrollo municipal.
+              </p>
+              <div class="gov-investment-output">
+                <small>DECISIÓN PÚBLICA</small>
+                <strong>Problema definido y territorio priorizado</strong>
               </div>
             </article>
 
             <article
-              class="connected-route-step"
+              class="connected-route-step gov-investment-step"
               data-route-index="1"
-              data-route-title="Priorizar con información"
-              data-route-caption="La situación se analiza, se localiza y se conecta con recursos y responsables."
+              data-route-title="Planeación y presupuesto"
+              data-route-caption="La prioridad se convierte en alcance, responsables, recursos y metas verificables."
+              style="--gov-route-index:1"
             >
-              <span>02</span>
-              <div>
-                <small>PRIORIZAR</small>
-                <h3>La decisión se sustenta</h3>
-                <p>
-                  Se define alcance, ubicación, población, responsable,
-                  presupuesto y compromisos verificables.
-                </p>
+              <header><span>02</span><small>PLANEACIÓN</small></header>
+              <h3>Definir la intervención</h3>
+              <p>
+                La administración establece alcance, recursos, responsables,
+                cronograma, población beneficiada e indicadores de cumplimiento.
+              </p>
+              <div class="gov-investment-output">
+                <small>INSTRUMENTO DE GESTIÓN</small>
+                <strong>Proyecto estructurado y metas públicas</strong>
               </div>
             </article>
 
             <article
-              class="connected-route-step"
+              class="connected-route-step gov-investment-step"
               data-route-index="2"
-              data-route-title="Ejecutar y hacer seguimiento"
-              data-route-caption="El avance deja de ser una cifra aislada y se convierte en una secuencia visible."
+              data-route-title="Ejecución y seguimiento"
+              data-route-caption="El avance se publica mediante estados, hitos, responsables y evidencias parciales."
+              style="--gov-route-index:2"
             >
-              <span>03</span>
-              <div>
-                <small>EJECUTAR</small>
-                <h3>La respuesta entra en movimiento</h3>
-                <p>
-                  Las actuaciones, obras o programas muestran su estado,
-                  avance territorial y evidencias asociadas.
-                </p>
+              <header><span>03</span><small>EJECUCIÓN</small></header>
+              <h3>Hacer visible el avance</h3>
+              <p>
+                La actuación deja una secuencia consultable de actividades,
+                hitos, novedades, compromisos y seguimiento institucional.
+              </p>
+              <div class="gov-investment-output">
+                <small>CONTROL CIUDADANO</small>
+                <strong>Avance, estado y responsables visibles</strong>
               </div>
             </article>
 
             <article
-              class="connected-route-step"
+              class="connected-route-step gov-investment-step"
               data-route-index="3"
-              data-route-title="Rendir cuentas con evidencia"
-              data-route-caption="El resultado se compara, se documenta y queda disponible para la ciudadanía."
+              data-route-title="Resultado y evidencia"
+              data-route-caption="El ciclo concluye con resultados medibles, documentos y evidencia territorial."
+              style="--gov-route-index:3"
             >
-              <span>04</span>
-              <div>
-                <small>VERIFICAR</small>
-                <h3>El resultado se puede comprobar</h3>
-                <p>
-                  Fotografías, documentos, indicadores y compromisos
-                  completan el recorrido de rendición.
-                </p>
+              <header><span>04</span><small>RESULTADO</small></header>
+              <h3>Rendir cuentas con claridad</h3>
+              <p>
+                La ciudadanía puede revisar qué cambió, cuánto se ejecutó,
+                quiénes fueron beneficiados y cuáles documentos lo respaldan.
+              </p>
+              <div class="gov-investment-output">
+                <small>RENDICIÓN DE CUENTAS</small>
+                <strong>Resultado medible y evidencia consultable</strong>
               </div>
             </article>
           </div>
@@ -1943,6 +1981,14 @@
       .forEach((item,itemIndex) => {
         item.classList.toggle("active",itemIndex <= index);
       });
+    state.route.querySelectorAll("[data-route-map-node]")
+      .forEach(node => {
+        node.classList.toggle(
+          "active",
+          Number(node.dataset.routeMapNode) === index
+        );
+      });
+    state.route.dataset.activeStep = String(index);
   }
 
   function setupRouteObserver() {
@@ -1969,6 +2015,26 @@
     });
 
     steps.forEach(step => state.routeObserver.observe(step));
+
+    let progressFrame = 0;
+    const updateProgress = () => {
+      progressFrame = 0;
+      if (!state.route) return;
+      const rect = state.route.getBoundingClientRect();
+      const travel = Math.max(1,rect.height - innerHeight);
+      const progress = Math.max(0,Math.min(1,(-rect.top + innerHeight * .18) / travel));
+      state.route.style.setProperty(
+        "--route-progress",
+        progress.toFixed(4)
+      );
+    };
+    const requestProgress = () => {
+      if (progressFrame) return;
+      progressFrame = requestAnimationFrame(updateProgress);
+    };
+    addEventListener("scroll",requestProgress,{passive:true});
+    addEventListener("resize",requestProgress,{passive:true});
+    requestProgress();
   }
 
   function compareVisualMarkup(url,type) {

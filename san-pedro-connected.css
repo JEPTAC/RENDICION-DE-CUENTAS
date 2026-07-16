@@ -1975,3 +1975,636 @@ html.is-connected-sphere-dragging body *{
   .connected-sphere-controls button,
   .connected-location-item{transition:none!important}
 }
+
+
+/* =========================================================
+   V11.17 · Scroll institucional de desarrollo
+   Dos narrativas reformuladas: expediente territorial y ruta
+   de inversión pública. Transform y opacity para rendimiento.
+   ========================================================= */
+
+.gov-record-section,
+.gov-investment-route{
+  --institutional-navy:#06284d;
+  --institutional-blue:#0b65a8;
+  --institutional-cyan:#39a7e1;
+  --institutional-green:#48c998;
+  --institutional-paper:#f5f9fc;
+  --institutional-line:#cfe0ec;
+  position:relative;
+  overflow:clip;
+}
+
+.gov-record-section{
+  padding-block:clamp(86px,9vw,140px);
+  background:
+    radial-gradient(circle at 12% 14%,rgba(57,167,225,.13),transparent 26rem),
+    linear-gradient(180deg,#f8fbfd,#edf5fa);
+}
+
+.gov-record-section::before,
+.gov-investment-route::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(6,40,77,.026) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,40,77,.026) 1px,transparent 1px);
+  background-size:46px 46px;
+  mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent);
+}
+
+.gov-record-heading{
+  position:relative;
+  z-index:2;
+  margin-bottom:clamp(42px,6vw,76px);
+}
+
+.gov-record-heading h2,
+.gov-investment-heading h2{
+  max-width:840px;
+  letter-spacing:-.065em;
+}
+
+.gov-record-layout,
+.gov-investment-layout{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:minmax(390px,.9fr) minmax(0,1.1fr);
+  gap:clamp(42px,7vw,96px);
+  align-items:start;
+}
+
+.gov-record-visual,
+.gov-investment-visual{
+  position:sticky;
+  top:92px;
+  min-height:650px;
+  padding:18px;
+  overflow:hidden;
+  border:1px solid rgba(11,101,168,.16);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 84% 10%,rgba(57,167,225,.20),transparent 24%),
+    linear-gradient(150deg,#06284d,#0b447b 58%,#0a5b99);
+  box-shadow:
+    0 34px 80px rgba(6,40,77,.18),
+    inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+.gov-record-toolbar,
+.gov-investment-topline{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:48px;
+  padding:0 13px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  color:#fff;
+  background:rgba(4,28,57,.36);
+  backdrop-filter:blur(14px);
+}
+
+.gov-record-toolbar span,
+.gov-investment-topline span{
+  color:#7ed9ff;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+
+.gov-record-toolbar strong,
+.gov-investment-topline strong{
+  margin-left:auto;
+  font-size:9px;
+  letter-spacing:.08em;
+}
+
+.gov-record-toolbar i{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--institutional-green);
+  box-shadow:0 0 0 6px rgba(72,201,152,.12);
+}
+
+.gov-record-stage,
+.gov-investment-map{
+  position:relative;
+  min-height:505px;
+  margin-top:14px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(57,167,225,.18),transparent 34%),
+    rgba(3,25,51,.52);
+}
+
+.gov-record-media{
+  position:absolute;
+  inset:0;
+  opacity:.24;
+  filter:saturate(.82) contrast(1.08);
+}
+
+.gov-record-media .territory-story-media-frame{
+  border:0;
+  border-radius:0;
+}
+
+.gov-record-map,
+.gov-investment-map > svg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+.gov-record-map svg,
+.gov-investment-map > svg{
+  width:100%;
+  height:100%;
+  filter:drop-shadow(0 18px 30px rgba(0,0,0,.18));
+}
+
+.gov-record-boundary,
+.gov-investment-boundary{
+  fill:rgba(63,151,190,.11);
+  stroke:rgba(189,229,247,.34);
+  stroke-width:2;
+}
+
+.gov-record-river{
+  fill:none;
+  stroke:rgba(81,211,239,.42);
+  stroke-width:5;
+  stroke-linecap:round;
+}
+
+.gov-record-road,
+.gov-investment-contour{
+  fill:none;
+  stroke:rgba(255,255,255,.12);
+  stroke-width:2;
+  stroke-linecap:round;
+}
+
+.gov-record-route,
+.gov-investment-main-path{
+  fill:none;
+  stroke:url(#govRouteGradient);
+  stroke:var(--institutional-green);
+  stroke-width:6;
+  stroke-linecap:round;
+  stroke-dasharray:100;
+  stroke-dashoffset:calc(100 - var(--story-progress,0) * 100);
+  filter:drop-shadow(0 0 9px rgba(72,201,152,.42));
+  transition:stroke-dashoffset .12s linear;
+}
+
+.gov-investment-main-path{
+  stroke:url(#govRouteGradient);
+  stroke-dashoffset:calc(100 - var(--route-progress,0) * 100);
+}
+
+.gov-record-map-nodes circle,
+.gov-investment-map-nodes circle{
+  fill:#0b5f9f;
+  stroke:#fff;
+  stroke-width:5;
+  opacity:.46;
+  transform-box:fill-box;
+  transform-origin:center;
+  transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1),fill .35s ease;
+}
+
+.gov-record-map-nodes circle.active,
+.gov-investment-map-nodes circle.active{
+  fill:var(--institutional-green);
+  opacity:1;
+  transform:scale(1.45);
+  filter:drop-shadow(0 0 14px rgba(72,201,152,.72));
+}
+
+.gov-record-map-label{
+  position:absolute;
+  padding:6px 8px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;
+  color:rgba(255,255,255,.72);
+  background:rgba(4,29,58,.58);
+  font-size:8px;
+  font-weight:800;
+  backdrop-filter:blur(8px);
+}
+.gov-record-map-label.label-a{left:10%;bottom:22%}
+.gov-record-map-label.label-b{left:39%;top:31%}
+.gov-record-map-label.label-c{right:9%;top:21%}
+
+.gov-record-summary,
+.gov-investment-stage-card{
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:18px;
+  z-index:4;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:8px 14px;
+  padding:17px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:18px;
+  color:#fff;
+  background:rgba(3,24,49,.76);
+  box-shadow:0 20px 42px rgba(0,0,0,.24);
+  backdrop-filter:blur(18px);
+}
+
+.gov-record-summary > div,
+.gov-investment-stage-card > div{
+  grid-row:1 / 3;
+  display:grid;
+  align-content:center;
+  min-width:72px;
+  padding-right:14px;
+  border-right:1px solid rgba(255,255,255,.12);
+}
+
+.gov-record-summary small,
+.gov-investment-stage-card small{
+  color:var(--institutional-green);
+  font-size:20px;
+  font-weight:900;
+}
+
+.gov-record-summary > div span,
+.gov-investment-stage-card > div span{
+  color:rgba(255,255,255,.48);
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+
+.gov-record-summary > strong,
+.gov-investment-stage-card > strong{
+  align-self:end;
+  font-size:19px;
+  line-height:1.05;
+}
+
+.gov-record-summary > p,
+.gov-investment-stage-card > p{
+  margin:0;
+  color:rgba(255,255,255,.62);
+  font-size:9px;
+  line-height:1.45;
+}
+
+.gov-record-progress{
+  position:relative;
+  z-index:3;
+  margin:14px 6px 0;
+}
+
+.gov-record-steps,
+.gov-investment-steps{
+  display:grid;
+  gap:24px;
+  padding-block:18px 120px;
+}
+
+.gov-record-step,
+.gov-investment-step{
+  position:relative;
+  min-height:360px;
+  padding:32px;
+  overflow:hidden;
+  border:1px solid rgba(11,101,168,.12);
+  border-radius:26px;
+  background:rgba(255,255,255,.76);
+  box-shadow:0 22px 56px rgba(6,40,77,.07);
+  opacity:.42;
+  transform:translateY(28px) scale(.975);
+  filter:saturate(.72);
+  transition:
+    opacity .55s ease,
+    transform .65s cubic-bezier(.2,.8,.2,1),
+    filter .55s ease,
+    box-shadow .55s ease,
+    background .55s ease !important;
+}
+
+.gov-record-step::before,
+.gov-investment-step::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:4px;
+  background:linear-gradient(var(--institutional-cyan),var(--institutional-green));
+  transform:scaleY(0);
+  transform-origin:top;
+  transition:transform .5s ease;
+}
+
+.gov-record-step.active,
+.gov-investment-step.active{
+  opacity:1;
+  transform:none;
+  filter:none;
+  background:#fff;
+  box-shadow:0 30px 68px rgba(6,40,77,.12);
+}
+
+.gov-record-step.active::before,
+.gov-investment-step.active::before{
+  transform:scaleY(1);
+}
+
+.gov-record-step header,
+.gov-investment-step header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:42px;
+}
+
+.gov-record-step header span,
+.gov-investment-step header span{
+  display:grid;
+  place-items:center;
+  width:54px;
+  height:54px;
+  border-radius:17px;
+  color:var(--institutional-blue);
+  background:#e4f1f8;
+  font-size:11px;
+  font-weight:900;
+}
+
+.gov-record-step.active header span,
+.gov-investment-step.active header span{
+  color:#fff;
+  background:linear-gradient(135deg,var(--institutional-blue),var(--institutional-cyan));
+  box-shadow:0 14px 28px rgba(11,101,168,.22);
+}
+
+.gov-record-step header small,
+.gov-investment-step header small{
+  color:var(--institutional-blue);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.17em;
+}
+
+.gov-record-step h3,
+.gov-investment-step h3{
+  max-width:560px;
+  margin:0 0 14px;
+  color:var(--institutional-navy);
+  font-size:clamp(29px,4vw,48px);
+  line-height:.96;
+  letter-spacing:-.06em;
+}
+
+.gov-record-step p,
+.gov-investment-step p{
+  max-width:580px;
+  margin:0;
+  color:#607a94;
+  font-size:11px;
+  line-height:1.75;
+}
+
+.gov-record-output,
+.gov-investment-output{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:28px;
+  padding-top:20px;
+  border-top:1px solid #dbe8f0;
+}
+
+.gov-record-output small,
+.gov-investment-output small{
+  flex-basis:100%;
+  margin-bottom:4px;
+  color:#7a91a6;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.15em;
+}
+
+.gov-record-output span{
+  padding:7px 9px;
+  border:1px solid #d6e5ee;
+  border-radius:999px;
+  color:#315b7a;
+  background:#f4f9fc;
+  font-size:8px;
+  font-weight:800;
+}
+
+/* Ruta de inversión */
+.gov-investment-route{
+  padding-block:clamp(90px,10vw,150px);
+  background:
+    radial-gradient(circle at 88% 11%,rgba(72,201,152,.12),transparent 26rem),
+    linear-gradient(180deg,#eef6fb,#f9fcfe);
+}
+
+.gov-investment-heading{
+  position:relative;
+  z-index:2;
+  margin-bottom:clamp(46px,6vw,78px);
+}
+
+.gov-investment-visual{
+  background:
+    radial-gradient(circle at 82% 10%,rgba(72,201,152,.18),transparent 27%),
+    linear-gradient(150deg,#052747,#0a477c 60%,#0b6196);
+}
+
+.gov-investment-contour{
+  stroke:rgba(255,255,255,.10);
+  stroke-width:2;
+}
+
+.gov-investment-progress{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+  margin:15px 4px 0;
+}
+
+.gov-investment-progress i{
+  height:3px;
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+}
+
+.gov-investment-progress i.active{
+  background:var(--institutional-green);
+  box-shadow:0 0 14px rgba(72,201,152,.45);
+}
+
+.gov-investment-kpis{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:14px;
+}
+
+.gov-investment-kpis article{
+  padding:12px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  background:rgba(255,255,255,.055);
+}
+
+.gov-investment-kpis small{
+  display:block;
+  margin-bottom:7px;
+  color:rgba(255,255,255,.48);
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+
+.gov-investment-kpis strong{
+  color:#fff;
+  font-size:12px;
+}
+
+.gov-investment-output strong{
+  color:var(--institutional-navy);
+  font-size:13px;
+}
+
+@supports (animation-timeline:view()){
+  .gov-record-section,
+  .gov-investment-route{
+    view-timeline-name:--institutional-section;
+    view-timeline-axis:block;
+  }
+
+  .gov-record-step,
+  .gov-investment-step{
+    animation:govInstitutionalCard linear both;
+    animation-timeline:view(block);
+    animation-range:entry 8% cover 42%;
+  }
+
+  .gov-record-map,
+  .gov-investment-map > svg{
+    animation:govInstitutionalMap linear both;
+    animation-timeline:view(block);
+    animation-range:entry 5% exit 95%;
+  }
+}
+
+@keyframes govInstitutionalCard{
+  from{opacity:.28;transform:translateY(34px) scale(.97);filter:saturate(.62)}
+  48%,to{opacity:1;transform:none;filter:none}
+}
+
+@keyframes govInstitutionalMap{
+  from{transform:scale(.94) translateY(16px)}
+  50%{transform:scale(1.02) translateY(0)}
+  to{transform:scale(.98) translateY(-10px)}
+}
+
+@media (max-width:940px){
+  .gov-record-layout,
+  .gov-investment-layout{
+    grid-template-columns:1fr;
+  }
+
+  .gov-record-visual,
+  .gov-investment-visual{
+    position:relative;
+    top:auto;
+    min-height:610px;
+  }
+
+  .gov-record-steps,
+  .gov-investment-steps{
+    padding-bottom:40px;
+  }
+}
+
+@media (max-width:580px){
+  .gov-record-section,
+  .gov-investment-route{
+    padding-block:70px;
+  }
+
+  .gov-record-visual,
+  .gov-investment-visual{
+    min-height:520px;
+    padding:12px;
+    border-radius:24px;
+  }
+
+  .gov-record-stage,
+  .gov-investment-map{
+    min-height:410px;
+  }
+
+  .gov-record-toolbar strong,
+  .gov-investment-topline strong{
+    display:none;
+  }
+
+  .gov-record-summary,
+  .gov-investment-stage-card{
+    left:10px;
+    right:10px;
+    bottom:10px;
+    grid-template-columns:1fr;
+  }
+
+  .gov-record-summary > div,
+  .gov-investment-stage-card > div{
+    grid-row:auto;
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    padding:0 0 10px;
+    border-right:0;
+    border-bottom:1px solid rgba(255,255,255,.12);
+  }
+
+  .gov-record-map-label{
+    display:none;
+  }
+
+  .gov-record-step,
+  .gov-investment-step{
+    min-height:auto;
+    padding:24px 20px;
+  }
+
+  .gov-record-step header,
+  .gov-investment-step header{
+    margin-bottom:28px;
+  }
+
+  .gov-investment-kpis{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .gov-record-step,
+  .gov-investment-step,
+  .gov-record-map,
+  .gov-investment-map > svg{
+    animation:none!important;
+    transition:none!important;
+    transform:none!important;
+  }
+}
