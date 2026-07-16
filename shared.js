@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.14-popup-diagnosticado-textura-esfera";
+  const PORTAL_BUILD = "11.15-globo-territorial-render";
 
   /*
    * Arranque visual temprano.

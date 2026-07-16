@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.14-popup-diagnosticado-textura-esfera";
+  const BUILD = "11.15-globo-territorial-render";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -48,7 +48,13 @@
       pointerId:null,
       lastX:0,
       lastY:0,
-      spin:0.0018
+      velocityX:0,
+      velocityY:0,
+      spin:0.00115,
+      zoom:1,
+      targetZoom:1,
+      autoRotate:true,
+      lastInteraction:0
     },
     adminDialog:null,
     compareValue:50,
@@ -213,79 +219,204 @@
   }
 
   function createVillageTexture() {
-    let seed = 20260715;
+    let seed = 20260716;
     const random = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
       return seed / 4294967296;
     };
-    const spreadLat = () => Math.asin(random() * 1.72 - .86);
-    const spreadLon = () => random() * Math.PI * 2 - Math.PI;
+    const range = (min,max) => min + (max - min) * random();
+    const spreadLat = (limit = 1.12) =>
+      Math.max(-limit,Math.min(limit,Math.asin(random() * 1.94 - .97)));
+    const spreadLon = () => range(-Math.PI,Math.PI);
 
-    const fields = Array.from({length:76},(_,index) => ({
-      lat:spreadLat(),
+    const continentSeeds = [
+      {lat:.34,lon:-1.82,rx:.64,ry:.47,tone:0},
+      {lat:-.14,lon:-.96,rx:.54,ry:.68,tone:1},
+      {lat:.48,lon:.12,rx:.79,ry:.50,tone:2},
+      {lat:-.27,lon:.70,rx:.48,ry:.56,tone:3},
+      {lat:.18,lon:1.72,rx:.66,ry:.44,tone:1},
+      {lat:-.56,lon:2.42,rx:.42,ry:.31,tone:2}
+    ];
+
+    const land = [];
+    continentSeeds.forEach((seedItem,seedIndex) => {
+      const count = 18 + (seedIndex % 3) * 4;
+      for (let index = 0; index < count; index += 1) {
+        const orbit = Math.sqrt(random());
+        const angle = random() * Math.PI * 2;
+        land.push({
+          lat:Math.max(-1.22,Math.min(1.22,
+            seedItem.lat + Math.sin(angle) * seedItem.ry * orbit)),
+          lon:seedItem.lon + Math.cos(angle) * seedItem.rx * orbit,
+          size:range(15,42) * (1 - orbit * .28),
+          squash:range(.48,.82),
+          angle:range(-Math.PI,Math.PI),
+          tone:(seedItem.tone + index) % 5,
+          alpha:range(.34,.64)
+        });
+      }
+    });
+
+    const fields = Array.from({length:128},(_,index) => ({
+      lat:spreadLat(1.06),
       lon:spreadLon(),
-      size:5 + random() * 14,
-      angle:random() * Math.PI,
-      tone:index % 4
+      size:range(4,12),
+      squash:range(.34,.66),
+      angle:range(-Math.PI,Math.PI),
+      tone:index % 6,
+      alpha:range(.14,.31)
     }));
 
-    const buildings = Array.from({length:68},(_,index) => ({
-      lat:Math.max(-1.05,Math.min(1.05,spreadLat() * .82)),
+    const forests = Array.from({length:190},(_,index) => ({
+      lat:spreadLat(1.08),
       lon:spreadLon(),
-      size:2.1 + random() * 3.4,
-      angle:random() * Math.PI,
+      size:range(1.1,3.4),
+      tone:index % 4,
+      alpha:range(.20,.50)
+    }));
+
+    const mountains = Array.from({length:56},(_,index) => ({
+      lat:spreadLat(.94),
+      lon:spreadLon(),
+      size:range(3.4,8.8),
+      angle:range(-Math.PI,Math.PI),
       tone:index % 3
     }));
 
-    const roads = Array.from({length:8},(_,roadIndex) => {
-      const baseLat = -.76 + roadIndex * .21;
-      const phase = random() * Math.PI * 2;
-      return Array.from({length:58},(_,pointIndex) => {
-        const progress = pointIndex / 57;
-        const lon = -Math.PI + progress * Math.PI * 2;
+    const buildings = Array.from({length:112},(_,index) => ({
+      lat:spreadLat(.98),
+      lon:spreadLon(),
+      size:range(1.5,3.5),
+      angle:range(-Math.PI,Math.PI),
+      tone:index % 4,
+      light:random() > .38
+    }));
+
+    const roads = Array.from({length:12},(_,roadIndex) => {
+      const baseLat = -.88 + roadIndex * .16;
+      const phase = range(0,Math.PI * 2);
+      const amplitude = range(.06,.15);
+      return Array.from({length:76},(_,pointIndex) => {
+        const progress = pointIndex / 75;
         return {
-          lat:baseLat + Math.sin(progress * Math.PI * 2 + phase) * .12,
-          lon
+          lat:baseLat + Math.sin(progress * Math.PI * (2.2 + roadIndex % 3) + phase) * amplitude,
+          lon:-Math.PI + progress * Math.PI * 2
         };
       });
     });
 
-    const river = Array.from({length:72},(_,pointIndex) => {
-      const progress = pointIndex / 71;
-      return {
-        lat:.30 + Math.sin(progress * Math.PI * 3.2) * .13,
-        lon:-Math.PI + progress * Math.PI * 2
-      };
+    const rivers = Array.from({length:3},(_,riverIndex) =>
+      Array.from({length:92},(_,pointIndex) => {
+        const progress = pointIndex / 91;
+        return {
+          lat:-.36 + riverIndex * .36 +
+            Math.sin(progress * Math.PI * (3.4 + riverIndex) + riverIndex) * .10,
+          lon:-Math.PI + progress * Math.PI * 2
+        };
+      })
+    );
+
+    const contours = Array.from({length:16},(_,contourIndex) => {
+      const baseLat = -.82 + contourIndex * .11;
+      return Array.from({length:66},(_,pointIndex) => {
+        const progress = pointIndex / 65;
+        return {
+          lat:baseLat + Math.sin(progress * Math.PI * 2 + contourIndex * .47) * .035,
+          lon:-Math.PI + progress * Math.PI * 2
+        };
+      });
     });
 
-    return {fields,buildings,roads,river};
-  }
+    const clouds = Array.from({length:34},(_,index) => ({
+      lat:spreadLat(.92),
+      lon:spreadLon(),
+      size:range(10,27),
+      squash:range(.42,.68),
+      angle:range(-Math.PI,Math.PI),
+      tone:index % 3,
+      alpha:range(.08,.21)
+    }));
 
-  function projectTexturePoint(lat,lon,rect) {
-    const cosLat = Math.cos(lat);
-    const rotated = rotatedPoint({
-      sphereX:Math.sin(lon) * cosLat,
-      sphereY:Math.sin(lat),
-      sphereZ:Math.cos(lon) * cosLat
-    });
-    const sphereRadius = Math.min(rect.width,rect.height) * .385;
-    const centerX = rect.width * .5;
-    const centerY = rect.height * .49;
-    const perspective = .66 + (rotated.z + 1) * .28;
+    const lights = Array.from({length:86},() => ({
+      lat:spreadLat(.96),
+      lon:spreadLon(),
+      size:range(.55,1.65),
+      alpha:range(.24,.72)
+    }));
+
+    const stars = Array.from({length:116},() => ({
+      x:random(),
+      y:random(),
+      size:range(.35,1.5),
+      alpha:range(.10,.54),
+      phase:range(0,Math.PI * 2)
+    }));
+
     return {
-      ...rotated,
-      x:centerX + rotated.x * sphereRadius * perspective,
-      y:centerY + rotated.y * sphereRadius * .92 * perspective,
-      scale:.58 + perspective * .46,
-      visible:rotated.z > .035
+      land,
+      fields,
+      forests,
+      mountains,
+      buildings,
+      roads,
+      rivers,
+      contours,
+      clouds,
+      lights,
+      stars
     };
   }
 
-  function drawTexturePath(ctx,path,rect,color,width) {
+  function sphereGeometry(rect) {
+    const compact = rect.width < 620;
+    const zoom = state.sphere.zoom || 1;
+    return {
+      centerX:rect.width * .5,
+      centerY:rect.height * (compact ? .48 : .495),
+      radius:Math.min(rect.width,rect.height) * (compact ? .365 : .395) * zoom
+    };
+  }
+
+  function rotatedPointAt(node,offsetY = 0,offsetX = 0) {
+    const rotY = state.sphere.rotY + offsetY;
+    const rotX = state.sphere.rotX + offsetX;
+    const x1 = node.sphereX * Math.cos(rotY) + node.sphereZ * Math.sin(rotY);
+    const z1 = -node.sphereX * Math.sin(rotY) + node.sphereZ * Math.cos(rotY);
+    const y2 = node.sphereY * Math.cos(rotX) - z1 * Math.sin(rotX);
+    const z2 = node.sphereY * Math.sin(rotX) + z1 * Math.cos(rotX);
+    return {x:x1,y:y2,z:z2};
+  }
+
+  function projectTexturePoint(lat,lon,rect,{offsetY = 0,offsetX = 0,altitude = 0} = {}) {
+    const cosLat = Math.cos(lat);
+    const rotated = rotatedPointAt({
+      sphereX:Math.sin(lon) * cosLat,
+      sphereY:Math.sin(lat),
+      sphereZ:Math.cos(lon) * cosLat
+    },offsetY,offsetX);
+    const geometry = sphereGeometry(rect);
+    const perspective = .68 + (rotated.z + 1) * .27;
+    const elevatedRadius = geometry.radius * (1 + altitude);
+    return {
+      ...rotated,
+      x:geometry.centerX + rotated.x * elevatedRadius * perspective,
+      y:geometry.centerY + rotated.y * elevatedRadius * .93 * perspective,
+      scale:.56 + perspective * .49,
+      visible:rotated.z > .018,
+      geometry
+    };
+  }
+
+  function drawTexturePath(ctx,path,rect,color,width,options = {}) {
     let started = false;
     ctx.beginPath();
     path.forEach(point => {
-      const projected = projectTexturePoint(point.lat,point.lon,rect);
+      const projected = projectTexturePoint(
+        point.lat,
+        point.lon,
+        rect,
+        options
+      );
       if (!projected.visible) {
         started = false;
         return;
@@ -304,34 +435,170 @@
     ctx.stroke();
   }
 
-  function drawVillageTexture(ctx,rect) {
+  function drawPlanetBackdrop(ctx,rect) {
+    const texture = state.villageTexture;
+    if (!texture) return;
+    const geometry = sphereGeometry(rect);
+
+    texture.stars.forEach((star,index) => {
+      const x = star.x * rect.width;
+      const y = star.y * rect.height;
+      const distance = Math.hypot(x - geometry.centerX,y - geometry.centerY);
+      if (distance < geometry.radius * 1.12) return;
+      const twinkle = reducedMotion.matches
+        ? 1
+        : .72 + Math.sin(state.time * .0012 + star.phase + index) * .28;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(210,235,255,${star.alpha * twinkle})`;
+      ctx.arc(x,y,star.size,0,Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.save();
+    ctx.translate(geometry.centerX,geometry.centerY + geometry.radius * 1.03);
+    ctx.scale(1,.20);
+    const shadow = ctx.createRadialGradient(0,0,8,0,0,geometry.radius * .92);
+    shadow.addColorStop(0,'rgba(0,0,0,.42)');
+    shadow.addColorStop(.58,'rgba(0,0,0,.16)');
+    shadow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = shadow;
+    ctx.beginPath();
+    ctx.arc(0,0,geometry.radius * .92,0,Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPlanetSurface(ctx,rect) {
     const texture = state.villageTexture;
     if (!texture) return;
 
-    texture.fields.forEach(field => {
-      const point = projectTexturePoint(field.lat,field.lon,rect);
+    const landColors = [
+      'rgba(79,135,82,.64)',
+      'rgba(105,150,82,.59)',
+      'rgba(137,149,82,.52)',
+      'rgba(86,127,101,.58)',
+      'rgba(157,128,77,.48)'
+    ];
+    const fieldColors = [
+      'rgba(168,176,92,.26)',
+      'rgba(188,155,82,.24)',
+      'rgba(88,145,92,.25)',
+      'rgba(204,185,112,.20)',
+      'rgba(117,160,104,.22)',
+      'rgba(154,122,76,.18)'
+    ];
+    const forestColors = [
+      'rgba(28,91,66,.60)',
+      'rgba(39,111,72,.52)',
+      'rgba(46,120,88,.48)',
+      'rgba(24,77,67,.54)'
+    ];
+
+    texture.land.forEach(patch => {
+      const point = projectTexturePoint(patch.lat,patch.lon,rect);
       if (!point.visible) return;
-      const colors = [
-        "rgba(95,150,105,.25)",
-        "rgba(145,179,105,.20)",
-        "rgba(177,150,94,.18)",
-        "rgba(71,129,117,.20)"
-      ];
       ctx.save();
       ctx.translate(point.x,point.y);
-      ctx.rotate(field.angle + state.sphere.rotY * .18);
-      ctx.scale(1,0.56 + point.scale * .13);
-      ctx.fillStyle = colors[field.tone];
+      ctx.rotate(patch.angle + state.sphere.rotY * .10);
+      ctx.scale(1,patch.squash);
+      const gradient = ctx.createRadialGradient(
+        -patch.size * .22,
+        -patch.size * .18,
+        1,
+        0,
+        0,
+        patch.size * point.scale
+      );
+      gradient.addColorStop(0,landColors[patch.tone]);
+      gradient.addColorStop(.72,landColors[(patch.tone + 1) % landColors.length]);
+      gradient.addColorStop(1,'rgba(21,75,69,.18)');
+      ctx.globalAlpha = patch.alpha;
+      ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.ellipse(
         0,
         0,
-        field.size * point.scale,
-        field.size * .62 * point.scale,
+        patch.size * point.scale,
+        patch.size * .70 * point.scale,
         0,
         0,
         Math.PI * 2
       );
+      ctx.fill();
+      ctx.restore();
+    });
+
+    texture.fields.forEach(field => {
+      const point = projectTexturePoint(field.lat,field.lon,rect);
+      if (!point.visible || point.z < .08) return;
+      ctx.save();
+      ctx.translate(point.x,point.y);
+      ctx.rotate(field.angle + state.sphere.rotY * .12);
+      ctx.scale(1,field.squash);
+      ctx.globalAlpha = field.alpha;
+      ctx.fillStyle = fieldColors[field.tone];
+      ctx.strokeStyle = 'rgba(239,229,188,.13)';
+      ctx.lineWidth = .55;
+      ctx.beginPath();
+      ctx.rect(
+        -field.size * point.scale,
+        -field.size * .62 * point.scale,
+        field.size * 2 * point.scale,
+        field.size * 1.24 * point.scale
+      );
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    texture.contours.forEach((contour,index) => {
+      drawTexturePath(
+        ctx,
+        contour,
+        rect,
+        index % 2
+          ? 'rgba(224,236,203,.055)'
+          : 'rgba(43,104,89,.10)',
+        .55
+      );
+    });
+
+    texture.forests.forEach(tree => {
+      const point = projectTexturePoint(tree.lat,tree.lon,rect);
+      if (!point.visible || point.z < .02) return;
+      const size = tree.size * point.scale;
+      ctx.beginPath();
+      ctx.fillStyle = forestColors[tree.tone];
+      ctx.globalAlpha = tree.alpha;
+      ctx.arc(point.x,point.y,size,0,Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    texture.mountains.forEach(mountain => {
+      const point = projectTexturePoint(mountain.lat,mountain.lon,rect,{altitude:.004});
+      if (!point.visible || point.z < .05) return;
+      const size = mountain.size * point.scale;
+      ctx.save();
+      ctx.translate(point.x,point.y);
+      ctx.rotate(mountain.angle + state.sphere.rotY * .08);
+      ctx.beginPath();
+      ctx.moveTo(-size,size * .60);
+      ctx.lineTo(0,-size);
+      ctx.lineTo(size,size * .60);
+      ctx.closePath();
+      ctx.fillStyle = [
+        'rgba(107,111,88,.42)',
+        'rgba(124,116,89,.39)',
+        'rgba(79,108,91,.40)'
+      ][mountain.tone];
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0,-size);
+      ctx.lineTo(size,size * .60);
+      ctx.lineTo(size * .22,size * .30);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(21,43,47,.22)';
       ctx.fill();
       ctx.restore();
     });
@@ -341,49 +608,104 @@
         ctx,
         road,
         rect,
-        index % 2
-          ? "rgba(233,214,166,.20)"
-          : "rgba(244,231,196,.25)",
-        index % 3 === 0 ? 2.2 : 1.35
+        index % 3 === 0
+          ? 'rgba(244,224,177,.34)'
+          : 'rgba(233,214,166,.24)',
+        index % 3 === 0 ? 2.25 : 1.25
       );
     });
 
-    drawTexturePath(
-      ctx,
-      texture.river,
-      rect,
-      "rgba(78,196,226,.30)",
-      2.4
-    );
+    texture.rivers.forEach((river,index) => {
+      drawTexturePath(
+        ctx,
+        river,
+        rect,
+        index === 1
+          ? 'rgba(76,205,235,.42)'
+          : 'rgba(84,186,226,.28)',
+        index === 1 ? 2.7 : 1.7
+      );
+    });
 
     texture.buildings.forEach(building => {
-      const point = projectTexturePoint(building.lat,building.lon,rect);
-      if (!point.visible || point.z < .08) return;
+      const point = projectTexturePoint(building.lat,building.lon,rect,{altitude:.006});
+      if (!point.visible || point.z < .10) return;
       const size = building.size * point.scale;
       const walls = [
-        "rgba(248,239,218,.48)",
-        "rgba(222,232,221,.43)",
-        "rgba(242,224,199,.42)"
+        'rgba(247,238,217,.72)',
+        'rgba(216,231,218,.63)',
+        'rgba(238,219,190,.65)',
+        'rgba(221,228,236,.62)'
       ];
       const roofs = [
-        "rgba(183,92,62,.48)",
-        "rgba(195,124,63,.44)",
-        "rgba(151,74,65,.42)"
+        'rgba(179,77,54,.72)',
+        'rgba(192,112,55,.68)',
+        'rgba(145,69,59,.66)',
+        'rgba(112,91,72,.62)'
       ];
       ctx.save();
       ctx.translate(point.x,point.y);
-      ctx.rotate(building.angle + state.sphere.rotY * .12);
+      ctx.rotate(building.angle + state.sphere.rotY * .10);
+      ctx.shadowColor = 'rgba(0,0,0,.22)';
+      ctx.shadowBlur = 2.4;
+      ctx.shadowOffsetY = 1.5;
       ctx.fillStyle = walls[building.tone];
-      ctx.fillRect(-size,-size * .62,size * 2,size * 1.24);
+      ctx.fillRect(-size,-size * .56,size * 2,size * 1.12);
       ctx.beginPath();
-      ctx.moveTo(-size * 1.18,-size * .62);
-      ctx.lineTo(0,-size * 1.45);
-      ctx.lineTo(size * 1.18,-size * .62);
+      ctx.moveTo(-size * 1.16,-size * .56);
+      ctx.lineTo(0,-size * 1.42);
+      ctx.lineTo(size * 1.16,-size * .56);
       ctx.closePath();
       ctx.fillStyle = roofs[building.tone];
       ctx.fill();
+      if (building.light) {
+        ctx.fillStyle = 'rgba(255,220,132,.86)';
+        ctx.fillRect(-size * .38,-size * .16,size * .28,size * .28);
+      }
       ctx.restore();
     });
+
+    texture.lights.forEach(light => {
+      const point = projectTexturePoint(light.lat,light.lon,rect,{altitude:.008});
+      if (!point.visible || point.z < .08) return;
+      const sideShadow = Math.max(0,(point.x - point.geometry.centerX) / point.geometry.radius);
+      if (sideShadow < .12) return;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,213,112,${light.alpha * sideShadow})`;
+      ctx.shadowColor = 'rgba(255,190,84,.72)';
+      ctx.shadowBlur = 5;
+      ctx.arc(point.x,point.y,light.size * point.scale,0,Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+  }
+
+  function drawCloudLayer(ctx,rect) {
+    const texture = state.villageTexture;
+    if (!texture) return;
+    const offset = reducedMotion.matches ? 0 : state.time * .000018;
+    texture.clouds.forEach(cloud => {
+      const point = projectTexturePoint(cloud.lat,cloud.lon,rect,{
+        offsetY:offset,
+        altitude:.018
+      });
+      if (!point.visible || point.z < .04) return;
+      ctx.save();
+      ctx.translate(point.x,point.y);
+      ctx.rotate(cloud.angle + offset * .4);
+      ctx.scale(1,cloud.squash);
+      ctx.globalAlpha = cloud.alpha;
+      const gradient = ctx.createRadialGradient(0,0,1,0,0,cloud.size * point.scale);
+      gradient.addColorStop(0,'rgba(247,252,255,.78)');
+      gradient.addColorStop(.55,'rgba(211,236,247,.42)');
+      gradient.addColorStop(1,'rgba(178,214,232,0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.ellipse(0,0,cloud.size * point.scale,cloud.size * .62 * point.scale,0,0,Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
   }
 
   function metricMarkup(data) {
@@ -532,6 +854,19 @@
             <div class="connected-sphere-hint">
               <b>↺</b>
               <span>Gire el modelo o elija un lugar en la barra lateral.</span>
+            </div>
+
+            <div class="connected-render-status" aria-hidden="true">
+              <i></i>
+              <span>GLOBO TERRITORIAL</span>
+              <b>RENDER 3D</b>
+            </div>
+
+            <div class="connected-sphere-controls" aria-label="Controles de la esfera">
+              <button type="button" id="connectedSphereZoomIn" aria-label="Acercar esfera">+</button>
+              <button type="button" id="connectedSphereZoomOut" aria-label="Alejar esfera">−</button>
+              <button type="button" id="connectedSphereReset" aria-label="Restablecer orientación">⌂</button>
+              <button type="button" id="connectedSphereAuto" class="active" aria-pressed="true" aria-label="Activar o desactivar rotación automática">↻</button>
             </div>
 
             <div class="connected-network-nodes">
@@ -1092,36 +1427,33 @@
 
   function rotateToNode(node) {
     if (!node) return;
+    state.sphere.velocityX = 0;
+    state.sphere.velocityY = 0;
+    state.sphere.lastInteraction = performance.now();
     state.sphere.targetY = normalizeAngle(-node.sphereLon);
-    state.sphere.targetX = Math.max(-.85,Math.min(.85,node.sphereLat));
+    state.sphere.targetX = Math.max(-.82,Math.min(.82,node.sphereLat));
+    if (reducedMotion.matches) {
+      state.sphere.rotY = state.sphere.targetY;
+      state.sphere.rotX = state.sphere.targetX;
+    }
   }
 
   function rotatedPoint(node) {
-    const rotY = state.sphere.rotY;
-    const rotX = state.sphere.rotX;
-
-    const x1 = node.sphereX * Math.cos(rotY) + node.sphereZ * Math.sin(rotY);
-    const z1 = -node.sphereX * Math.sin(rotY) + node.sphereZ * Math.cos(rotY);
-    const y2 = node.sphereY * Math.cos(rotX) - z1 * Math.sin(rotX);
-    const z2 = node.sphereY * Math.sin(rotX) + z1 * Math.cos(rotX);
-
-    return {x:x1,y:y2,z:z2};
+    return rotatedPointAt(node);
   }
 
   function projectNode(node,rect) {
-    const sphereRadius = Math.min(rect.width,rect.height) * .385;
-    const centerX = rect.width * .5;
-    const centerY = rect.height * .49;
+    const geometry = sphereGeometry(rect);
 
     if (node.group === "center") {
       return {
-        x:centerX,
-        y:centerY,
+        x:geometry.centerX,
+        y:geometry.centerY,
         z:1,
         node,
-        radius:sphereRadius,
-        cx:centerX,
-        cy:centerY,
+        radius:geometry.radius,
+        cx:geometry.centerX,
+        cy:geometry.centerY,
         scale:1.18,
         opacity:1,
         visible:true
@@ -1129,22 +1461,18 @@
     }
 
     const rotated = rotatedPoint(node);
-    const perspective = .66 + (rotated.z + 1) * .28;
+    const perspective = .68 + (rotated.z + 1) * .27;
     return {
       ...rotated,
       node,
-      radius:sphereRadius,
-      cx:centerX,
-      cy:centerY,
-      x:centerX + rotated.x * sphereRadius * perspective,
-      y:centerY + rotated.y * sphereRadius * .92 * perspective,
-      scale:node.group === "center"
-        ? 1.08 + perspective * .12
-        : .74 + perspective * .28,
-      opacity:node.group === "center"
-        ? 1
-        : Math.max(.14,.36 + (rotated.z + 1) * .42),
-      visible:node.group === "center" || rotated.z > -0.58
+      radius:geometry.radius,
+      cx:geometry.centerX,
+      cy:geometry.centerY,
+      x:geometry.centerX + rotated.x * geometry.radius * perspective,
+      y:geometry.centerY + rotated.y * geometry.radius * .93 * perspective,
+      scale:.72 + perspective * .30,
+      opacity:Math.max(.16,.32 + (rotated.z + 1) * .46),
+      visible:rotated.z > .018
     };
   }
 
@@ -1199,14 +1527,12 @@
         sphereZ:Math.cos(lon) * cosLat
       };
       const rotated = rotatedPoint(pseudo);
-      const sphereRadius = Math.min(rect.width,rect.height) * .385;
-      const centerX = rect.width * .5;
-      const centerY = rect.height * .49;
-      const perspective = .66 + (rotated.z + 1) * .28;
+      const geometry = sphereGeometry(rect);
+      const perspective = .68 + (rotated.z + 1) * .27;
       points.push({
-        x:centerX + rotated.x * sphereRadius * perspective,
-        y:centerY + rotated.y * sphereRadius * .92 * perspective,
-        visible:rotated.z > .035
+        x:geometry.centerX + rotated.x * geometry.radius * perspective,
+        y:geometry.centerY + rotated.y * geometry.radius * .93 * perspective,
+        visible:rotated.z > .018
       });
     }
     return points;
@@ -1220,129 +1546,229 @@
     const rect = stage.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
+    const now = performance.now();
     const rotDeltaY = normalizeAngle(state.sphere.targetY - state.sphere.rotY);
     const rotDeltaX = state.sphere.targetX - state.sphere.rotX;
+    const zoomDelta = state.sphere.targetZoom - state.sphere.zoom;
+
     if (!state.sphere.dragging) {
-      state.sphere.rotY += rotDeltaY * .075;
-      state.sphere.rotX += rotDeltaX * .085;
-      if (!state.activeNode && Math.abs(rotDeltaY) < .0025 && Math.abs(rotDeltaX) < .0025) {
-        state.sphere.rotY = normalizeAngle(state.sphere.rotY + state.sphere.spin);
+      if (
+        Math.abs(state.sphere.velocityX) > .00008 ||
+        Math.abs(state.sphere.velocityY) > .00008
+      ) {
+        state.sphere.rotY = normalizeAngle(
+          state.sphere.rotY + state.sphere.velocityY
+        );
+        state.sphere.rotX = Math.max(-.92,Math.min(.92,
+          state.sphere.rotX + state.sphere.velocityX
+        ));
         state.sphere.targetY = state.sphere.rotY;
+        state.sphere.targetX = state.sphere.rotX;
+        state.sphere.velocityX *= .925;
+        state.sphere.velocityY *= .925;
+      } else {
+        state.sphere.rotY = normalizeAngle(
+          state.sphere.rotY + rotDeltaY * .072
+        );
+        state.sphere.rotX += rotDeltaX * .082;
+      }
+
+      if (
+        state.sphere.autoRotate &&
+        now - state.sphere.lastInteraction > 7200 &&
+        Math.abs(rotDeltaY) < .006 &&
+        Math.abs(rotDeltaX) < .006
+      ) {
+        state.sphere.targetY = normalizeAngle(
+          state.sphere.targetY + state.sphere.spin
+        );
       }
     }
 
-    const centerX = rect.width * .5;
-    const centerY = rect.height * .49;
-    const sphereRadius = Math.min(rect.width,rect.height) * .385;
+    state.sphere.zoom += zoomDelta * .10;
+
+    const geometry = sphereGeometry(rect);
+    const centerX = geometry.centerX;
+    const centerY = geometry.centerY;
+    const sphereRadius = geometry.radius;
 
     ctx.save();
+    drawPlanetBackdrop(ctx,rect);
 
-    const bgGlow = ctx.createRadialGradient(centerX,centerY,18,centerX,centerY,sphereRadius * 1.24);
-    bgGlow.addColorStop(0,'rgba(67,195,232,.20)');
-    bgGlow.addColorStop(.45,'rgba(37,139,213,.08)');
-    bgGlow.addColorStop(1,'rgba(6,29,59,0)');
-    ctx.fillStyle = bgGlow;
-    ctx.fillRect(0,0,rect.width,rect.height);
+    const atmosphere = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      sphereRadius * .78,
+      centerX,
+      centerY,
+      sphereRadius * 1.22
+    );
+    atmosphere.addColorStop(0,'rgba(40,157,235,0)');
+    atmosphere.addColorStop(.72,'rgba(62,179,241,.07)');
+    atmosphere.addColorStop(.91,'rgba(92,210,255,.23)');
+    atmosphere.addColorStop(1,'rgba(109,220,255,0)');
+    ctx.fillStyle = atmosphere;
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,sphereRadius * 1.22,0,Math.PI * 2);
+    ctx.fill();
 
     ctx.save();
-    ctx.shadowColor = 'rgba(1,10,28,.60)';
-    ctx.shadowBlur = 52;
-    ctx.shadowOffsetY = 22;
-
-    const globe = ctx.createRadialGradient(
+    ctx.shadowColor = 'rgba(0,0,0,.66)';
+    ctx.shadowBlur = 58;
+    ctx.shadowOffsetY = 24;
+    const ocean = ctx.createRadialGradient(
       centerX - sphereRadius * .30,
       centerY - sphereRadius * .34,
-      sphereRadius * .08,
+      sphereRadius * .06,
       centerX,
       centerY,
       sphereRadius * 1.18
     );
-    globe.addColorStop(0,'rgba(46,163,246,.48)');
-    globe.addColorStop(.38,'rgba(12,100,184,.85)');
-    globe.addColorStop(.72,'rgba(4,58,120,.98)');
-    globe.addColorStop(1,'rgba(2,22,55,1)');
+    ocean.addColorStop(0,'#45baf2');
+    ocean.addColorStop(.24,'#1686cb');
+    ocean.addColorStop(.56,'#075ba9');
+    ocean.addColorStop(.82,'#043b78');
+    ocean.addColorStop(1,'#021b42');
     ctx.beginPath();
     ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
-    ctx.fillStyle = globe;
+    ctx.fillStyle = ocean;
     ctx.fill();
     ctx.restore();
-
-    const solidShade = ctx.createLinearGradient(
-      centerX - sphereRadius,
-      centerY - sphereRadius * .45,
-      centerX + sphereRadius,
-      centerY + sphereRadius * .55
-    );
-    solidShade.addColorStop(0,'rgba(255,255,255,.09)');
-    solidShade.addColorStop(.38,'rgba(255,255,255,.015)');
-    solidShade.addColorStop(.65,'rgba(0,0,0,.17)');
-    solidShade.addColorStop(1,'rgba(0,0,0,.46)');
-    ctx.beginPath();
-    ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
-    ctx.fillStyle = solidShade;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.13)';
-    ctx.lineWidth = 1.25;
-    ctx.stroke();
 
     ctx.save();
     ctx.beginPath();
     ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
     ctx.clip();
 
-    drawVillageTexture(ctx,rect);
+    drawPlanetSurface(ctx,rect);
 
-    [-1.1,-.55,0,.55,1.1].forEach(lon => {
-      drawCurve(ctx,sampleSphereLine('lon',lon,rect),'rgba(116,199,243,.12)',1);
+    [-1.10,-.55,0,.55,1.10].forEach(lon => {
+      drawCurve(
+        ctx,
+        sampleSphereLine('lon',lon,rect),
+        'rgba(188,229,247,.105)',
+        .7
+      );
     });
     [-.85,-.42,0,.42,.85].forEach(lat => {
-      drawCurve(ctx,sampleSphereLine('lat',lat,rect),'rgba(116,199,243,.10)',1);
+      drawCurve(
+        ctx,
+        sampleSphereLine('lat',lat,rect),
+        'rgba(188,229,247,.085)',
+        .65
+      );
     });
 
+    drawCloudLayer(ctx,rect);
+
+    const daylight = ctx.createLinearGradient(
+      centerX - sphereRadius,
+      centerY - sphereRadius * .5,
+      centerX + sphereRadius,
+      centerY + sphereRadius * .45
+    );
+    daylight.addColorStop(0,'rgba(255,255,255,.19)');
+    daylight.addColorStop(.28,'rgba(255,255,255,.035)');
+    daylight.addColorStop(.58,'rgba(1,20,48,.08)');
+    daylight.addColorStop(.82,'rgba(0,8,29,.34)');
+    daylight.addColorStop(1,'rgba(0,5,22,.60)');
+    ctx.fillStyle = daylight;
+    ctx.fillRect(
+      centerX - sphereRadius,
+      centerY - sphereRadius,
+      sphereRadius * 2,
+      sphereRadius * 2
+    );
+
+    const specular = ctx.createRadialGradient(
+      centerX - sphereRadius * .38,
+      centerY - sphereRadius * .42,
+      0,
+      centerX - sphereRadius * .28,
+      centerY - sphereRadius * .32,
+      sphereRadius * .72
+    );
+    specular.addColorStop(0,'rgba(255,255,255,.31)');
+    specular.addColorStop(.24,'rgba(255,255,255,.10)');
+    specular.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = specular;
+    ctx.fillRect(
+      centerX - sphereRadius,
+      centerY - sphereRadius,
+      sphereRadius * 2,
+      sphereRadius * 2
+    );
+
     const projected = state.nodes.map(node => projectNode(node,rect));
-
-    const selected = projected.find(item => item.node.id === state.activeNode?.id);
-    if (selected) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(101,226,176,.34)';
-      ctx.lineWidth = 1.6;
-      ctx.arc(centerX,centerY,sphereRadius * .96,0,Math.PI * 2);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(centerX,centerY);
-      ctx.quadraticCurveTo(
-        (centerX + selected.x) / 2,
-        centerY - sphereRadius * .22,
-        selected.x,
-        selected.y
-      );
-      ctx.strokeStyle = 'rgba(101,226,176,.78)';
-      ctx.lineWidth = 2.2;
-      ctx.stroke();
-    }
+    const selected = projected.find(item =>
+      item.node.id === state.activeNode?.id
+    );
 
     projected
       .filter(item => nodeIsVisible(item.node) && item.visible)
       .sort((a,b) => a.z - b.z)
       .forEach(item => {
         if (item.node.group === 'center') return;
-        const halo = ctx.createRadialGradient(item.x,item.y,1,item.x,item.y,18 * item.scale);
-        halo.addColorStop(0,item.node.group === 'neighborhood' ? 'rgba(143,122,227,.34)' : 'rgba(67,195,232,.28)');
+        const halo = ctx.createRadialGradient(
+          item.x,
+          item.y,
+          1,
+          item.x,
+          item.y,
+          20 * item.scale
+        );
+        halo.addColorStop(
+          0,
+          item.node.group === 'neighborhood'
+            ? 'rgba(151,125,239,.38)'
+            : 'rgba(73,202,244,.34)'
+        );
         halo.addColorStop(1,'rgba(0,0,0,0)');
         ctx.beginPath();
         ctx.fillStyle = halo;
-        ctx.arc(item.x,item.y,18 * item.scale,0,Math.PI * 2);
+        ctx.arc(item.x,item.y,20 * item.scale,0,Math.PI * 2);
         ctx.fill();
       });
 
+    if (selected && selected.visible) {
+      ctx.beginPath();
+      ctx.moveTo(centerX,centerY);
+      ctx.quadraticCurveTo(
+        (centerX + selected.x) / 2,
+        centerY - sphereRadius * .28,
+        selected.x,
+        selected.y
+      );
+      ctx.strokeStyle = 'rgba(115,239,190,.88)';
+      ctx.lineWidth = 2.1;
+      ctx.shadowColor = 'rgba(101,226,176,.65)';
+      ctx.shadowBlur = 13;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
     ctx.restore();
 
-    if (selected && !reducedMotion.matches) {
-      const pulse = 10 + Math.sin(state.time * .005) * 3;
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,sphereRadius,0,Math.PI * 2);
+    ctx.strokeStyle = 'rgba(193,238,255,.34)';
+    ctx.lineWidth = 1.35;
+    ctx.shadowColor = 'rgba(70,192,247,.54)';
+    ctx.shadowBlur = 14;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,sphereRadius * 1.035,0,Math.PI * 2);
+    ctx.strokeStyle = 'rgba(93,210,255,.12)';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    if (selected && selected.visible && !reducedMotion.matches) {
+      const pulse = 12 + Math.sin(state.time * .0048) * 3.5;
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(101,226,176,.42)';
-      ctx.lineWidth = 1.3;
+      ctx.strokeStyle = 'rgba(111,240,192,.52)';
+      ctx.lineWidth = 1.2;
       ctx.arc(selected.x,selected.y,pulse,0,Math.PI * 2);
       ctx.stroke();
     }
@@ -1868,6 +2294,9 @@
       state.sphere.pointerId = event.pointerId;
       state.sphere.lastX = event.clientX;
       state.sphere.lastY = event.clientY;
+      state.sphere.velocityX = 0;
+      state.sphere.velocityY = 0;
+      state.sphere.lastInteraction = performance.now();
       state.networkStage.setPointerCapture?.(event.pointerId);
       state.networkStage.classList.add('is-dragging');
       document.documentElement.classList.add('is-connected-sphere-dragging');
@@ -1887,10 +2316,19 @@
       const dy = event.clientY - state.sphere.lastY;
       state.sphere.lastX = event.clientX;
       state.sphere.lastY = event.clientY;
-      state.sphere.rotY = normalizeAngle(state.sphere.rotY + dx * .0082);
-      state.sphere.rotX = Math.max(-.95,Math.min(.95,state.sphere.rotX + dy * .0064));
+      const velocityY = dx * .0080;
+      const velocityX = dy * .0061;
+      state.sphere.rotY = normalizeAngle(
+        state.sphere.rotY + velocityY
+      );
+      state.sphere.rotX = Math.max(-.92,Math.min(.92,
+        state.sphere.rotX + velocityX
+      ));
       state.sphere.targetY = state.sphere.rotY;
       state.sphere.targetX = state.sphere.rotX;
+      state.sphere.velocityY = velocityY;
+      state.sphere.velocityX = velocityX;
+      state.sphere.lastInteraction = performance.now();
       drawNetwork();
     },{passive:false});
 
@@ -1908,6 +2346,60 @@
       state.pointer.x = .5;
       state.pointer.y = .5;
     },{passive:true});
+
+    state.networkStage?.addEventListener("wheel",event => {
+      event.preventDefault();
+      state.sphere.lastInteraction = performance.now();
+      state.sphere.targetZoom = Math.max(.84,Math.min(1.18,
+        state.sphere.targetZoom + (event.deltaY < 0 ? .06 : -.06)
+      ));
+      startNetwork();
+    },{passive:false});
+
+    const changeSphereZoom = amount => {
+      state.sphere.lastInteraction = performance.now();
+      state.sphere.targetZoom = Math.max(.84,Math.min(1.18,
+        state.sphere.targetZoom + amount
+      ));
+      if (reducedMotion.matches) {
+        state.sphere.zoom = state.sphere.targetZoom;
+      }
+      startNetwork();
+    };
+
+    state.root?.querySelector("#connectedSphereZoomIn")
+      ?.addEventListener("click",() => changeSphereZoom(.08));
+    state.root?.querySelector("#connectedSphereZoomOut")
+      ?.addEventListener("click",() => changeSphereZoom(-.08));
+    state.root?.querySelector("#connectedSphereReset")
+      ?.addEventListener("click",() => {
+        state.sphere.velocityX = 0;
+        state.sphere.velocityY = 0;
+        state.sphere.targetX = -.18;
+        state.sphere.targetY = .24;
+        state.sphere.targetZoom = 1;
+        state.sphere.lastInteraction = performance.now();
+        updateDetail(
+          state.nodes.find(node => node.group === "center") ||
+          state.nodes[0] ||
+          null
+        );
+        startNetwork();
+      });
+    state.root?.querySelector("#connectedSphereAuto")
+      ?.addEventListener("click",event => {
+        state.sphere.autoRotate = !state.sphere.autoRotate;
+        state.sphere.lastInteraction = performance.now() - 8000;
+        event.currentTarget.classList.toggle(
+          "active",
+          state.sphere.autoRotate
+        );
+        event.currentTarget.setAttribute(
+          "aria-pressed",
+          String(state.sphere.autoRotate)
+        );
+        startNetwork();
+      });
 
     const range = document.querySelector("#connectedCompareRange");
     range?.addEventListener("input",event => {
