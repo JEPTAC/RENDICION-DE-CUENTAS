@@ -1,0 +1,44 @@
+{
+  "version": "11.5",
+  "name": "Territorio Premium",
+  "replace_files": [
+    "shared.js",
+    "claude-design.js",
+    "claude-design.css",
+    "admin-popup.js",
+    "motion-studio.js",
+    "territory-experience.js"
+  ],
+  "new_assets": [
+    "ui-gifs/loading-spinner.gif",
+    "ui-gifs/ok-hand.gif"
+  ],
+  "implemented": [
+    "Relación de aspecto responsive del panel y mapa.",
+    "Mapa arriba del panel en tablet y móvil.",
+    "Vistas Plano, Relieve, Satélite e Híbrido.",
+    "Zoom cinematográfico y estado visual de cámara.",
+    "Animaciones integradas para los cuatro pasos narrativos.",
+    "Soporte administrable de imagen y video por URL.",
+    "Popup administrativo para narrativa multimedia.",
+    "Restauración de GIF cargando y GIF listo.",
+    "Estados de carga también disponibles dentro del botón activo."
+  ],
+  "data_integrity": [
+    "No se agregaron cifras territoriales ficticias.",
+    "No se agregaron fotografías de terceros sin autorización.",
+    "Los límites deben seguir validándose con cartografía oficial."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK",
+      "territory-experience.js": "OK"
+    },
+    "css_braces": "1070/1070",
+    "loading_gif_bytes": 158532,
+    "success_gif_bytes": 43210
+  }
+}

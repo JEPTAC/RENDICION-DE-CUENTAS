@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.4-territorio-vivo";
+  const BUILD = "11.5-territorio-premium";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -181,6 +181,48 @@
     }
   ];
 
+  const STORY_DEFAULTS = [
+    {
+      id:"register",
+      title:"El hecho se registra",
+      caption:"La información inicia con una descripción clara, una fecha y un responsable.",
+      type:"visual",
+      url:"",
+      poster:""
+    },
+    {
+      id:"locate",
+      title:"Se ubica en el territorio",
+      caption:"El registro se conecta con un barrio, vereda, corregimiento o coordenada.",
+      type:"visual",
+      url:"",
+      poster:""
+    },
+    {
+      id:"respond",
+      title:"Se conecta con una respuesta",
+      caption:"La ciudadanía puede seguir responsable, estado, avance y compromisos.",
+      type:"visual",
+      url:"",
+      poster:""
+    },
+    {
+      id:"verify",
+      title:"La evidencia queda visible",
+      caption:"Documentos, fotografías y resultados cierran el ciclo de rendición.",
+      type:"visual",
+      url:"",
+      poster:""
+    }
+  ];
+
+  const BASEMAP_LABELS = Object.freeze({
+    plano:"Plano",
+    relieve:"Relieve",
+    satelite:"Satélite",
+    hibrido:"Híbrido"
+  });
+
   const state = {
     initialized:false,
     section:null,
@@ -196,9 +238,15 @@
     storyObserver:null,
     mapClick:null,
     adminDialog:null,
+    storyAdminDialog:null,
     editingRecordId:null,
     records:[],
-    localFallback:null
+    localFallback:null,
+    baseLayers:null,
+    activeBaseLayer:null,
+    activeBaseName:"plano",
+    baseLayerReadyTimer:0,
+    zoomTimer:0
   };
 
   const portal = () => window.Portal;
@@ -241,9 +289,10 @@
 
   function defaultStore() {
     return {
-      version:1,
+      version:2,
       updatedAt:"",
-      records:[]
+      records:[],
+      storyMedia:STORY_DEFAULTS.map(item => ({...item}))
     };
   }
 
@@ -271,6 +320,10 @@
       }
       if (!Array.isArray(content.territoryExperience.records)) {
         content.territoryExperience.records = [];
+      }
+      if (!Array.isArray(content.territoryExperience.storyMedia)) {
+        content.territoryExperience.storyMedia =
+          STORY_DEFAULTS.map(item => ({...item}));
       }
       return content.territoryExperience;
     }
@@ -343,6 +396,107 @@
           <span>${escapeHtml(item.name)}</span>
         </button>`;
     }).join("");
+  }
+
+  function safeMediaUrl(value) {
+    const url = String(value || "").trim();
+    if (!url) return "";
+    try {
+      const parsed = new URL(url,location.href);
+      return ["http:","https:","data:"].includes(parsed.protocol)
+        ? parsed.href
+        : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function getStoryMedia() {
+    const store = getStore();
+    return STORY_DEFAULTS.map((fallback,index) => ({
+      ...fallback,
+      ...(store.storyMedia?.[index] || {})
+    }));
+  }
+
+  function visualSceneMarkup(index) {
+    const scenes = [
+      `
+        <div class="territory-media-illustration is-register">
+          <span class="media-sheet sheet-a"></span>
+          <span class="media-sheet sheet-b"></span>
+          <span class="media-sheet sheet-c"></span>
+          <span class="media-writing-line line-a"></span>
+          <span class="media-writing-line line-b"></span>
+          <span class="media-writing-line line-c"></span>
+          <i class="media-cursor"></i>
+        </div>`,
+      `
+        <div class="territory-media-illustration is-locate">
+          <span class="media-map-grid"></span>
+          <span class="media-route route-a"></span>
+          <span class="media-route route-b"></span>
+          <span class="media-pin"><i></i></span>
+          <span class="media-coordinate">3.99557 · -76.22805</span>
+        </div>`,
+      `
+        <div class="territory-media-illustration is-respond">
+          <span class="media-response-wave wave-a"></span>
+          <span class="media-response-wave wave-b"></span>
+          <span class="media-response-card card-a"><i></i><b>Responsable</b></span>
+          <span class="media-response-card card-b"><i></i><b>Avance</b></span>
+          <span class="media-response-card card-c"><i></i><b>Compromiso</b></span>
+        </div>`,
+      `
+        <div class="territory-media-illustration is-verify">
+          <span class="media-evidence evidence-a"></span>
+          <span class="media-evidence evidence-b"></span>
+          <span class="media-scan-line"></span>
+          <span class="media-check"><i></i></span>
+          <span class="media-evidence-label">EVIDENCIA VERIFICADA</span>
+        </div>`
+    ];
+    return scenes[index] || scenes[0];
+  }
+
+  function renderStoryMedia(index = 0) {
+    const holder = state.storySection?.querySelector("#territoryStoryMediaStage");
+    if (!holder) return;
+
+    const item = getStoryMedia()[index] || STORY_DEFAULTS[index];
+    const url = safeMediaUrl(item.url);
+    const poster = safeMediaUrl(item.poster);
+
+    let media = visualSceneMarkup(index);
+    if (item.type === "image" && url) {
+      media = `
+        <img
+          src="${escapeHtml(url)}"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        >`;
+    } else if (item.type === "video" && url) {
+      media = `
+        <video
+          src="${escapeHtml(url)}"
+          ${poster ? `poster="${escapeHtml(poster)}"` : ""}
+          muted
+          loop
+          playsinline
+          autoplay
+          preload="metadata"
+        ></video>`;
+    }
+
+    holder.dataset.mediaType = item.type || "visual";
+    holder.dataset.storyScene = String(index);
+    holder.innerHTML = `
+      <div class="territory-story-media-frame is-active">
+        ${media}
+        <span class="territory-story-media-vignette"></span>
+        <small>${escapeHtml(["REGISTRO","UBICACIÓN","RESPUESTA","EVIDENCIA"][index])}</small>
+      </div>`;
   }
 
   function createMapSection() {
@@ -435,6 +589,17 @@
                 <span class="territory-live-dot" aria-hidden="true"></span>
                 <strong>Mapa territorial interactivo</strong>
               </div>
+              <div class="territory-map-view-switch" role="group" aria-label="Vista cartográfica">
+                ${Object.entries(BASEMAP_LABELS).map(([key,label],index) => `
+                  <button
+                    type="button"
+                    class="${index === 0 ? "active" : ""}"
+                    data-territory-basemap="${key}"
+                    aria-pressed="${index === 0 ? "true" : "false"}"
+                  >
+                    <span>${label}</span>
+                  </button>`).join("")}
+              </div>
               <div class="territory-toolbar-actions">
                 <button type="button" class="territory-map-action" id="territoryResetMap">
                   Vista general
@@ -451,6 +616,13 @@
               role="application"
               aria-label="Mapa interactivo de San Pedro, Valle del Cauca"
             ></div>
+            <div class="territory-map-zoom-orbit" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </div>
+            <div class="territory-camera-status" aria-live="polite">
+              <i></i>
+              <span id="territoryCameraStatus">Vista general preparada</span>
+            </div>
 
             <div class="territory-map-fallback" id="territoryMapFallback">
               <div class="territory-contours" aria-hidden="true">
@@ -468,8 +640,8 @@
             <div class="territory-coordinate-bar">
               <span id="territoryCoordinateText">Centro: 3.99557, -76.22805</span>
               <small>
-                Cartografía base © OpenStreetMap. Los límites y nombres deben
-                validarse con información oficial.
+                Cartografía abierta y vistas satelitales de referencia.
+                Los límites y nombres deben validarse con información oficial.
               </small>
             </div>
 
@@ -518,6 +690,14 @@
           <div>
             <span>DEL TERRITORIO A LA RESPUESTA</span>
             <h2>Una historia pública que se puede seguir</h2>
+            <button
+              type="button"
+              class="territory-story-admin-button"
+              id="territoryStoryAdminButton"
+              hidden
+            >
+              Gestionar imágenes y videos
+            </button>
           </div>
           <p>
             Cada situación puede convertirse en una secuencia verificable:
@@ -526,8 +706,13 @@
         </div>
 
         <div class="territory-story-layout">
-          <div class="territory-story-visual" aria-hidden="true">
-            <div class="territory-story-world">
+          <div class="territory-story-visual">
+            <div
+              class="territory-story-media-stage"
+              id="territoryStoryMediaStage"
+              aria-hidden="true"
+            ></div>
+            <div class="territory-story-world" aria-hidden="true">
               <span class="territory-story-ring ring-a"></span>
               <span class="territory-story-ring ring-b"></span>
               <span class="territory-story-ring ring-c"></span>
@@ -544,6 +729,17 @@
             <p id="territoryStoryCaption">
               La información inicia con una descripción clara y una fecha.
             </p>
+            <div class="territory-story-progress" aria-label="Pasos de la narrativa">
+              ${STORY_DEFAULTS.map((item,index) => `
+                <button
+                  type="button"
+                  class="${index === 0 ? "active" : ""}"
+                  data-story-jump="${index}"
+                  aria-label="Ir al paso ${index + 1}"
+                >
+                  <i></i><span>0${index + 1}</span>
+                </button>`).join("")}
+            </div>
           </div>
 
           <div class="territory-story-steps">
@@ -614,6 +810,7 @@
 
     state.section = section;
     state.storySection = story;
+    renderStoryMedia(0);
   }
 
   function layerRecords(mode = state.activeMode) {
@@ -773,13 +970,7 @@
       Number.isFinite(item.lat) &&
       Number.isFinite(item.lng)
     ) {
-      state.map.flyTo([item.lat,item.lng],Math.max(state.map.getZoom(),14),{
-        duration:.75
-      });
-      const layer = state.markerLayer?.getLayers?.().find(marker =>
-        marker.options?.territoryId === item.id
-      );
-      layer?.openPopup?.();
+      cinematicFlyTo(item);
     }
   }
 
@@ -813,6 +1004,159 @@
         <p>${escapeHtml(item.description || item.note || details.join(" · "))}</p>
         ${details.length ? `<small>${escapeHtml(details.join(" · "))}</small>` : ""}
       </div>`;
+  }
+
+  function createBaseLayers() {
+    if (!window.L) return null;
+
+    const tileOptions = {
+      minZoom:9,
+      updateWhenIdle:true,
+      updateWhenZooming:false,
+      keepBuffer:2,
+      crossOrigin:true
+    };
+
+    const plano = window.L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        ...tileOptions,
+        maxZoom:19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }
+    );
+
+    const relieve = window.L.tileLayer(
+      "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      {
+        ...tileOptions,
+        maxZoom:17,
+        attribution:
+          'Datos &copy; OpenStreetMap · relieve &copy; OpenTopoMap'
+      }
+    );
+
+    const imageryUrl =
+      "https://server.arcgisonline.com/ArcGIS/rest/services/" +
+      "World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    const labelsUrl =
+      "https://services.arcgisonline.com/ArcGIS/rest/services/" +
+      "Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
+
+    const satelite = window.L.tileLayer(imageryUrl,{
+      ...tileOptions,
+      maxZoom:19,
+      attribution:"Imágenes &copy; Esri y proveedores"
+    });
+
+    const hybridImagery = window.L.tileLayer(imageryUrl,{
+      ...tileOptions,
+      maxZoom:19,
+      attribution:"Imágenes &copy; Esri y proveedores"
+    });
+    const hybridLabels = window.L.tileLayer(labelsUrl,{
+      ...tileOptions,
+      maxZoom:19,
+      pane:"overlayPane",
+      opacity:.92
+    });
+    const hibrido = window.L.layerGroup([hybridImagery,hybridLabels]);
+
+    return {plano,relieve,satelite,hibrido};
+  }
+
+  function setMapCameraStatus(message,active = false) {
+    const shell = state.section?.querySelector(".territory-map-shell");
+    const node = state.section?.querySelector("#territoryCameraStatus");
+    if (node) node.textContent = message;
+    shell?.classList.toggle("is-camera-active",active);
+  }
+
+  function markBaseButton(button,status) {
+    if (!button) return;
+    button.classList.remove("is-loading","is-loaded");
+    button.removeAttribute("aria-busy");
+    if (status === "loading") {
+      button.classList.add("is-loading");
+      button.setAttribute("aria-busy","true");
+    }
+    if (status === "loaded") {
+      button.classList.add("is-loaded");
+      window.setTimeout(() => button.classList.remove("is-loaded"),1000);
+    }
+  }
+
+  function switchBasemap(name,button = null) {
+    if (!state.mapReady || !state.baseLayers?.[name]) return;
+    if (name === state.activeBaseName) return;
+
+    const shell = state.section?.querySelector(".territory-map-shell");
+    const next = state.baseLayers[name];
+    const previous = state.activeBaseLayer;
+    markBaseButton(button,"loading");
+    shell?.classList.add("is-layer-switching");
+    setMapCameraStatus(`Cargando vista ${BASEMAP_LABELS[name]}…`,true);
+
+    clearTimeout(state.baseLayerReadyTimer);
+    if (previous && state.map.hasLayer(previous)) state.map.removeLayer(previous);
+    state.activeBaseLayer = next;
+    state.activeBaseName = name;
+    next.addTo(state.map);
+
+    state.section?.querySelectorAll("[data-territory-basemap]")
+      .forEach(control => {
+        const active = control.dataset.territoryBasemap === name;
+        control.classList.toggle("active",active);
+        control.setAttribute("aria-pressed",String(active));
+      });
+
+    shell.dataset.basemap = name;
+
+    const ready = () => {
+      clearTimeout(state.baseLayerReadyTimer);
+      shell?.classList.remove("is-layer-switching");
+      markBaseButton(button,"loaded");
+      setMapCameraStatus(`Vista ${BASEMAP_LABELS[name]} lista`,false);
+    };
+
+    const watchLayer = name === "hibrido"
+      ? next.getLayers?.()[0]
+      : next;
+    watchLayer?.once?.("load",ready);
+    state.baseLayerReadyTimer = window.setTimeout(ready,1800);
+  }
+
+  function cinematicFlyTo(item) {
+    if (!state.mapReady || !state.map) return;
+
+    const shell = state.section?.querySelector(".territory-map-shell");
+    clearTimeout(state.zoomTimer);
+    shell?.classList.remove("is-cinematic-zoom");
+    void shell?.offsetWidth;
+    shell?.classList.add("is-cinematic-zoom");
+
+    setMapCameraStatus(`Acercando la vista a ${item.name}`,true);
+
+    const currentZoom = state.map.getZoom();
+    const targetZoom = Math.max(14.25,Math.min(16,currentZoom + 2.25));
+    state.map.flyTo([item.lat,item.lng],targetZoom,{
+      animate:true,
+      duration:1.35,
+      easeLinearity:.18,
+      noMoveStart:false
+    });
+
+    state.map.once("moveend",() => {
+      const layer = state.markerLayer?.getLayers?.().find(marker =>
+        marker.options?.territoryId === item.id
+      );
+      layer?.openPopup?.();
+      setMapCameraStatus(`${item.name} en detalle`,false);
+      state.zoomTimer = window.setTimeout(() => {
+        shell?.classList.remove("is-cinematic-zoom");
+      },850);
+    });
   }
 
   function renderMapLayers() {
@@ -875,6 +1219,9 @@
 
   function resetMap() {
     if (!state.mapReady) return;
+    const shell = state.section?.querySelector(".territory-map-shell");
+    shell?.classList.add("is-cinematic-zoom");
+    setMapCameraStatus("Regresando a la vista general",true);
     const positions = TERRITORY
       .filter(item => Number.isFinite(item.lat) && Number.isFinite(item.lng))
       .map(item => [item.lat,item.lng]);
@@ -887,8 +1234,13 @@
         duration:.8
       });
     } else {
-      state.map.setView(CENTER,12);
+      state.map.flyTo(CENTER,12,{duration:1.1,easeLinearity:.2});
     }
+
+    state.map.once("moveend",() => {
+      setMapCameraStatus("Vista general preparada",false);
+      window.setTimeout(() => shell?.classList.remove("is-cinematic-zoom"),700);
+    });
   }
 
   function loadLeaflet() {
@@ -942,7 +1294,7 @@
         center:CENTER,
         zoom:12,
         zoomControl:false,
-        scrollWheelZoom:false,
+        scrollWheelZoom:true,
         doubleClickZoom:true,
         touchZoom:true,
         boxZoom:true,
@@ -951,20 +1303,21 @@
         attributionControl:true,
         fadeAnimation:true,
         zoomAnimation:true,
-        markerZoomAnimation:true
+        markerZoomAnimation:true,
+        inertia:true,
+        inertiaDeceleration:2600,
+        easeLinearity:.18,
+        zoomSnap:.25,
+        zoomDelta:.5,
+        wheelPxPerZoomLevel:84
       });
 
-      window.L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom:19,
-          minZoom:9,
-          updateWhenIdle:true,
-          keepBuffer:2,
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }
-      ).addTo(state.map);
+      state.baseLayers = createBaseLayers();
+      state.activeBaseName = "plano";
+      state.activeBaseLayer = state.baseLayers.plano;
+      state.activeBaseLayer.addTo(state.map);
+      state.section.querySelector(".territory-map-shell").dataset.basemap =
+        state.activeBaseName;
 
       window.L.control.zoom({position:"topright"}).addTo(state.map);
       window.L.control.scale({
@@ -996,8 +1349,17 @@
         const text = state.section?.querySelector("#territoryCoordinateText");
         if (text && !state.mapClick) {
           text.textContent =
-            `Centro: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)} · zoom ${state.map.getZoom()}`;
+            `Centro: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)} · zoom ${state.map.getZoom().toFixed(2)}`;
         }
+      });
+
+      state.map.on("zoomstart",() => {
+        state.section?.querySelector(".territory-map-shell")
+          ?.classList.add("is-map-zooming");
+      });
+      state.map.on("zoomend",() => {
+        state.section?.querySelector(".territory-map-shell")
+          ?.classList.remove("is-map-zooming");
       });
 
       state.mapReady = true;
@@ -1043,6 +1405,129 @@
     state.mapObserver.observe(state.section);
   }
 
+  function ensureStoryAdminDialog() {
+    if (state.storyAdminDialog) return state.storyAdminDialog;
+
+    const dialog = document.createElement("dialog");
+    dialog.id = "territoryStoryAdminDialog";
+    dialog.className = "territory-story-admin-dialog";
+    dialog.innerHTML = `
+      <div class="territory-story-admin-shell">
+        <header>
+          <div>
+            <span>NARRATIVA VISUAL</span>
+            <h2>Imágenes y videos por etapa</h2>
+            <p>
+              Puede conservar la animación integrada o pegar una URL directa
+              de imagen o video. Utilice únicamente material autorizado.
+            </p>
+          </div>
+          <button type="button" data-story-admin-close aria-label="Cerrar">×</button>
+        </header>
+
+        <form id="territoryStoryMediaForm">
+          <div id="territoryStoryMediaRows"></div>
+          <footer>
+            <button type="button" class="button button-secondary" data-story-admin-close>
+              Cancelar
+            </button>
+            <button type="submit" class="button button-primary">
+              Guardar narrativa
+            </button>
+          </footer>
+        </form>
+      </div>`;
+
+    document.body.appendChild(dialog);
+    state.storyAdminDialog = dialog;
+
+    dialog.addEventListener("click",event => {
+      if (event.target === dialog || event.target.closest("[data-story-admin-close]")) {
+        dialog.close();
+      }
+    });
+
+    dialog.querySelector("#territoryStoryMediaForm")
+      .addEventListener("submit",event => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const storyMedia = STORY_DEFAULTS.map((fallback,index) => ({
+          ...fallback,
+          type:String(formData.get(`type-${index}`) || "visual"),
+          url:safeMediaUrl(formData.get(`url-${index}`)),
+          poster:safeMediaUrl(formData.get(`poster-${index}`))
+        }));
+
+        getStore().storyMedia = storyMedia;
+        persistStore();
+        renderStoryMedia(
+          Number(state.storySection?.style.getPropertyValue("--story-step")) || 0
+        );
+        portal()?.helpers?.hideLoading?.(
+          "Narrativa visual actualizada.",
+          {trigger:event.submitter}
+        );
+        dialog.close();
+      });
+
+    return dialog;
+  }
+
+  function renderStoryAdminRows() {
+    const dialog = ensureStoryAdminDialog();
+    const holder = dialog.querySelector("#territoryStoryMediaRows");
+    const media = getStoryMedia();
+
+    holder.innerHTML = media.map((item,index) => `
+      <section class="territory-story-admin-row">
+        <div>
+          <span>0${index + 1}</span>
+          <h3>${escapeHtml(STORY_DEFAULTS[index].title)}</h3>
+        </div>
+        <label>
+          Tipo de contenido
+          <select name="type-${index}">
+            <option value="visual" ${item.type === "visual" ? "selected" : ""}>
+              Animación integrada
+            </option>
+            <option value="image" ${item.type === "image" ? "selected" : ""}>
+              Imagen por URL
+            </option>
+            <option value="video" ${item.type === "video" ? "selected" : ""}>
+              Video por URL
+            </option>
+          </select>
+        </label>
+        <label>
+          URL de imagen o video
+          <input
+            name="url-${index}"
+            type="url"
+            value="${escapeHtml(item.url || "")}"
+            placeholder="https://..."
+          >
+        </label>
+        <label>
+          Póster del video
+          <input
+            name="poster-${index}"
+            type="url"
+            value="${escapeHtml(item.poster || "")}"
+            placeholder="Opcional"
+          >
+        </label>
+      </section>`).join("");
+  }
+
+  function openStoryAdminDialog() {
+    if (!isAdmin()) {
+      portal()?.helpers?.toast?.("Debe iniciar sesión con permisos administrativos.");
+      return;
+    }
+    renderStoryAdminRows();
+    if (!state.storyAdminDialog.open) state.storyAdminDialog.showModal();
+  }
+
   function setStoryStep(step) {
     if (!step || !state.storySection) return;
     const index = Number(step.dataset.storyIndex || 0);
@@ -1057,6 +1542,13 @@
     if (indexNode) indexNode.textContent = String(index + 1).padStart(2,"0");
     if (titleNode) titleNode.textContent = step.dataset.storyTitle || "";
     if (captionNode) captionNode.textContent = step.dataset.storyCaption || "";
+
+    state.storySection.querySelectorAll("[data-story-jump]").forEach(button => {
+      const active = Number(button.dataset.storyJump) === index;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-current",active ? "step" : "false");
+    });
+    renderStoryMedia(index);
   }
 
   function setupStoryObserver() {
@@ -1403,12 +1895,23 @@
   }
 
   function syncAdminVisibility() {
-    const button = state.section?.querySelector("#territoryAdminButton");
-    if (button) button.hidden = !isAdmin();
+    const mapButton = state.section?.querySelector("#territoryAdminButton");
+    const storyButton = state.storySection?.querySelector(
+      "#territoryStoryAdminButton"
+    );
+    const hidden = !isAdmin();
+    if (mapButton) mapButton.hidden = hidden;
+    if (storyButton) storyButton.hidden = hidden;
   }
 
   function bindEvents() {
     state.section?.addEventListener("click",event => {
+      const basemapButton = event.target.closest("[data-territory-basemap]");
+      if (basemapButton) {
+        switchBasemap(basemapButton.dataset.territoryBasemap,basemapButton);
+        return;
+      }
+
       const modeButton = event.target.closest("[data-territory-mode]");
       if (modeButton) {
         setMode(modeButton.dataset.territoryMode);
@@ -1456,6 +1959,25 @@
       setMode(card.dataset.territoryCard,{focusMap:true});
     });
 
+
+    state.storySection?.addEventListener("click",event => {
+      const jump = event.target.closest("[data-story-jump]");
+      if (jump) {
+        const step = state.storySection.querySelector(
+          `.territory-story-step[data-story-index="${jump.dataset.storyJump}"]`
+        );
+        if (step) {
+          setStoryStep(step);
+          step.scrollIntoView({behavior:"smooth",block:"center"});
+        }
+        return;
+      }
+
+      if (event.target.closest("#territoryStoryAdminButton")) {
+        openStoryAdminDialog();
+      }
+    });
+
     state.section?.querySelector("#territorySearch")
       ?.addEventListener("input",renderResultList);
 
@@ -1482,6 +2004,9 @@
         renderMetrics();
         renderResultList();
         renderMapLayers();
+        renderStoryMedia(
+          Number(state.storySection?.style.getPropertyValue("--story-step")) || 0
+        );
       });
     });
 
@@ -1521,6 +2046,8 @@
     init,
     setMode,
     openAdmin:openAdminDialog,
+    openStoryAdmin:openStoryAdminDialog,
+    switchBasemap,
     resetMap,
     refresh:() => {
       refreshRecords();

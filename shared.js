@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.4-territorio-vivo";
+  const PORTAL_BUILD = "11.5-territorio-premium";
 
   /*
    * Arranque visual temprano.
@@ -443,73 +443,189 @@
   }
 
 
-const UI_ASSETS = Object.freeze({});
+const UI_ASSETS = Object.freeze({
+  loading:"ui-gifs/loading-spinner.gif",
+  success:"ui-gifs/ok-hand.gif"
+});
 
 let loaderPanel = null;
+let loaderGif = null;
+let loaderTitle = null;
+let loaderText = null;
+let loaderActiveButton = null;
 
 function ensureFeedbackUi() {
-  if (!document.body || loaderPanel) return;
-  loaderPanel = document.querySelector("#globalLoadingPopup");
-  if (loaderPanel) return;
+  if (!document.body) return;
 
-  loaderPanel = document.createElement("div");
-  loaderPanel.id = "globalLoadingPopup";
-  loaderPanel.className = "ui-loader ui-loader--lightweight";
-  loaderPanel.setAttribute("aria-hidden", "true");
-  loaderPanel.innerHTML = `
-    <div class="ui-loader__backdrop"></div>
-    <div class="ui-loader__panel" role="status" aria-live="polite">
-      <span class="ui-loader__spinner" aria-hidden="true"></span>
-      <div class="ui-loader__copy">
-        <strong class="ui-loader__title">Cargando contenido</strong>
-        <span class="ui-loader__text">Estamos preparando la información…</span>
-      </div>
-    </div>`;
-  document.body.appendChild(loaderPanel);
+  loaderPanel = loaderPanel || document.querySelector("#globalLoadingPopup");
+  if (!loaderPanel) {
+    loaderPanel = document.createElement("div");
+    loaderPanel.id = "globalLoadingPopup";
+    loaderPanel.className = "ui-loader ui-loader--gif";
+    loaderPanel.setAttribute("aria-hidden","true");
+    loaderPanel.innerHTML = `
+      <div class="ui-loader__backdrop"></div>
+      <div class="ui-loader__panel" role="status" aria-live="polite">
+        <div class="ui-loader__media" aria-hidden="true">
+          <img
+            class="ui-loader__gif"
+            src="${UI_ASSETS.loading}"
+            alt=""
+            decoding="async"
+          >
+          <span class="ui-loader__orbit"></span>
+        </div>
+        <div class="ui-loader__copy">
+          <small class="ui-loader__eyebrow">PORTAL INSTITUCIONAL</small>
+          <strong class="ui-loader__title">Cargando contenido</strong>
+          <span class="ui-loader__text">
+            Estamos preparando la información…
+          </span>
+          <span class="ui-loader__progress" aria-hidden="true"><i></i></span>
+        </div>
+      </div>`;
+    document.body.appendChild(loaderPanel);
+  }
+
+  loaderGif = loaderPanel.querySelector(".ui-loader__gif");
+  loaderTitle = loaderPanel.querySelector(".ui-loader__title");
+  loaderText = loaderPanel.querySelector(".ui-loader__text");
+}
+
+function setLoadingButton(button,stateName) {
+  if (!(button instanceof HTMLElement)) return;
+
+  button.classList.remove("is-loading-action","is-loaded-action");
+  button.removeAttribute("aria-busy");
+
+  if (stateName === "loading") {
+    loaderActiveButton = button;
+    button.classList.add("is-loading-action");
+    button.setAttribute("aria-busy","true");
+  } else if (stateName === "success") {
+    button.classList.add("is-loaded-action");
+    window.setTimeout(() => {
+      button.classList.remove("is-loaded-action");
+    },1200);
+    if (loaderActiveButton === button) loaderActiveButton = null;
+  } else if (loaderActiveButton === button) {
+    loaderActiveButton = null;
+  }
+}
+
+function resolveLoadingTrigger(trigger) {
+  if (trigger instanceof HTMLElement) return trigger;
+  const active = document.activeElement;
+  return active instanceof HTMLElement &&
+    active.matches("button,.button,a") ? active : null;
 }
 
 function playNotification() {
-  // Se conserva como API compatible, sin cargar archivos de audio externos.
+  // La señal visual de "Listo" reemplaza el audio invasivo.
 }
 
-function showLoading(message = "Estamos cargando el contenido solicitado…") {
+function showLoading(
+  message = "Estamos cargando el contenido solicitado…",
+  options = {}
+) {
   ensureFeedbackUi();
   if (!loaderPanel) return;
-  const title = loaderPanel.querySelector(".ui-loader__title");
-  const text = loaderPanel.querySelector(".ui-loader__text");
-  if (title) title.textContent = "Cargando contenido";
-  if (text) text.textContent = message;
-  loaderPanel.classList.add("is-visible");
-  loaderPanel.setAttribute("aria-hidden", "false");
+
+  const trigger = resolveLoadingTrigger(options.trigger);
+  if (trigger) setLoadingButton(trigger,"loading");
+
+  loaderPanel.classList.remove("is-success","is-error");
+  loaderPanel.classList.add("is-visible","is-loading");
+  loaderPanel.setAttribute("aria-hidden","false");
+
+  if (loaderGif) {
+    loaderGif.src = `${UI_ASSETS.loading}?v=${Date.now()}`;
+  }
+  if (loaderTitle) loaderTitle.textContent = options.title || "Cargando contenido";
+  if (loaderText) loaderText.textContent = message;
+
+  clearTimeout(window.__globalLoadingTimer);
   clearTimeout(window.__globalLoadingFailSafe);
-  window.__globalLoadingFailSafe = setTimeout(() => hideLoading(), 5000);
+  window.__globalLoadingFailSafe = window.setTimeout(() => {
+    hideLoading("La operación terminó.");
+  },10000);
 }
 
-function hideLoading(message = "Contenido listo") {
+function hideLoading(
+  message = "Contenido cargado correctamente",
+  options = {}
+) {
+  ensureFeedbackUi();
   if (!loaderPanel) return;
-  const title = loaderPanel.querySelector(".ui-loader__title");
-  const text = loaderPanel.querySelector(".ui-loader__text");
-  if (title) title.textContent = "Listo";
-  if (text) text.textContent = message;
+
+  const trigger = resolveLoadingTrigger(options.trigger) || loaderActiveButton;
+  if (trigger) setLoadingButton(trigger,"success");
+
   clearTimeout(window.__globalLoadingFailSafe);
-  window.setTimeout(() => {
-    loaderPanel?.classList.remove("is-visible");
-    loaderPanel?.setAttribute("aria-hidden", "true");
-  }, 180);
+  loaderPanel.classList.remove("is-loading","is-error");
+  loaderPanel.classList.add("is-visible","is-success");
+  loaderPanel.setAttribute("aria-hidden","false");
+
+  if (loaderGif) {
+    loaderGif.src = `${UI_ASSETS.success}?v=${Date.now()}`;
+  }
+  if (loaderTitle) loaderTitle.textContent = options.title || "Listo";
+  if (loaderText) loaderText.textContent = message;
+
+  clearTimeout(window.__globalLoadingTimer);
+  window.__globalLoadingTimer = window.setTimeout(() => {
+    loaderPanel?.classList.remove("is-visible","is-success");
+    loaderPanel?.setAttribute("aria-hidden","true");
+  },Math.max(650,Number(options.delay) || 1050));
+}
+
+function failLoading(message = "No fue posible completar la operación.") {
+  ensureFeedbackUi();
+  if (!loaderPanel) return;
+
+  clearTimeout(window.__globalLoadingFailSafe);
+  setLoadingButton(loaderActiveButton,"idle");
+  loaderPanel.classList.remove("is-loading","is-success");
+  loaderPanel.classList.add("is-visible","is-error");
+  loaderPanel.setAttribute("aria-hidden","false");
+
+  if (loaderGif) loaderGif.src = UI_ASSETS.loading;
+  if (loaderTitle) loaderTitle.textContent = "Revise la operación";
+  if (loaderText) loaderText.textContent = message;
+
+  clearTimeout(window.__globalLoadingTimer);
+  window.__globalLoadingTimer = window.setTimeout(() => {
+    loaderPanel?.classList.remove("is-visible","is-error");
+    loaderPanel?.setAttribute("aria-hidden","true");
+  },1600);
+}
+
+async function withLoading(task,{
+  loadingMessage = "Procesando información…",
+  successMessage = "Operación completada.",
+  errorMessage = "No fue posible completar la operación.",
+  trigger = null
+} = {}) {
+  showLoading(loadingMessage,{trigger});
+  try {
+    const result = await (typeof task === "function" ? task() : task);
+    hideLoading(successMessage,{trigger});
+    return result;
+  } catch (error) {
+    failLoading(error?.message || errorMessage);
+    throw error;
+  }
 }
 
 function showClickEffect() {
-  // Eliminado: la animación global de clic añadía listeners y nodos en cada interacción.
+  // Se mantiene desactivado para evitar nodos en cada interacción.
 }
 
 function mountNewsHoverCat() {
-  // Eliminado: compatibilidad temporal con llamadas antiguas, sin insertar GIF.
   return null;
 }
 
 function initInteractiveFeedback() {
-  // La retroalimentación global invasiva fue retirada. Los componentes usan
-  // estados propios y el loader solo se muestra cuando una acción lo solicita.
   ensureFeedbackUi();
 }
 
