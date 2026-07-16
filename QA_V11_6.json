@@ -1,0 +1,46 @@
+{
+  "version": "11.6",
+  "name": "Mapa vectorial y carga exacta",
+  "replace_files": [
+    "shared.js",
+    "claude-design.js",
+    "claude-design.css",
+    "admin-popup.js",
+    "motion-studio.js",
+    "territory-experience.js"
+  ],
+  "new_files": [
+    "territory-map-engine.js",
+    "ui-sounds/notification.mp3"
+  ],
+  "exact_assets": [
+    "ui-gifs/loading-spinner.gif",
+    "ui-gifs/ok-hand.gif"
+  ],
+  "fixes": [
+    "Las filas de localidades ya no heredan alturas recortadas.",
+    "Los nombres y subtítulos admiten varias líneas y mantienen line-height.",
+    "En móvil el panel se organiza como una columna legible.",
+    "El mapa usa MapLibre GL WebGL como motor principal.",
+    "Se añadieron relieve 3D, inclinación, rotación y vuelo cinematográfico.",
+    "Plano y Relieve usan estilos vectoriales de OpenFreeMap.",
+    "Satélite e Híbrido usan cartografía raster realista.",
+    "Leaflet permanece como respaldo si WebGL falla.",
+    "El GIF de carga y el GIF de listo son exactamente los suministrados.",
+    "El sonido notification.mp3 se reproduce al finalizar correctamente."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK",
+      "territory-experience.js": "OK",
+      "territory-map-engine.js": "OK"
+    },
+    "css_braces": "1138/1138",
+    "loading_gif_bytes": 158532,
+    "success_gif_bytes": 43210,
+    "notification_audio_bytes": 78576
+  }
+}

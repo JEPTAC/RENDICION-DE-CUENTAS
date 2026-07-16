@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.5-territorio-premium";
+  const PORTAL_BUILD = "11.6-maplibre-territory";
 
   /*
    * Arranque visual temprano.
@@ -520,8 +520,22 @@ function resolveLoadingTrigger(trigger) {
     active.matches("button,.button,a") ? active : null;
 }
 
+let notificationAudio = null;
+
 function playNotification() {
-  // La señal visual de "Listo" reemplaza el audio invasivo.
+  try {
+    if (!notificationAudio) {
+      notificationAudio = new Audio("ui-sounds/notification.mp3");
+      notificationAudio.preload = "auto";
+      notificationAudio.volume = .72;
+    }
+    notificationAudio.pause();
+    notificationAudio.currentTime = 0;
+    const playback = notificationAudio.play();
+    playback?.catch?.(() => null);
+  } catch {
+    // La confirmación visual permanece aunque el navegador bloquee el audio.
+  }
 }
 
 function showLoading(
@@ -571,6 +585,8 @@ function hideLoading(
   }
   if (loaderTitle) loaderTitle.textContent = options.title || "Listo";
   if (loaderText) loaderText.textContent = message;
+
+  playNotification();
 
   clearTimeout(window.__globalLoadingTimer);
   window.__globalLoadingTimer = window.setTimeout(() => {
@@ -2551,6 +2567,7 @@ helpers.showClickEffect = showClickEffect;
     const cssId = "claudeStudioStyles";
     const scriptId = "claudeStudioScript";
     const motionId = "motionStudioScript";
+    const territoryMapEngineId = "territoryMapEngineScript";
     const territoryId = "territoryExperienceScript";
 
     let link = document.getElementById(cssId) || visualBoot.link;
@@ -2562,7 +2579,7 @@ helpers.showClickEffect = showClickEffect;
       document.head.appendChild(link);
     }
 
-    const loadTerritoryExperience = () => {
+    const mountTerritoryExperience = () => {
       if (document.getElementById(territoryId)) {
         window.TerritoryExperience?.init?.();
         return;
@@ -2574,6 +2591,26 @@ helpers.showClickEffect = showClickEffect;
       territory.defer = true;
       territory.onload = () => window.TerritoryExperience?.init?.();
       document.head.appendChild(territory);
+    };
+
+    const loadTerritoryExperience = () => {
+      if (document.getElementById(territoryMapEngineId)) {
+        if (window.TerritoryMapEngine) {
+          mountTerritoryExperience();
+        } else {
+          document.getElementById(territoryMapEngineId)
+            ?.addEventListener("load",mountTerritoryExperience,{once:true});
+        }
+        return;
+      }
+
+      const mapEngine = document.createElement("script");
+      mapEngine.id = territoryMapEngineId;
+      mapEngine.src = `territory-map-engine.js?v=${PORTAL_BUILD}`;
+      mapEngine.defer = true;
+      mapEngine.onload = mountTerritoryExperience;
+      mapEngine.onerror = mountTerritoryExperience;
+      document.head.appendChild(mapEngine);
     };
 
     const loadMotion = () => {

@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.5-territorio-premium";
+  const BUILD = "11.6-maplibre-territory";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -966,7 +966,7 @@
 
     if (
       fly &&
-      state.mapReady &&
+      (state.mapReady || window.TerritoryMapEngine?.isReady?.()) &&
       Number.isFinite(item.lat) &&
       Number.isFinite(item.lng)
     ) {
@@ -1088,6 +1088,20 @@
   }
 
   function switchBasemap(name,button = null) {
+    if (window.TerritoryMapEngine?.isReady?.()) {
+      window.TerritoryMapEngine.switchBasemap(name,button);
+      state.activeBaseName = name;
+      state.section?.querySelectorAll("[data-territory-basemap]")
+        .forEach(control => {
+          const active = control.dataset.territoryBasemap === name;
+          control.classList.toggle("active",active);
+          control.setAttribute("aria-pressed",String(active));
+        });
+      const shell = state.section?.querySelector(".territory-map-shell");
+      if (shell) shell.dataset.basemap = name;
+      return;
+    }
+
     if (!state.mapReady || !state.baseLayers?.[name]) return;
     if (name === state.activeBaseName) return;
 
@@ -1128,6 +1142,17 @@
   }
 
   function cinematicFlyTo(item) {
+    if (window.TerritoryMapEngine?.isReady?.()) {
+      const shell = state.section?.querySelector(".territory-map-shell");
+      shell?.classList.add("is-cinematic-zoom");
+      window.TerritoryMapEngine.flyTo(item);
+      window.setTimeout(
+        () => shell?.classList.remove("is-cinematic-zoom"),
+        2150
+      );
+      return;
+    }
+
     if (!state.mapReady || !state.map) return;
 
     const shell = state.section?.querySelector(".territory-map-shell");
@@ -1160,6 +1185,14 @@
   }
 
   function renderMapLayers() {
+    if (window.TerritoryMapEngine?.isReady?.()) {
+      window.TerritoryMapEngine.render(
+        layerRecords(),
+        state.activeMode
+      );
+      return;
+    }
+
     if (!state.mapReady || !window.L) return;
 
     if (!state.markerLayer) {
@@ -1218,6 +1251,18 @@
   }
 
   function resetMap() {
+    if (window.TerritoryMapEngine?.isReady?.()) {
+      const shell = state.section?.querySelector(".territory-map-shell");
+      shell?.classList.add("is-cinematic-zoom");
+      setMapCameraStatus("Regresando a la vista general",true);
+      window.TerritoryMapEngine.reset();
+      window.setTimeout(() => {
+        shell?.classList.remove("is-cinematic-zoom");
+        setMapCameraStatus("Vista general preparada",false);
+      },1850);
+      return;
+    }
+
     if (!state.mapReady) return;
     const shell = state.section?.querySelector(".territory-map-shell");
     shell?.classList.add("is-cinematic-zoom");
@@ -1287,6 +1332,61 @@
     if (!mapNode) return;
 
     try {
+      if (window.TerritoryMapEngine) {
+        await window.TerritoryMapEngine.init({
+          container:mapNode,
+          fallback,
+          center:[CENTER[1],CENTER[0]],
+          items:layerRecords(),
+          allTerritory:TERRITORY,
+          mode:state.activeMode,
+          onSelect:item => selectItem(item,{fly:false}),
+          onMapClick:({lat,lng}) => {
+            state.mapClick = {lat,lng};
+            const text = state.section?.querySelector(
+              "#territoryCoordinateText"
+            );
+            if (text) {
+              text.textContent =
+                `Punto seleccionado: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            }
+
+            if (state.adminDialog?.open) {
+              const form = state.adminDialog.querySelector(
+                "#territoryRecordForm"
+              );
+              if (form) {
+                form.elements.lat.value = lat.toFixed(6);
+                form.elements.lng.value = lng.toFixed(6);
+              }
+            }
+          },
+          onMove:({lat,lng,zoom,pitch}) => {
+            const text = state.section?.querySelector(
+              "#territoryCoordinateText"
+            );
+            if (text && !state.mapClick) {
+              text.textContent =
+                `Centro: ${lat.toFixed(5)}, ${lng.toFixed(5)} · ` +
+                `zoom ${zoom.toFixed(2)} · inclinación ${Math.round(pitch)}°`;
+            }
+          },
+          onStatus:(message,active) => {
+            setMapCameraStatus(message,active);
+          },
+          onReady:() => {
+            state.mapReady = true;
+            mapNode.classList.add("is-ready","is-maplibre");
+            fallback?.classList.add("is-hidden");
+          }
+        });
+
+        state.mapReady = true;
+        state.map = window.TerritoryMapEngine;
+        renderMapLayers();
+        return;
+      }
+
       await loadLeaflet();
       if (!window.L?.map) throw new Error("Leaflet no disponible.");
 
@@ -1600,6 +1700,27 @@
     },{passive:true});
   }
 
+  function getActiveMapCenter() {
+    const engineCenter = window.TerritoryMapEngine?.getCenter?.();
+    if (
+      engineCenter &&
+      Number.isFinite(engineCenter.lat) &&
+      Number.isFinite(engineCenter.lng)
+    ) {
+      return engineCenter;
+    }
+
+    if (state.mapReady && state.map?.getCenter) {
+      const center = state.map.getCenter();
+      return {
+        lat:center.lat,
+        lng:center.lng
+      };
+    }
+
+    return {lat:CENTER[0],lng:CENTER[1]};
+  }
+
   function ensureAdminDialog() {
     if (state.adminDialog) return state.adminDialog;
 
@@ -1722,9 +1843,7 @@
 
     dialog.querySelector(".territory-use-map-center")
       .addEventListener("click",() => {
-        const center = state.mapReady
-          ? state.map.getCenter()
-          : {lat:CENTER[0],lng:CENTER[1]};
+        const center = getActiveMapCenter();
         const form = dialog.querySelector("#territoryRecordForm");
         form.elements.lat.value = center.lat.toFixed(6);
         form.elements.lng.value = center.lng.toFixed(6);
@@ -1754,9 +1873,7 @@
     form.elements.recordId.value = "";
     state.editingRecordId = null;
 
-    const center = state.mapReady
-      ? state.map.getCenter()
-      : {lat:CENTER[0],lng:CENTER[1]};
+    const center = getActiveMapCenter();
     form.elements.lat.value = center.lat.toFixed(6);
     form.elements.lng.value = center.lng.toFixed(6);
   }
@@ -2012,7 +2129,13 @@
 
     window.addEventListener("resize",() => {
       if (!state.mapReady) return;
-      requestAnimationFrame(() => state.map.invalidateSize({animate:false}));
+      requestAnimationFrame(() => {
+        if (window.TerritoryMapEngine?.isReady?.()) {
+          window.TerritoryMapEngine.resize();
+          return;
+        }
+        state.map?.invalidateSize?.({animate:false});
+      });
     },{passive:true});
   }
 
