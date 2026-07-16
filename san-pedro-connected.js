@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "11.17-scroll-gubernamental";
+  const BUILD = "11.18-scroll-inmersivo-funcional";
   const STORE_KEY = "sp_connected_experience_v1";
 
   const DEFAULT_CONFIG = Object.freeze({
@@ -24,7 +24,10 @@
     initialized:false,
     root:null,
     route:null,
+    corridor:null,
     closing:null,
+    immersiveFrame:0,
+    immersiveBound:false,
     canvas:null,
     context:null,
     networkStage:null,
@@ -880,7 +883,8 @@
   function createSections() {
     if (document.querySelector("#sanPedroConnected")) {
       state.root = document.querySelector("#sanPedroConnected");
-      state.route = document.querySelector("#connectedRoute");
+      state.route = document.querySelector("#spDevelopmentJourney");
+      state.corridor = document.querySelector("#spPublicWorksCorridor");
       state.closing = document.querySelector("#connectedClosing");
       return;
     }
@@ -1094,156 +1098,238 @@
     `;
 
     const route = document.createElement("section");
-    route.id = "connectedRoute";
-    route.className = "connected-route gov-investment-route";
+    route.id = "spDevelopmentJourney";
+    route.className = "sp-scroll-story sp-scroll-story--territory";
     route.innerHTML = `
-      <div class="connected-shell gov-investment-shell">
-        <header class="connected-heading connected-heading--light gov-investment-heading">
+      <div class="sp-scroll-sticky">
+        <div class="sp-scroll-backdrop" aria-hidden="true">
+          <span class="sp-scroll-light sp-scroll-light--a"></span>
+          <span class="sp-scroll-light sp-scroll-light--b"></span>
+          <span class="sp-scroll-grid"></span>
+        </div>
+
+        <header class="sp-scroll-topbar">
           <div>
-            <span>RUTA DE LA INVERSIÓN PÚBLICA</span>
-            <h2>De la prioridad territorial al resultado ciudadano</h2>
+            <span>RECORRIDO INMERSIVO · DESARROLLO TERRITORIAL</span>
+            <strong>Del territorio al resultado</strong>
           </div>
-          <p>
-            Una secuencia clara para comprender cómo una necesidad se convierte
-            en planeación, ejecución, seguimiento y evidencia pública.
-          </p>
+          <div class="sp-scroll-topbar-actions">
+            <span class="sp-scroll-counter"><b id="spJourneyCurrent">01</b> / 04</span>
+            <button type="button" id="spImmersiveAdmin" hidden>Gestionar escenas</button>
+          </div>
         </header>
 
-        <div class="connected-route-layout gov-investment-layout">
-          <aside class="connected-route-visual gov-investment-visual">
-            <div class="gov-investment-topline">
-              <span>FLUJO INSTITUCIONAL</span>
-              <strong>GESTIÓN · DESARROLLO · RESULTADO</strong>
+        <div class="sp-scroll-stage">
+          <div class="sp-scroll-copy">
+            <div class="sp-scroll-kicker" id="spJourneyKicker">VISIÓN TERRITORIAL</div>
+            <h2 id="spJourneyTitle">San Pedro se observa como un solo sistema.</h2>
+            <p id="spJourneyText">
+              El recorrido comienza con una vista general del municipio para
+              comprender cómo se conectan cabecera, barrios y zonas rurales.
+            </p>
+            <div class="sp-scroll-facts" id="spJourneyFacts">
+              <span><small>ESCALA</small><b>Municipal</b></span>
+              <span><small>LECTURA</small><b>Territorio completo</b></span>
+              <span><small>OBJETIVO</small><b>Comprender</b></span>
             </div>
+          </div>
 
-            <div class="gov-investment-map">
-              <svg viewBox="0 0 640 470" role="presentation" aria-hidden="true">
+          <div class="sp-digital-twin" id="spDigitalTwin" aria-label="Representación animada del desarrollo territorial de San Pedro">
+            <div class="sp-twin-shadow"></div>
+            <div class="sp-twin-camera">
+              <svg class="sp-twin-map" viewBox="0 0 1000 720" role="img" aria-label="Mapa ilustrado de San Pedro">
                 <defs>
-                  <linearGradient id="govRouteGradient" x1="0" x2="1">
-                    <stop offset="0" stop-color="#39a7e1" />
-                    <stop offset=".55" stop-color="#1b77bd" />
-                    <stop offset="1" stop-color="#48c998" />
+                  <linearGradient id="spTerrain" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#2f8f74"/>
+                    <stop offset=".48" stop-color="#176b6f"/>
+                    <stop offset="1" stop-color="#0a3d62"/>
                   </linearGradient>
+                  <linearGradient id="spRoad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#9be7ff"/>
+                    <stop offset=".5" stop-color="#ffffff"/>
+                    <stop offset="1" stop-color="#6dd7c5"/>
+                  </linearGradient>
+                  <filter id="spMapShadow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#00162c" flood-opacity=".55"/>
+                  </filter>
+                  <filter id="spGlow" x="-100%" y="-100%" width="300%" height="300%">
+                    <feGaussianBlur stdDeviation="8" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <clipPath id="spLandClip">
+                    <path d="M111 234 201 116 350 76 493 106 632 71 792 132 894 257 862 421 926 540 779 640 611 610 491 677 319 630 190 555 92 425Z"/>
+                  </clipPath>
                 </defs>
-                <path
-                  class="gov-investment-boundary"
-                  d="M93 80C153 35 222 48 275 70C330 94 380 54 442 82C512 113 553 174 538 240C524 301 483 353 421 369C355 386 314 420 246 402C176 384 126 339 95 286C65 235 44 117 93 80Z"
-                />
-                <path class="gov-investment-contour contour-a" d="M112 142C182 116 237 130 295 163C359 200 420 194 503 150" />
-                <path class="gov-investment-contour contour-b" d="M112 323C168 292 215 266 284 267C361 269 421 317 501 285" />
-                <path
-                  class="gov-investment-main-path"
-                  pathLength="100"
-                  d="M119 327C171 295 175 218 239 193C298 170 329 230 388 218C447 206 461 137 520 125"
-                />
-                <g class="gov-investment-map-nodes">
-                  <circle data-route-map-node="0" cx="119" cy="327" r="13" />
-                  <circle data-route-map-node="1" cx="239" cy="193" r="13" />
-                  <circle data-route-map-node="2" cx="388" cy="218" r="13" />
-                  <circle data-route-map-node="3" cx="520" cy="125" r="13" />
+
+                <g class="sp-twin-land" filter="url(#spMapShadow)">
+                  <path d="M111 234 201 116 350 76 493 106 632 71 792 132 894 257 862 421 926 540 779 640 611 610 491 677 319 630 190 555 92 425Z" fill="url(#spTerrain)"/>
+                  <g clip-path="url(#spLandClip)" class="sp-twin-contours">
+                    <path d="M40 257C184 160 261 188 371 246S589 306 751 208 936 181 1014 248"/>
+                    <path d="M22 365C153 291 286 315 389 371S575 469 740 382 924 335 1010 390"/>
+                    <path d="M30 491C172 413 270 436 403 501S628 562 785 483 938 458 1030 503"/>
+                    <path d="M159 74C240 162 246 292 211 412S211 603 295 711"/>
+                    <path d="M401 13C442 123 426 235 462 348S523 573 488 742"/>
+                    <path d="M673 7C619 156 667 262 708 366S730 565 675 729"/>
+                  </g>
+                </g>
+
+                <g class="sp-twin-fields" clip-path="url(#spLandClip)">
+                  <path d="M140 263 270 184 347 252 215 333Z"/>
+                  <path d="M637 149 777 179 742 292 610 251Z"/>
+                  <path d="M719 430 861 448 829 560 692 531Z"/>
+                  <path d="M171 440 303 402 343 519 219 561Z"/>
+                  <path d="M408 508 538 458 603 559 473 614Z"/>
+                </g>
+
+                <g class="sp-twin-river">
+                  <path d="M139 134C221 194 272 238 337 304S486 427 552 488 703 570 858 602"/>
+                  <path d="M139 134C221 194 272 238 337 304S486 427 552 488 703 570 858 602" class="sp-twin-river-glow"/>
+                </g>
+
+                <g class="sp-twin-roads">
+                  <path d="M155 504C266 429 339 398 432 367S613 306 827 218" class="sp-twin-road-main"/>
+                  <path d="M257 173C337 254 385 304 432 367S517 479 617 565"/>
+                  <path d="M432 367C517 359 596 379 688 430S791 510 850 544"/>
+                  <path d="M432 367C375 420 341 469 311 555"/>
+                  <path d="M432 367C499 273 552 205 635 143"/>
+                </g>
+
+                <g class="sp-twin-urban" transform="translate(355 286)">
+                  <g class="sp-twin-blocks">
+                    <rect x="0" y="0" width="58" height="44" rx="7"/>
+                    <rect x="68" y="-12" width="72" height="55" rx="7"/>
+                    <rect x="150" y="5" width="55" height="49" rx="7"/>
+                    <rect x="10" y="56" width="78" height="48" rx="7"/>
+                    <rect x="100" y="54" width="52" height="67" rx="7"/>
+                    <rect x="165" y="66" width="69" height="48" rx="7"/>
+                    <rect x="-20" y="116" width="67" height="49" rx="7"/>
+                    <rect x="58" y="125" width="81" height="45" rx="7"/>
+                    <rect x="153" y="127" width="58" height="59" rx="7"/>
+                  </g>
+                  <g class="sp-twin-buildings">
+                    <path d="M25 4v-32h25V4Z"/>
+                    <path d="M95 -8v-45h31V-8Z"/>
+                    <path d="M172 9v-28h24V9Z"/>
+                    <path d="M36 60v-24h33V60Z"/>
+                    <path d="M111 58v-55h29V58Z"/>
+                    <path d="M186 70v-38h34V70Z"/>
+                    <path d="M3 119V90h29v29Z"/>
+                    <path d="M84 128V93h36v35Z"/>
+                    <path d="M169 131V82h28v49Z"/>
+                  </g>
+                </g>
+
+                <path class="sp-twin-development-path" id="spDevelopmentPath" d="M190 522C282 438 339 414 432 367S596 273 826 213" pathLength="1"/>
+
+                <g class="sp-twin-nodes">
+                  <g data-twin-node="0" transform="translate(432 367)"><circle r="17"/><circle r="6"/><text y="-28">SAN PEDRO</text></g>
+                  <g data-twin-node="1" transform="translate(292 431)"><circle r="15"/><circle r="5"/><text y="-26">NECESIDAD</text></g>
+                  <g data-twin-node="2" transform="translate(617 286)"><circle r="15"/><circle r="5"/><text y="-26">PROYECTO</text></g>
+                  <g data-twin-node="3" transform="translate(826 213)"><circle r="15"/><circle r="5"/><text y="-26">RESULTADO</text></g>
+                </g>
+
+                <g class="sp-twin-pin sp-twin-pin--active" id="spTwinPin" transform="translate(432 367)">
+                  <circle r="24"/><circle r="11"/><path d="M0 11 8 26 0 22-8 26Z"/>
                 </g>
               </svg>
 
-              <div class="gov-investment-stage-card">
-                <div>
-                  <small id="connectedRouteNumber">01</small>
-                  <span>ETAPA ACTIVA</span>
-                </div>
-                <strong id="connectedRouteTitle">Prioridad territorial</strong>
-                <p id="connectedRouteCaption">
-                  La gestión comienza con una necesidad identificada y localizada.
-                </p>
+              <div class="sp-twin-hud sp-twin-hud--left">
+                <span>LECTURA TERRITORIAL</span>
+                <strong id="spHudTitle">Vista municipal</strong>
+                <small id="spHudText">Conectando cabecera, barrios y zona rural.</small>
+              </div>
+
+              <div class="sp-twin-hud sp-twin-hud--right">
+                <span>PROGRESO DEL RECORRIDO</span>
+                <strong id="spHudPercent">0%</strong>
+                <i><b id="spHudBar"></b></i>
+              </div>
+
+              <div class="sp-twin-evidence" id="spTwinEvidence">
+                <span>RESULTADO PUBLICADO</span>
+                <strong>La evidencia queda disponible para consulta.</strong>
+                <div><i></i><i></i><i></i></div>
               </div>
             </div>
-
-            <div class="connected-route-progress gov-investment-progress">
-              <i></i><i></i><i></i><i></i>
-            </div>
-
-            <div class="gov-investment-kpis">
-              <article><small>Entrada</small><strong>Necesidad</strong></article>
-              <article><small>Proceso</small><strong>Gestión</strong></article>
-              <article><small>Salida</small><strong>Evidencia</strong></article>
-            </div>
-          </aside>
-
-          <div class="connected-route-steps gov-investment-steps">
-            <article
-              class="connected-route-step gov-investment-step active"
-              data-route-index="0"
-              data-route-title="Prioridad territorial"
-              data-route-caption="La gestión comienza con una necesidad identificada, descrita y localizada."
-              style="--gov-route-index:0"
-            >
-              <header><span>01</span><small>DIAGNÓSTICO</small></header>
-              <h3>Identificar y priorizar</h3>
-              <p>
-                Se reconoce la necesidad, su ubicación, población relacionada,
-                urgencia y aporte esperado al desarrollo municipal.
-              </p>
-              <div class="gov-investment-output">
-                <small>DECISIÓN PÚBLICA</small>
-                <strong>Problema definido y territorio priorizado</strong>
-              </div>
-            </article>
-
-            <article
-              class="connected-route-step gov-investment-step"
-              data-route-index="1"
-              data-route-title="Planeación y presupuesto"
-              data-route-caption="La prioridad se convierte en alcance, responsables, recursos y metas verificables."
-              style="--gov-route-index:1"
-            >
-              <header><span>02</span><small>PLANEACIÓN</small></header>
-              <h3>Definir la intervención</h3>
-              <p>
-                La administración establece alcance, recursos, responsables,
-                cronograma, población beneficiada e indicadores de cumplimiento.
-              </p>
-              <div class="gov-investment-output">
-                <small>INSTRUMENTO DE GESTIÓN</small>
-                <strong>Proyecto estructurado y metas públicas</strong>
-              </div>
-            </article>
-
-            <article
-              class="connected-route-step gov-investment-step"
-              data-route-index="2"
-              data-route-title="Ejecución y seguimiento"
-              data-route-caption="El avance se publica mediante estados, hitos, responsables y evidencias parciales."
-              style="--gov-route-index:2"
-            >
-              <header><span>03</span><small>EJECUCIÓN</small></header>
-              <h3>Hacer visible el avance</h3>
-              <p>
-                La actuación deja una secuencia consultable de actividades,
-                hitos, novedades, compromisos y seguimiento institucional.
-              </p>
-              <div class="gov-investment-output">
-                <small>CONTROL CIUDADANO</small>
-                <strong>Avance, estado y responsables visibles</strong>
-              </div>
-            </article>
-
-            <article
-              class="connected-route-step gov-investment-step"
-              data-route-index="3"
-              data-route-title="Resultado y evidencia"
-              data-route-caption="El ciclo concluye con resultados medibles, documentos y evidencia territorial."
-              style="--gov-route-index:3"
-            >
-              <header><span>04</span><small>RESULTADO</small></header>
-              <h3>Rendir cuentas con claridad</h3>
-              <p>
-                La ciudadanía puede revisar qué cambió, cuánto se ejecutó,
-                quiénes fueron beneficiados y cuáles documentos lo respaldan.
-              </p>
-              <div class="gov-investment-output">
-                <small>RENDICIÓN DE CUENTAS</small>
-                <strong>Resultado medible y evidencia consultable</strong>
-              </div>
-            </article>
           </div>
+
+          <nav class="sp-scroll-scenes" aria-label="Etapas del recorrido territorial">
+            <button type="button" class="active" data-immersive-section="journey" data-immersive-jump="0"><b>01</b><span>Comprender</span></button>
+            <button type="button" data-immersive-section="journey" data-immersive-jump="1"><b>02</b><span>Localizar</span></button>
+            <button type="button" data-immersive-section="journey" data-immersive-jump="2"><b>03</b><span>Ejecutar</span></button>
+            <button type="button" data-immersive-section="journey" data-immersive-jump="3"><b>04</b><span>Verificar</span></button>
+          </nav>
+        </div>
+
+        <div class="sp-scroll-down" aria-hidden="true"><i></i><span>Deslice para recorrer</span></div>
+      </div>
+    `;
+
+    const corridor = document.createElement("section");
+    corridor.id = "spPublicWorksCorridor";
+    corridor.className = "sp-scroll-story sp-scroll-story--corridor";
+    corridor.innerHTML = `
+      <div class="sp-scroll-sticky">
+        <div class="sp-corridor-sky" aria-hidden="true"><i></i><i></i><i></i></div>
+
+        <header class="sp-scroll-topbar sp-scroll-topbar--light">
+          <div>
+            <span>RUTA PÚBLICA DE DESARROLLO</span>
+            <strong>Una obra se entiende cuando se puede seguir.</strong>
+          </div>
+          <span class="sp-scroll-counter"><b id="spCorridorCurrent">01</b> / 04</span>
+        </header>
+
+        <div class="sp-corridor-stage">
+          <div class="sp-corridor-copy">
+            <span id="spCorridorKicker">DIAGNÓSTICO</span>
+            <h2 id="spCorridorTitle">El recorrido comienza con una prioridad real.</h2>
+            <p id="spCorridorText">La necesidad se registra, se escucha y se ubica antes de tomar decisiones.</p>
+            <div class="sp-corridor-status">
+              <i></i><strong id="spCorridorStatus">Prioridad identificada</strong>
+            </div>
+          </div>
+
+          <div class="sp-corridor-window">
+            <div class="sp-corridor-camera" id="spCorridorCamera">
+              <div class="sp-corridor-ground">
+                <span class="sp-corridor-field field-a"></span>
+                <span class="sp-corridor-field field-b"></span>
+                <span class="sp-corridor-field field-c"></span>
+                <span class="sp-corridor-river"></span>
+                <span class="sp-corridor-road"></span>
+                <span class="sp-corridor-road-line"></span>
+              </div>
+
+              <div class="sp-corridor-town">
+                ${Array.from({length:18},(_,index) => `
+                  <span class="sp-corridor-house" style="--house:${index};--hx:${80 + index * 110}px;--hy:${index % 3 * 34}px"><i></i><b></b></span>
+                `).join("")}
+              </div>
+
+              <div class="sp-corridor-route">
+                <span class="sp-corridor-station station-0 active" data-corridor-station="0"><i>01</i><b>Diagnóstico</b><small>Necesidad localizada</small></span>
+                <span class="sp-corridor-station station-1" data-corridor-station="1"><i>02</i><b>Planeación</b><small>Recursos y alcance</small></span>
+                <span class="sp-corridor-station station-2" data-corridor-station="2"><i>03</i><b>Ejecución</b><small>Avance y seguimiento</small></span>
+                <span class="sp-corridor-station station-3" data-corridor-station="3"><i>04</i><b>Resultado</b><small>Evidencia pública</small></span>
+              </div>
+
+              <div class="sp-corridor-vehicle" id="spCorridorVehicle"><i></i><b></b><span></span></div>
+            </div>
+
+            <div class="sp-corridor-dashboard">
+              <article><small>ETAPA</small><strong id="spCorridorStageLabel">Diagnóstico</strong></article>
+              <article><small>AVANCE</small><strong id="spCorridorPercent">0%</strong></article>
+              <article><small>TRAZABILIDAD</small><strong>Activa</strong></article>
+            </div>
+          </div>
+
+          <nav class="sp-scroll-scenes sp-scroll-scenes--light" aria-label="Etapas de la ruta pública">
+            <button type="button" class="active" data-immersive-section="corridor" data-immersive-jump="0"><b>01</b><span>Diagnóstico</span></button>
+            <button type="button" data-immersive-section="corridor" data-immersive-jump="1"><b>02</b><span>Planeación</span></button>
+            <button type="button" data-immersive-section="corridor" data-immersive-jump="2"><b>03</b><span>Ejecución</span></button>
+            <button type="button" data-immersive-section="corridor" data-immersive-jump="3"><b>04</b><span>Resultado</span></button>
+          </nav>
         </div>
       </div>
     `;
@@ -1356,24 +1442,31 @@
       </div>
     `;
 
+    const legacyStory = document.querySelector("#territoryStory");
+    if (legacyStory) {
+      legacyStory.hidden = true;
+      legacyStory.classList.add("sp-scroll-legacy-hidden");
+    }
+
     const anchor =
-      document.querySelector("#territoryStory") ||
       document.querySelector("#territorioVivo") ||
       document.querySelector(".explorer-bar");
 
     if (anchor) {
       anchor.insertAdjacentElement("afterend",network);
       network.insertAdjacentElement("afterend",route);
-      route.insertAdjacentElement("afterend",compare);
+      route.insertAdjacentElement("afterend",corridor);
+      corridor.insertAdjacentElement("afterend",compare);
       compare.insertAdjacentElement("afterend",closing);
     } else {
       document.querySelector("main")?.append(
-        network,route,compare,closing
+        network,route,corridor,compare,closing
       );
     }
 
     state.root = network;
     state.route = route;
+    state.corridor = corridor;
     state.closing = closing;
     state.canvas = network.querySelector("#connectedNetworkCanvas");
     state.context = state.canvas?.getContext("2d");
@@ -1960,81 +2053,231 @@
     state.networkObserver.observe(state.root);
   }
 
-  function setRouteStep(step) {
-    if (!step || !state.route) return;
-
-    const index = Number(step.dataset.routeIndex || 0);
-    state.route.style.setProperty("--connected-step",String(index));
-
-    state.route.querySelectorAll(".connected-route-step")
-      .forEach(item => item.classList.toggle("active",item === step));
-
-    const number = state.route.querySelector("#connectedRouteNumber");
-    const title = state.route.querySelector("#connectedRouteTitle");
-    const caption = state.route.querySelector("#connectedRouteCaption");
-
-    if (number) number.textContent = String(index + 1).padStart(2,"0");
-    if (title) title.textContent = step.dataset.routeTitle || "";
-    if (caption) caption.textContent = step.dataset.routeCaption || "";
-
-    state.route.querySelectorAll(".connected-route-progress i")
-      .forEach((item,itemIndex) => {
-        item.classList.toggle("active",itemIndex <= index);
-      });
-    state.route.querySelectorAll("[data-route-map-node]")
-      .forEach(node => {
-        node.classList.toggle(
-          "active",
-          Number(node.dataset.routeMapNode) === index
-        );
-      });
-    state.route.dataset.activeStep = String(index);
+  function clamp01(value) {
+    return Math.max(0,Math.min(1,value));
   }
 
-  function setupRouteObserver() {
-    if (!state.route) return;
-    const steps = [
-      ...state.route.querySelectorAll(".connected-route-step")
-    ];
+  function interpolate(values,progress) {
+    const scaled = clamp01(progress) * (values.length - 1);
+    const index = Math.min(values.length - 2,Math.floor(scaled));
+    const local = scaled - index;
+    return values[index] + (values[index + 1] - values[index]) * local;
+  }
 
-    steps.forEach(step => {
-      step.addEventListener("click",() => setRouteStep(step));
+  function sectionProgress(section) {
+    if (!section) return 0;
+    const rect = section.getBoundingClientRect();
+    const distance = Math.max(1,rect.height - innerHeight);
+    return clamp01(-rect.top / distance);
+  }
+
+  const JOURNEY_SCENES = [
+    {
+      kicker:"VISIÓN TERRITORIAL",
+      title:"San Pedro se observa como un solo sistema.",
+      text:"El recorrido comienza con una vista general del municipio para comprender cómo se conectan cabecera, barrios y zonas rurales.",
+      hud:"Vista municipal",
+      hudText:"Conectando cabecera, barrios y zona rural.",
+      facts:["Municipal","Territorio completo","Comprender"],
+      pin:[432,367]
+    },
+    {
+      kicker:"NECESIDAD LOCALIZADA",
+      title:"La cámara se acerca al lugar donde comienza la gestión.",
+      text:"La información deja de ser abstracta: se vincula con un punto, una comunidad y una situación concreta.",
+      hud:"Prioridad localizada",
+      hudText:"El territorio indica dónde actuar y a quién beneficia.",
+      facts:["Barrio o vereda","Punto identificado","Priorizar"],
+      pin:[292,431]
+    },
+    {
+      kicker:"INVERSIÓN EN MOVIMIENTO",
+      title:"La decisión se convierte en una actuación visible.",
+      text:"Recursos, responsables, avance y tiempos se integran en una ruta pública que puede seguirse.",
+      hud:"Proyecto en ejecución",
+      hudText:"La ruta conecta decisión, avance y responsable.",
+      facts:["Proyecto","Seguimiento activo","Ejecutar"],
+      pin:[617,286]
+    },
+    {
+      kicker:"RESULTADO VERIFICABLE",
+      title:"El recorrido termina con evidencia que cualquier persona puede consultar.",
+      text:"Fotografías, documentos, indicadores y resultados completan la historia de la gestión territorial.",
+      hud:"Resultado publicado",
+      hudText:"La evidencia cierra el ciclo de rendición de cuentas.",
+      facts:["Resultado","Evidencia pública","Verificar"],
+      pin:[826,213]
+    }
+  ];
+
+  const CORRIDOR_SCENES = [
+    {
+      kicker:"DIAGNÓSTICO",
+      title:"El recorrido comienza con una prioridad real.",
+      text:"La necesidad se registra, se escucha y se ubica antes de tomar decisiones.",
+      status:"Prioridad identificada",
+      stage:"Diagnóstico"
+    },
+    {
+      kicker:"PLANEACIÓN",
+      title:"La prioridad se transforma en una decisión sustentada.",
+      text:"Se definen alcance, recursos, responsables, tiempos y metas que después podrán verificarse.",
+      status:"Proyecto estructurado",
+      stage:"Planeación"
+    },
+    {
+      kicker:"EJECUCIÓN",
+      title:"La actuación avanza y deja trazabilidad.",
+      text:"Los hitos, porcentajes y evidencias parciales muestran qué está ocurriendo en el territorio.",
+      status:"Seguimiento en curso",
+      stage:"Ejecución"
+    },
+    {
+      kicker:"RESULTADO",
+      title:"La ciudadanía puede comprobar qué cambió.",
+      text:"El proceso concluye con resultados, documentos, fotografías e indicadores disponibles para consulta.",
+      status:"Resultado publicado",
+      stage:"Resultado"
+    }
+  ];
+
+  function setText(node,text) {
+    if (node && node.textContent !== text) node.textContent = text;
+  }
+
+  function updateJourney(progress) {
+    const section = state.route;
+    if (!section) return;
+
+    const scaled = Math.min(3.9999,progress * 4);
+    const index = Math.min(3,Math.floor(scaled));
+    const local = scaled - index;
+    const scene = JOURNEY_SCENES[index];
+
+    section.dataset.activeScene = String(index);
+    section.style.setProperty("--sp-progress",progress.toFixed(4));
+    section.style.setProperty("--sp-scene-local",local.toFixed(4));
+    section.style.setProperty("--sp-camera-scale",interpolate([.82,1.18,1.48,1.08],progress).toFixed(4));
+    section.style.setProperty("--sp-camera-x",`${interpolate([0,-11,9,0],progress).toFixed(3)}%`);
+    section.style.setProperty("--sp-camera-y",`${interpolate([5,-5,-11,0],progress).toFixed(3)}%`);
+    section.style.setProperty("--sp-camera-rx",`${interpolate([59,62,65,55],progress).toFixed(3)}deg`);
+    section.style.setProperty("--sp-camera-rz",`${interpolate([-8,-2,5,0],progress).toFixed(3)}deg`);
+
+    setText(section.querySelector("#spJourneyCurrent"),String(index + 1).padStart(2,"0"));
+    setText(section.querySelector("#spJourneyKicker"),scene.kicker);
+    setText(section.querySelector("#spJourneyTitle"),scene.title);
+    setText(section.querySelector("#spJourneyText"),scene.text);
+    setText(section.querySelector("#spHudTitle"),scene.hud);
+    setText(section.querySelector("#spHudText"),scene.hudText);
+    setText(section.querySelector("#spHudPercent"),`${Math.round(progress * 100)}%`);
+
+    const bar = section.querySelector("#spHudBar");
+    if (bar) bar.style.transform = `scaleX(${progress})`;
+
+    section.querySelectorAll(".sp-scroll-facts span b").forEach((node,factIndex) => {
+      setText(node,scene.facts[factIndex] || "—");
     });
 
-    if (!("IntersectionObserver" in window)) return;
-
-    state.routeObserver = new IntersectionObserver(entries => {
-      const visible = entries
-        .filter(entry => entry.isIntersecting)
-        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-      if (visible) setRouteStep(visible.target);
-    },{
-      threshold:[.28,.52,.76],
-      rootMargin:"-24% 0px -48% 0px"
+    section.querySelectorAll("[data-immersive-section='journey']").forEach((button,buttonIndex) => {
+      button.classList.toggle("active",buttonIndex === index);
+      button.setAttribute("aria-current",buttonIndex === index ? "step" : "false");
     });
 
-    steps.forEach(step => state.routeObserver.observe(step));
+    section.querySelectorAll("[data-twin-node]").forEach((node,nodeIndex) => {
+      node.classList.toggle("active",nodeIndex <= index);
+    });
 
-    let progressFrame = 0;
-    const updateProgress = () => {
-      progressFrame = 0;
-      if (!state.route) return;
-      const rect = state.route.getBoundingClientRect();
-      const travel = Math.max(1,rect.height - innerHeight);
-      const progress = Math.max(0,Math.min(1,(-rect.top + innerHeight * .18) / travel));
-      state.route.style.setProperty(
-        "--route-progress",
-        progress.toFixed(4)
-      );
-    };
-    const requestProgress = () => {
-      if (progressFrame) return;
-      progressFrame = requestAnimationFrame(updateProgress);
-    };
-    addEventListener("scroll",requestProgress,{passive:true});
-    addEventListener("resize",requestProgress,{passive:true});
-    requestProgress();
+    const pin = section.querySelector("#spTwinPin");
+    if (pin) pin.setAttribute("transform",`translate(${scene.pin[0]} ${scene.pin[1]})`);
+
+    const path = section.querySelector("#spDevelopmentPath");
+    if (path) path.style.strokeDashoffset = String(1 - progress);
+
+    const evidence = section.querySelector("#spTwinEvidence");
+    if (evidence) evidence.classList.toggle("active",index === 3 && local > .15);
+  }
+
+  function updateCorridor(progress) {
+    const section = state.corridor;
+    if (!section) return;
+
+    const scaled = Math.min(3.9999,progress * 4);
+    const index = Math.min(3,Math.floor(scaled));
+    const scene = CORRIDOR_SCENES[index];
+    const camera = section.querySelector("#spCorridorCamera");
+    const shift = progress * 54;
+
+    section.dataset.activeScene = String(index);
+    section.style.setProperty("--sp-corridor-progress",progress.toFixed(4));
+    section.style.setProperty("--sp-corridor-shift",`${shift.toFixed(3)}%`);
+
+    if (camera) {
+      camera.style.transform = `translate3d(-${shift}%,0,0) rotateX(48deg) rotateZ(-2deg)`;
+    }
+
+    setText(section.querySelector("#spCorridorCurrent"),String(index + 1).padStart(2,"0"));
+    setText(section.querySelector("#spCorridorKicker"),scene.kicker);
+    setText(section.querySelector("#spCorridorTitle"),scene.title);
+    setText(section.querySelector("#spCorridorText"),scene.text);
+    setText(section.querySelector("#spCorridorStatus"),scene.status);
+    setText(section.querySelector("#spCorridorStageLabel"),scene.stage);
+    setText(section.querySelector("#spCorridorPercent"),`${Math.round(progress * 100)}%`);
+
+    const vehicle = section.querySelector("#spCorridorVehicle");
+    if (vehicle) vehicle.style.left = `${8 + progress * 82}%`;
+
+    section.querySelectorAll("[data-corridor-station]").forEach((station,stationIndex) => {
+      station.classList.toggle("active",stationIndex <= index);
+    });
+
+    section.querySelectorAll("[data-immersive-section='corridor']").forEach((button,buttonIndex) => {
+      button.classList.toggle("active",buttonIndex === index);
+      button.setAttribute("aria-current",buttonIndex === index ? "step" : "false");
+    });
+  }
+
+  function updateImmersiveScroll() {
+    state.immersiveFrame = 0;
+    updateJourney(sectionProgress(state.route));
+    updateCorridor(sectionProgress(state.corridor));
+  }
+
+  function requestImmersiveScroll() {
+    if (state.immersiveFrame) return;
+    state.immersiveFrame = requestAnimationFrame(updateImmersiveScroll);
+  }
+
+  function scrollToImmersiveScene(section,index) {
+    if (!section) return;
+    const distance = Math.max(1,section.offsetHeight - innerHeight);
+    const target = section.offsetTop + distance * ((Number(index) + .08) / 4);
+    scrollTo({top:target,behavior:"smooth"});
+  }
+
+  function setupImmersiveScroll() {
+    if (state.immersiveBound) {
+      requestImmersiveScroll();
+      return;
+    }
+    state.immersiveBound = true;
+
+    addEventListener("scroll",requestImmersiveScroll,{passive:true});
+    addEventListener("resize",requestImmersiveScroll,{passive:true});
+
+    document.addEventListener("click",event => {
+      const jump = event.target.closest("[data-immersive-jump]");
+      if (!jump) return;
+      const section = jump.dataset.immersiveSection === "corridor"
+        ? state.corridor
+        : state.route;
+      scrollToImmersiveScene(section,Number(jump.dataset.immersiveJump || 0));
+    });
+
+    state.route?.querySelector("#spImmersiveAdmin")?.addEventListener("click",() => {
+      window.TerritoryExperience?.openStoryAdmin?.();
+    });
+
+    requestImmersiveScroll();
   }
 
   function compareVisualMarkup(url,type) {
@@ -2386,6 +2629,8 @@
   function syncAdmin() {
     const button = state.root?.querySelector("#connectedAdminButton");
     if (button) button.hidden = !isAdmin();
+    const immersiveButton = state.route?.querySelector("#spImmersiveAdmin");
+    if (immersiveButton) immersiveButton.hidden = !isAdmin();
   }
 
   function bindEvents() {
@@ -2638,7 +2883,7 @@
     bindEvents();
     syncAdmin();
     setupNetworkObserver();
-    setupRouteObserver();
+    setupImmersiveScroll();
 
     state.resizeObserver = "ResizeObserver" in window
       ? new ResizeObserver(() => {
@@ -2673,6 +2918,7 @@
       resizeCanvas();
       resizeClosingCanvas();
       updateDetail(state.activeNode || state.nodes.find(node => node.group === "center") || state.nodes[0] || null);
+      requestImmersiveScroll();
     }
   };
 

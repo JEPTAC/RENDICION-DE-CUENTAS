@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.17-scroll-gubernamental";
+  const BUILD = "11.18-scroll-inmersivo-funcional";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -835,13 +835,13 @@
     const story = document.createElement("section");
     story.id = "territoryStory";
     story.className =
-      "home-section home-section--soft territory-story-section gov-record-section";
+      "home-section home-section--soft territory-story-section";
     story.innerHTML = `
-      <div class="site-shell territory-story-shell gov-record-shell">
-        <div class="home-section__head gov-record-heading">
+      <div class="site-shell territory-story-shell">
+        <div class="home-section__head">
           <div>
-            <span>TRAZABILIDAD PÚBLICA</span>
-            <h2>Del reporte ciudadano al resultado verificable</h2>
+            <span>DEL TERRITORIO A LA RESPUESTA</span>
+            <h2>Una historia pública que se puede seguir</h2>
             <button
               type="button"
               class="territory-story-admin-button"
@@ -852,75 +852,36 @@
             </button>
           </div>
           <p>
-            Una narrativa institucional sobria que explica cómo una situación
-            se registra, se ubica, recibe respuesta y queda respaldada por
-            evidencia pública.
+            Cada situación puede convertirse en una secuencia verificable:
+            ubicación, impacto, decisión y evidencia.
           </p>
         </div>
 
-        <div class="territory-story-layout gov-record-layout">
-          <aside class="territory-story-visual gov-record-visual">
-            <div class="gov-record-toolbar">
-              <span>EXPEDIENTE TERRITORIAL</span>
-              <strong>SP · GESTIÓN ABIERTA</strong>
-              <i aria-hidden="true"></i>
-            </div>
-
-            <div class="gov-record-stage">
-              <div
-                class="territory-story-media-stage gov-record-media"
-                id="territoryStoryMediaStage"
-                aria-hidden="true"
-              ></div>
-
-              <div class="gov-record-map" aria-hidden="true">
-                <svg viewBox="0 0 620 440" role="presentation">
-                  <path
-                    class="gov-record-boundary"
-                    d="M93 83C142 38 229 36 280 65C333 95 376 64 433 82C505 105 548 165 536 228C525 286 486 337 425 354C358 373 317 405 250 392C187 380 137 337 105 288C73 239 49 127 93 83Z"
-                  />
-                  <path
-                    class="gov-record-river"
-                    d="M76 266C139 234 160 172 225 176C291 179 311 252 376 241C431 232 454 168 535 161"
-                  />
-                  <path
-                    class="gov-record-road road-a"
-                    d="M116 119C174 147 227 122 275 161C323 199 345 255 414 278C454 292 487 278 524 299"
-                  />
-                  <path
-                    class="gov-record-road road-b"
-                    d="M162 356C187 296 219 263 273 245C324 228 382 199 420 133"
-                  />
-                  <path
-                    class="gov-record-route"
-                    pathLength="100"
-                    d="M124 310C181 279 174 210 240 191C301 173 323 243 384 229C441 216 456 144 511 132"
-                  />
-                  <g class="gov-record-map-nodes">
-                    <circle data-record-map-node="0" cx="124" cy="310" r="11" />
-                    <circle data-record-map-node="1" cx="240" cy="191" r="11" />
-                    <circle data-record-map-node="2" cx="384" cy="229" r="11" />
-                    <circle data-record-map-node="3" cx="511" cy="132" r="11" />
-                  </g>
-                </svg>
-                <div class="gov-record-map-label label-a">Cabecera</div>
-                <div class="gov-record-map-label label-b">Sector priorizado</div>
-                <div class="gov-record-map-label label-c">Respuesta pública</div>
-              </div>
-
-              <div class="gov-record-summary">
-                <div>
-                  <small id="territoryStoryIndex">01</small>
-                  <span>FASE ACTIVA</span>
-                </div>
+        <div class="territory-story-layout">
+          <div class="territory-story-visual">
+            <div
+              class="territory-story-media-stage"
+              id="territoryStoryMediaStage"
+              aria-hidden="true"
+            ></div>
+            <div class="territory-story-world" aria-hidden="true">
+              <span class="territory-story-ring ring-a"></span>
+              <span class="territory-story-ring ring-b"></span>
+              <span class="territory-story-ring ring-c"></span>
+              <span class="territory-story-path"></span>
+              <i class="territory-story-node node-a"></i>
+              <i class="territory-story-node node-b"></i>
+              <i class="territory-story-node node-c"></i>
+              <i class="territory-story-node node-d"></i>
+              <div class="territory-story-core">
+                <small id="territoryStoryIndex">01</small>
                 <strong id="territoryStoryTitle">El hecho se registra</strong>
-                <p id="territoryStoryCaption">
-                  La información inicia con una descripción clara y una fecha.
-                </p>
               </div>
             </div>
-
-            <div class="territory-story-progress gov-record-progress" aria-label="Pasos de la narrativa">
+            <p id="territoryStoryCaption">
+              La información inicia con una descripción clara y una fecha.
+            </p>
+            <div class="territory-story-progress" aria-label="Pasos de la narrativa">
               ${STORY_DEFAULTS.map((item,index) => `
                 <button
                   type="button"
@@ -931,82 +892,55 @@
                   <i></i><span>0${index + 1}</span>
                 </button>`).join("")}
             </div>
-          </aside>
+          </div>
 
-          <div class="territory-story-steps gov-record-steps">
+          <div class="territory-story-steps">
             <article
-              class="territory-story-step gov-record-step active"
+              class="territory-story-step active"
               data-story-index="0"
               data-story-title="El hecho se registra"
-              data-story-caption="La información inicia con una descripción clara, una fecha y una fuente responsable."
-              style="--gov-step-index:0"
+              data-story-caption="La información inicia con una descripción clara y una fecha."
             >
-              <header><span>01</span><small>CAPTURA</small></header>
-              <h3>Registrar con precisión</h3>
-              <p>
-                La situación se convierte en un registro público comprensible,
-                con fecha, fuente, descripción y contexto inicial.
-              </p>
-              <div class="gov-record-output">
-                <small>INFORMACIÓN MÍNIMA</small>
-                <span>Fecha</span><span>Descripción</span><span>Fuente</span>
+              <span>01</span>
+              <div>
+                <h3>Registrar</h3>
+                <p>Se documenta qué ocurrió, cuándo ocurrió y quién reporta.</p>
               </div>
             </article>
-
             <article
-              class="territory-story-step gov-record-step"
+              class="territory-story-step"
               data-story-index="1"
               data-story-title="Se ubica en el territorio"
-              data-story-caption="El registro se conecta con un barrio, vereda, corregimiento o coordenada de referencia."
-              style="--gov-step-index:1"
+              data-story-caption="El mapa conecta el registro con un barrio, vereda, corregimiento o coordenada."
             >
-              <header><span>02</span><small>LOCALIZACIÓN</small></header>
-              <h3>Ubicar para comprender</h3>
-              <p>
-                El reporte se vincula con el territorio para identificar su
-                alcance, población relacionada y contexto geográfico.
-              </p>
-              <div class="gov-record-output">
-                <small>REFERENCIA TERRITORIAL</small>
-                <span>Barrio</span><span>Corregimiento</span><span>Coordenada</span>
+              <span>02</span>
+              <div>
+                <h3>Ubicar</h3>
+                <p>La situación se vincula con un punto, sector o área territorial.</p>
               </div>
             </article>
-
             <article
-              class="territory-story-step gov-record-step"
+              class="territory-story-step"
               data-story-index="2"
               data-story-title="Se conecta con una respuesta"
-              data-story-caption="La ciudadanía puede seguir responsable, estado, actuación y compromisos."
-              style="--gov-step-index:2"
+              data-story-caption="La ciudadanía puede identificar responsable, estado y avance."
             >
-              <header><span>03</span><small>GESTIÓN</small></header>
-              <h3>Responder con trazabilidad</h3>
-              <p>
-                La actuación institucional muestra quién responde, qué se
-                realizará, en qué estado se encuentra y cuál es el compromiso.
-              </p>
-              <div class="gov-record-output">
-                <small>SEGUIMIENTO PÚBLICO</small>
-                <span>Responsable</span><span>Estado</span><span>Compromiso</span>
+              <span>03</span>
+              <div>
+                <h3>Responder</h3>
+                <p>Se publica la actuación institucional, su estado y los compromisos.</p>
               </div>
             </article>
-
             <article
-              class="territory-story-step gov-record-step"
+              class="territory-story-step"
               data-story-index="3"
               data-story-title="La evidencia queda visible"
-              data-story-caption="Documentos, fotografías, indicadores y resultados cierran el ciclo de rendición."
-              style="--gov-step-index:3"
+              data-story-caption="Documentos, fotografías y resultados cierran el ciclo de rendición."
             >
-              <header><span>04</span><small>VERIFICACIÓN</small></header>
-              <h3>Publicar el resultado</h3>
-              <p>
-                La respuesta final queda respaldada por evidencia consultable,
-                comparaciones, documentos y resultados medibles.
-              </p>
-              <div class="gov-record-output">
-                <small>EVIDENCIA DISPONIBLE</small>
-                <span>Fotografías</span><span>Documentos</span><span>Resultados</span>
+              <span>04</span>
+              <div>
+                <h3>Verificar</h3>
+                <p>La respuesta se conecta con documentos, fotografías y resultados.</p>
               </div>
             </article>
           </div>
@@ -1928,14 +1862,6 @@
       button.classList.toggle("active",active);
       button.setAttribute("aria-current",active ? "step" : "false");
     });
-    state.storySection.querySelectorAll("[data-record-map-node]")
-      .forEach(node => {
-        node.classList.toggle(
-          "active",
-          Number(node.dataset.recordMapNode) === index
-        );
-      });
-    state.storySection.dataset.activeStep = String(index);
     renderStoryMedia(index);
   }
 
@@ -1962,26 +1888,6 @@
       state.storyObserver.observe(step);
       step.addEventListener("click",() => setStoryStep(step));
     });
-
-    let progressFrame = 0;
-    const updateProgress = () => {
-      progressFrame = 0;
-      if (!state.storySection) return;
-      const rect = state.storySection.getBoundingClientRect();
-      const travel = Math.max(1,rect.height - innerHeight);
-      const progress = Math.max(0,Math.min(1,(-rect.top + innerHeight * .18) / travel));
-      state.storySection.style.setProperty(
-        "--story-progress",
-        progress.toFixed(4)
-      );
-    };
-    const requestProgress = () => {
-      if (progressFrame) return;
-      progressFrame = requestAnimationFrame(updateProgress);
-    };
-    addEventListener("scroll",requestProgress,{passive:true});
-    addEventListener("resize",requestProgress,{passive:true});
-    requestProgress();
   }
 
   function focusCardMotion(card) {

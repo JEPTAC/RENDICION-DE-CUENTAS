@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.17-scroll-gubernamental";
+  const PORTAL_BUILD = "11.18-scroll-inmersivo-funcional";
 
   /*
    * Arranque visual temprano.
