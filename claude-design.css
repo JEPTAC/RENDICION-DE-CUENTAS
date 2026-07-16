@@ -7943,3 +7943,75 @@ html.has-sp-loading-popup{
     transition:none!important;
   }
 }
+
+
+/* =========================================================
+   V11.8 · Barrios de la cabecera municipal
+   ========================================================= */
+
+.territory-metrics{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+
+.territory-metrics article{
+  min-width:0;
+}
+
+.territory-leaflet-icon.is-neighborhood{
+  width:30px!important;
+  height:30px!important;
+  margin-left:2px!important;
+  margin-top:2px!important;
+  border:3px solid #fff!important;
+  color:#fff!important;
+  background:
+    linear-gradient(135deg,#5a42b8,#258bd5 62%,#43c3e8)!important;
+  box-shadow:
+    0 0 0 5px rgba(90,66,184,.12),
+    0 10px 24px rgba(5,45,91,.26)!important;
+}
+
+.territory-leaflet-icon.is-neighborhood > i{
+  font:900 11px/1 "Century Gothic",Arial,sans-serif!important;
+}
+
+.territory-leaflet-icon.is-neighborhood
+.territory-marker-pulse{
+  border-color:#8f7ae3!important;
+}
+
+.territory-result-symbol.is-neighborhood{
+  background:
+    linear-gradient(135deg,#5a42b8,#258bd5 62%,#43c3e8)!important;
+}
+
+.territory-popup em{
+  display:block;
+  margin-top:8px;
+  padding-top:7px;
+  border-top:1px solid rgba(18,106,182,.10);
+  color:#7b6ba8;
+  font-size:8px;
+  font-style:normal;
+  line-height:1.4;
+}
+
+@media (max-width:880px){
+  .territory-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+@media (max-width:620px){
+  .territory-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+
+  .territory-metrics article:last-child{
+    grid-column:auto!important;
+  }
+
+  .territory-metrics article{
+    min-height:80px!important;
+  }
+}

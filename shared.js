@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.7-real-map-loader";
+  const PORTAL_BUILD = "11.8-barrios-cabecera";
 
   /*
    * Arranque visual temprano.

@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.7-real-map-loader";
+  const BUILD = "11.8-barrios-cabecera";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -11,7 +11,7 @@
       label:"Territorio",
       short:"Localidades",
       icon:"◎",
-      description:"Cabecera, corregimientos y veredas de referencia."
+      description:"Cabecera, barrios urbanos, corregimientos y veredas de referencia."
     },
     impact:{
       label:"Afectaciones",
@@ -46,8 +46,21 @@
       lat:3.99557,
       lng:-76.22805,
       altitude:988,
-      veredas:["Barrios y equipamientos visibles en el mapa base"],
-      note:"Centro urbano de San Pedro."
+      veredas:[],
+      barrios:[
+        "El Centro",
+        "Jorge Herrera",
+        "El Espinal",
+        "El Porvenir",
+        "Villa del Lago",
+        "Villas de Belén",
+        "La Esperanza",
+        "Villa Juliana",
+        "Avenida La Planta",
+        "El Jardín",
+        "La Campiña"
+      ],
+      note:"Centro urbano de San Pedro con once barrios y sectores georreferenciados."
     },
     {
       id:"angosturas",
@@ -181,6 +194,136 @@
     }
   ];
 
+  /*
+   * Barrios documentados en fuentes municipales y territoriales.
+   * Las coordenadas corresponden a centros urbanos de referencia para
+   * navegación y deben sustituirse por centroides o polígonos oficiales
+   * cuando Planeación Municipal suministre la cartografía.
+   */
+  const URBAN_NEIGHBORHOODS = [
+    {
+      id:"barrio-el-centro",
+      name:"El Centro",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:3.99555,
+      lng:-76.22810,
+      sector:"Cabecera municipal",
+      note:"Sector central donde se ubican la Alcaldía y el parque principal.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-jorge-herrera",
+      name:"Jorge Herrera",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:3.99820,
+      lng:-76.23105,
+      sector:"Cabecera municipal",
+      note:"Barrio urbano ubicado hacia el noroccidente del centro tradicional.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-el-espinal",
+      name:"El Espinal",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:3.99155,
+      lng:-76.23185,
+      sector:"Cabecera municipal",
+      note:"Barrio urbano ubicado al suroccidente del centro.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-el-porvenir",
+      name:"El Porvenir",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:3.99075,
+      lng:-76.22615,
+      sector:"Cabecera municipal",
+      note:"Sector residencial ubicado al sur de la cabecera.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-villa-del-lago",
+      name:"Villa del Lago",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:4.00055,
+      lng:-76.22395,
+      sector:"Cabecera municipal",
+      note:"Sector residencial ubicado al nororiente del casco urbano.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-villas-de-belen",
+      name:"Villas de Belén",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:4.00125,
+      lng:-76.22735,
+      sector:"Cabecera municipal",
+      note:"Sector residencial ubicado al norte del centro.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-la-esperanza",
+      name:"La Esperanza",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:4.00265,
+      lng:-76.23020,
+      sector:"Cabecera municipal",
+      note:"Sector urbano ubicado hacia el noroccidente de la cabecera.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-villa-juliana",
+      name:"Villa Juliana",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:3.98865,
+      lng:-76.22720,
+      sector:"Cabecera municipal",
+      note:"Sector residencial ubicado al sur del casco urbano.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-avenida-la-planta",
+      name:"Avenida La Planta",
+      kind:"Barrio o sector urbano",
+      category:"neighborhood",
+      lat:3.99355,
+      lng:-76.22295,
+      sector:"Cabecera municipal",
+      note:"Sector urbano asociado al corredor de la antigua salida oriental.",
+      referenceNote:"Centro de referencia; validar denominación y límite oficial."
+    },
+    {
+      id:"barrio-el-jardin",
+      name:"El Jardín",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:3.99755,
+      lng:-76.22245,
+      sector:"Cabecera municipal",
+      note:"Sector urbano ubicado hacia el oriente del centro.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    },
+    {
+      id:"barrio-la-campina",
+      name:"La Campiña",
+      kind:"Barrio urbano",
+      category:"neighborhood",
+      lat:4.00335,
+      lng:-76.22525,
+      sector:"Cabecera municipal",
+      note:"Sector urbano ubicado al norte de la cabecera.",
+      referenceNote:"Centro de referencia; no representa límite oficial."
+    }
+  ];
+
   const STORY_DEFAULTS = [
     {
       id:"register",
@@ -231,6 +374,7 @@
     mapReady:false,
     leafletPromise:null,
     markerLayer:null,
+    neighborhoodLayer:null,
     radiusLayer:null,
     activeMode:"territory",
     selectedId:null,
@@ -552,6 +696,10 @@
                 <strong id="territoryMetricLocations">${TERRITORY.filter(item => Number.isFinite(item.lat)).length}/${TERRITORY.length}</strong>
               </article>
               <article>
+                <small>Barrios cabecera</small>
+                <strong id="territoryMetricNeighborhoods">${URBAN_NEIGHBORHOODS.length}</strong>
+              </article>
+              <article>
                 <small>Registros</small>
                 <strong id="territoryMetricRecords">0</strong>
               </article>
@@ -566,7 +714,7 @@
               <input
                 id="territorySearch"
                 type="search"
-                placeholder="Corregimiento, vereda o sector"
+                placeholder="Barrio, corregimiento, vereda o sector"
                 autocomplete="off"
               >
             </label>
@@ -818,7 +966,13 @@
   }
 
   function layerRecords(mode = state.activeMode) {
-    if (mode === "territory") return TERRITORY;
+    if (mode === "territory") {
+      return [
+        TERRITORY[0],
+        ...URBAN_NEIGHBORHOODS,
+        ...TERRITORY.slice(1)
+      ];
+    }
     return state.records.filter(record => record.category === mode);
   }
 
@@ -861,10 +1015,20 @@
     const people = totalPeople();
 
     const locationsNode = state.section?.querySelector("#territoryMetricLocations");
+    const neighborhoodsNode = state.section?.querySelector(
+      "#territoryMetricNeighborhoods"
+    );
     const recordsNode = state.section?.querySelector("#territoryMetricRecords");
     const peopleNode = state.section?.querySelector("#territoryMetricPopulation");
 
-    if (locationsNode) locationsNode.textContent = `${georeferenced}/${TERRITORY.length}`;
+    if (locationsNode) {
+      locationsNode.textContent = `${georeferenced}/${TERRITORY.length}`;
+    }
+    if (neighborhoodsNode) {
+      neighborhoodsNode.textContent = formatNumber(
+        URBAN_NEIGHBORHOODS.length
+      );
+    }
     if (recordsNode) {
       recordsNode.textContent = state.activeMode === "territory"
         ? formatNumber(records)
@@ -885,7 +1049,9 @@
       item.sector,
       item.status,
       item.description,
-      ...(item.veredas || [])
+      item.referenceNote,
+      ...(item.veredas || []),
+      ...(item.barrios || [])
     ].join(" ").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     const normalized = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     return haystack.includes(normalized);
@@ -913,12 +1079,27 @@
     holder.innerHTML = items.map(item => {
       const hasCoordinates =
         Number.isFinite(item.lat) && Number.isFinite(item.lng);
+      const isNeighborhood = item.category === "neighborhood";
       const subtitle = state.activeMode === "territory"
-        ? `${item.kind}${item.veredas?.length ? ` · ${item.veredas.length} veredas` : ""}`
+        ? (
+          isNeighborhood
+            ? `${item.kind} · Cabecera municipal`
+            : `${item.kind}${item.veredas?.length
+              ? ` · ${item.veredas.length} veredas`
+              : ""}`
+        )
         : `${MODES[item.category]?.label || "Registro"} · ${item.status || "Sin estado"}`;
       const value = state.activeMode === "territory"
-        ? (item.altitude ? `${formatNumber(item.altitude)} m` : "Por ubicar")
-        : (item.people ? `${formatNumber(item.people)} personas` : "Sin cifra");
+        ? (
+          isNeighborhood
+            ? "Barrio"
+            : (item.altitude
+              ? `${formatNumber(item.altitude)} m`
+              : "Por ubicar")
+        )
+        : (item.people
+          ? `${formatNumber(item.people)} personas`
+          : "Sin cifra");
 
       return `
         <button
@@ -964,6 +1145,10 @@
     if (item.people) chips.push(`${formatNumber(item.people)} personas`);
     if (item.altitude) chips.push(`${formatNumber(item.altitude)} m s. n. m.`);
     if (item.veredas?.length) chips.push(item.veredas.join(" · "));
+    if (item.barrios?.length) {
+      chips.push(`${item.barrios.length} barrios de cabecera`);
+    }
+    if (item.referenceNote) chips.push("Ubicación de referencia");
     if (meta) {
       meta.innerHTML = chips.map(chip => `<span>${escapeHtml(chip)}</span>`).join("");
     }
@@ -979,7 +1164,9 @@
   }
 
   function createLeafletIcon(category = "territory",label = "") {
-    const icon = MODES[category]?.icon || "◎";
+    const icon = category === "neighborhood"
+      ? "B"
+      : (MODES[category]?.icon || "◎");
     return window.L.divIcon({
       className:`territory-leaflet-icon is-${category}`,
       html:`
@@ -1003,10 +1190,19 @@
 
     return `
       <div class="territory-popup">
-        <span>${escapeHtml(MODES[category]?.label || "Territorio")}</span>
+        <span>${escapeHtml(
+          category === "neighborhood"
+            ? "Barrio de la cabecera"
+            : (MODES[category]?.label || "Territorio")
+        )}</span>
         <h3>${escapeHtml(item.name)}</h3>
         <p>${escapeHtml(item.description || item.note || details.join(" · "))}</p>
-        ${details.length ? `<small>${escapeHtml(details.join(" · "))}</small>` : ""}
+        ${details.length
+          ? `<small>${escapeHtml(details.join(" · "))}</small>`
+          : ""}
+        ${item.referenceNote
+          ? `<em>${escapeHtml(item.referenceNote)}</em>`
+          : ""}
       </div>`;
   }
 
@@ -1157,7 +1353,10 @@
     });
 
     state.map.once("moveend",() => {
-      const layer = state.markerLayer?.getLayers?.().find(marker =>
+      const layer = [
+        ...(state.markerLayer?.getLayers?.() || []),
+        ...(state.neighborhoodLayer?.getLayers?.() || [])
+      ].find(marker =>
         marker.options?.territoryId === item.id
       );
       layer?.openPopup?.();
@@ -1168,17 +1367,37 @@
     });
   }
 
+  function updateNeighborhoodLayerVisibility() {
+    if (!state.mapReady || !state.map || !state.neighborhoodLayer) return;
+
+    const shouldShow =
+      state.activeMode === "territory" &&
+      state.map.getZoom() >= 14;
+
+    const visible = state.map.hasLayer(state.neighborhoodLayer);
+
+    if (shouldShow && !visible) {
+      state.neighborhoodLayer.addTo(state.map);
+    } else if (!shouldShow && visible) {
+      state.map.removeLayer(state.neighborhoodLayer);
+    }
+  }
+
   function renderMapLayers() {
     if (!state.mapReady || !window.L) return;
 
     if (!state.markerLayer) {
       state.markerLayer = window.L.layerGroup().addTo(state.map);
     }
+    if (!state.neighborhoodLayer) {
+      state.neighborhoodLayer = window.L.layerGroup();
+    }
     if (!state.radiusLayer) {
       state.radiusLayer = window.L.layerGroup().addTo(state.map);
     }
 
     state.markerLayer.clearLayers();
+    state.neighborhoodLayer.clearLayers();
     state.radiusLayer.clearLayers();
 
     const items = layerRecords();
@@ -1199,7 +1418,13 @@
         maxWidth:300
       });
       marker.on("click",() => selectItem(item,{fly:false}));
-      marker.addTo(state.markerLayer);
+
+      if (category === "neighborhood") {
+        marker.addTo(state.neighborhoodLayer);
+      } else {
+        marker.addTo(state.markerLayer);
+      }
+
       bounds.push([item.lat,item.lng]);
 
       if (category === "impact" && item.people > 0) {
@@ -1215,6 +1440,8 @@
         }).addTo(state.radiusLayer);
       }
     });
+
+    updateNeighborhoodLayerVisibility();
 
     if (bounds.length && state.activeMode !== "territory") {
       state.map.fitBounds(bounds,{
@@ -1435,6 +1662,7 @@
       state.map.on("zoomend",() => {
         state.section?.querySelector(".territory-map-shell")
           ?.classList.remove("is-map-zooming");
+        updateNeighborhoodLayerVisibility();
       });
 
       state.mapReady = true;

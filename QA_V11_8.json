@@ -1,0 +1,50 @@
+{
+  "version": "11.8",
+  "name": "Barrios de la cabecera municipal",
+  "base": "V11.7",
+  "replace_files": [
+    "shared.js",
+    "claude-design.css",
+    "territory-experience.js"
+  ],
+  "preserved": [
+    "Mapa real Leaflet.",
+    "Vistas Plano, Relieve, Satélite e Híbrido.",
+    "Popup único de carga con los GIF suministrados.",
+    "Sonido notification.mp3.",
+    "Administración y narrativa visual."
+  ],
+  "neighborhoods": [
+    "El Centro",
+    "Jorge Herrera",
+    "El Espinal",
+    "El Porvenir",
+    "Villa del Lago",
+    "Villas de Belén",
+    "La Esperanza",
+    "Villa Juliana",
+    "Avenida La Planta",
+    "El Jardín",
+    "La Campiña"
+  ],
+  "behavior": [
+    "Los barrios aparecen en la lista territorial y en el buscador.",
+    "Los marcadores barriales se muestran automáticamente desde zoom 14.",
+    "Al seleccionar un barrio el mapa vuela a zoom 17.",
+    "En la vista municipal general se conserva un solo marcador de cabecera para evitar saturación.",
+    "Las coordenadas se identifican como centros de referencia y no límites oficiales."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK",
+      "territory-experience.js": "OK"
+    },
+    "css_braces": "1124/1124",
+    "neighborhood_count": 11,
+    "map_engine": "Leaflet",
+    "existing_popup_preserved": true
+  }
+}
