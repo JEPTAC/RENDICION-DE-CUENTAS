@@ -1,5 +1,5 @@
 (() => {
-  const PORTAL_BUILD = "11.8-barrios-cabecera";
+  const PORTAL_BUILD = "11.9-san-pedro-conectado";
 
   /*
    * Arranque visual temprano.
@@ -2589,6 +2589,8 @@ helpers.showClickEffect = showClickEffect;
     const scriptId = "claudeStudioScript";
     const motionId = "motionStudioScript";
     const territoryId = "territoryExperienceScript";
+    const connectedCssId = "sanPedroConnectedStyles";
+    const connectedId = "sanPedroConnectedScript";
 
     let link = document.getElementById(cssId) || visualBoot.link;
     if (!link) {
@@ -2599,9 +2601,43 @@ helpers.showClickEffect = showClickEffect;
       document.head.appendChild(link);
     }
 
+    const loadConnectedExperience = () => {
+      const mountScript = () => {
+        if (document.getElementById(connectedId)) {
+          window.SanPedroConnected?.init?.();
+          return;
+        }
+
+        const connected = document.createElement("script");
+        connected.id = connectedId;
+        connected.src = `san-pedro-connected.js?v=${PORTAL_BUILD}`;
+        connected.defer = true;
+        connected.onload = () => window.SanPedroConnected?.init?.();
+        document.head.appendChild(connected);
+      };
+
+      let connectedCss = document.getElementById(connectedCssId);
+      if (!connectedCss) {
+        connectedCss = document.createElement("link");
+        connectedCss.id = connectedCssId;
+        connectedCss.rel = "stylesheet";
+        connectedCss.href =
+          `san-pedro-connected.css?v=${PORTAL_BUILD}`;
+        connectedCss.onload = mountScript;
+        connectedCss.onerror = mountScript;
+        document.head.appendChild(connectedCss);
+      } else if (connectedCss.sheet) {
+        mountScript();
+      } else {
+        connectedCss.addEventListener("load",mountScript,{once:true});
+        connectedCss.addEventListener("error",mountScript,{once:true});
+      }
+    };
+
     const loadTerritoryExperience = () => {
       if (document.getElementById(territoryId)) {
         window.TerritoryExperience?.init?.();
+        loadConnectedExperience();
         return;
       }
 
@@ -2609,7 +2645,11 @@ helpers.showClickEffect = showClickEffect;
       territory.id = territoryId;
       territory.src = `territory-experience.js?v=${PORTAL_BUILD}`;
       territory.defer = true;
-      territory.onload = () => window.TerritoryExperience?.init?.();
+      territory.onload = () => {
+        window.TerritoryExperience?.init?.();
+        loadConnectedExperience();
+      };
+      territory.onerror = loadConnectedExperience;
       document.head.appendChild(territory);
     };
 

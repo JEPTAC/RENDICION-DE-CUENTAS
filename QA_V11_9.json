@@ -1,0 +1,57 @@
+{
+  "version": "11.9",
+  "name": "San Pedro Conectado",
+  "base": "V11.8",
+  "replace_files": [
+    "shared.js",
+    "territory-experience.js"
+  ],
+  "new_files": [
+    "san-pedro-connected.js",
+    "san-pedro-connected.css"
+  ],
+  "preserved": [
+    "Mapa real Leaflet y sus cuatro vistas.",
+    "Barrios de la cabecera.",
+    "Popup único con loading-spinner.gif, ok-hand.gif y notification.mp3.",
+    "Firebase, Drive y panel administrativo.",
+    "Narrativa Territorio Vivo existente."
+  ],
+  "new_sections": [
+    "Red territorial interactiva con Canvas 2D.",
+    "Tarjetas con enfoque y difuminado.",
+    "Ruta de la gestión controlada por desplazamiento.",
+    "Comparador antes y después administrable.",
+    "Cierre territorial animado."
+  ],
+  "performance": [
+    "Sin WebGL.",
+    "Sin bibliotecas externas.",
+    "Canvas pausado fuera de pantalla o con la pestaña oculta.",
+    "Compatible con prefers-reduced-motion.",
+    "CSS y JavaScript encapsulados en archivos nuevos."
+  ],
+  "admin": [
+    "Título y descripción de la red.",
+    "Imágenes anterior y posterior mediante URL.",
+    "Etiquetas, ubicación, descripción y enlace de evidencia.",
+    "Guardado integrado con el popup de carga existente."
+  ],
+  "validation": {
+    "javascript": {
+      "shared.js": "OK",
+      "claude-design.js": "OK",
+      "admin-popup.js": "OK",
+      "motion-studio.js": "OK",
+      "territory-experience.js": "OK",
+      "san-pedro-connected.js": "OK"
+    },
+    "css": {
+      "claude-design.css": "1124/1124",
+      "san-pedro-connected.css": "197/197"
+    },
+    "map_replaced": false,
+    "webgl_dependencies": 0,
+    "new_module_isolated": true
+  }
+}

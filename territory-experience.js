@@ -2,7 +2,7 @@
   "use strict";
 
   const STORE_KEY = "sp_territory_experience_v1";
-  const BUILD = "11.8-barrios-cabecera";
+  const BUILD = "11.9-san-pedro-conectado";
   const HOME_PATHS = new Set(["","index.html","/"]);
   const CENTER = [3.99557,-76.22805];
 
@@ -2383,6 +2383,44 @@
     }));
   }
 
+  function getPublicTerritoryData() {
+    refreshRecords();
+    return {
+      center:{lat:CENTER[0],lng:CENTER[1]},
+      territory:TERRITORY.map(item => ({
+        ...item,
+        veredas:[...(item.veredas || [])],
+        barrios:[...(item.barrios || [])]
+      })),
+      neighborhoods:URBAN_NEIGHBORHOODS.map(item => ({...item})),
+      records:state.records.map(item => ({...item}))
+    };
+  }
+
+  function focusLocation(id) {
+    const item = [
+      ...URBAN_NEIGHBORHOODS,
+      ...TERRITORY,
+      ...state.records
+    ].find(entry => entry.id === id);
+
+    if (!item) return false;
+
+    const mode = ["impact","work","participation"].includes(item.category)
+      ? item.category
+      : "territory";
+
+    setMode(mode);
+    state.section?.querySelector(".territory-map-shell")
+      ?.scrollIntoView({behavior:"smooth",block:"center"});
+
+    window.setTimeout(() => {
+      selectItem(item,{fly:true});
+    },420);
+
+    return true;
+  }
+
   window.TerritoryExperience = {
     init,
     setMode,
@@ -2390,6 +2428,8 @@
     openStoryAdmin:openStoryAdminDialog,
     switchBasemap,
     resetMap,
+    getData:getPublicTerritoryData,
+    focusLocation,
     refresh:() => {
       refreshRecords();
       renderMetrics();
