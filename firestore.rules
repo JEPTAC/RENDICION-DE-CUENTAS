@@ -1,0 +1,205 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function hasAuthEmail() {
+      return signedIn()
+        && request.auth.token.email is string
+        && request.auth.token.email.size() > 0;
+    }
+
+    function uidProfilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function legacyProfilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.token.email);
+    }
+
+    function uidProfileExists() {
+      return signedIn() && exists(uidProfilePath());
+    }
+
+    function legacyProfileExists() {
+      return hasAuthEmail() && exists(legacyProfilePath());
+    }
+
+    function roleOf(data) {
+      return data.get(
+        'role',
+        data.get('rol', data.get('tipoUsuario', data.get('userRole', 'guest')))
+      );
+    }
+
+    function isActive(data) {
+      return data.get('active', true) == true;
+    }
+
+    function isEditorRole(role) {
+      return role is string
+        && role.lower() in [
+          'super_admin', 'superadmin', 'super_administrador',
+          'superadministrador', 'administrador_principal',
+          'admin', 'administrador', 'editor'
+        ];
+    }
+
+    function isSuperRole(role) {
+      return role is string
+        && role.lower() in [
+          'super_admin', 'superadmin', 'super_administrador',
+          'superadministrador', 'administrador_principal'
+        ];
+    }
+
+    function uidIsActiveEditor() {
+      return uidProfileExists()
+        && isActive(get(uidProfilePath()).data)
+        && isEditorRole(roleOf(get(uidProfilePath()).data));
+    }
+
+    function legacyIsActiveEditor() {
+      return legacyProfileExists()
+        && isActive(get(legacyProfilePath()).data)
+        && isEditorRole(roleOf(get(legacyProfilePath()).data));
+    }
+
+    function isActiveEditor() {
+      return uidIsActiveEditor() || legacyIsActiveEditor();
+    }
+
+    function isSuperAdmin() {
+      return (
+        uidProfileExists()
+        && isActive(get(uidProfilePath()).data)
+        && isSuperRole(roleOf(get(uidProfilePath()).data))
+      ) || (
+        legacyProfileExists()
+        && isActive(get(legacyProfilePath()).data)
+        && isSuperRole(roleOf(get(legacyProfilePath()).data))
+      );
+    }
+
+    function isOwnProfile(userId) {
+      return signedIn()
+        && (
+          userId == request.auth.uid
+          || (hasAuthEmail() && userId == request.auth.token.email)
+        );
+    }
+
+    function canonicalRoleMatches(sourceData, targetData) {
+      let sourceRole = roleOf(sourceData);
+      let targetRole = targetData.get('role', 'guest');
+      return (
+        isSuperRole(sourceRole) && targetRole == 'super_admin'
+      ) || (
+        sourceRole is string
+        && sourceRole.lower() in ['admin', 'administrador']
+        && targetRole == 'admin'
+      ) || (
+        sourceRole is string
+        && sourceRole.lower() == 'editor'
+        && targetRole == 'editor'
+      ) || (
+        sourceRole is string
+        && sourceRole.lower() in ['guest', 'invitado', 'visitante', 'viewer', 'usuario']
+        && targetRole == 'guest'
+      );
+    }
+
+    function validLegacyMigration(userId) {
+      return userId == request.auth.uid
+        && legacyProfileExists()
+        && request.resource.data.get('uid', '') == request.auth.uid
+        && request.resource.data.get('email', '') is string
+        && request.resource.data.get('email', '').lower() == request.auth.token.email.lower()
+        && canonicalRoleMatches(get(legacyProfilePath()).data, request.resource.data)
+        && request.resource.data.get('active', true)
+          == get(legacyProfilePath()).data.get('active', true);
+    }
+
+    function validGuestProfileCreate(userId) {
+      return userId == request.auth.uid
+        && request.resource.data.get('uid', '') == request.auth.uid
+        && request.resource.data.get('role', '') == 'guest'
+        && request.resource.data.get('active', false) == true
+        && request.resource.data.get('email', '') is string;
+    }
+
+    function validOwnProfileUpdate(userId) {
+      return userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName', 'phone', 'neighborhood', 'emailVerified',
+          'lastLoginAt', 'updatedAt'
+        ]);
+    }
+
+    function validPublicIdea() {
+      return request.resource.data.keys().hasAll([
+          'title', 'author', 'location', 'category', 'description',
+          'status', 'response', 'votes', 'created'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'title', 'author', 'location', 'category', 'description',
+          'status', 'response', 'votes', 'created', 'createdBy',
+          'createdByEmail', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.author is string
+        && request.resource.data.author.size() <= 120
+        && request.resource.data.location is string
+        && request.resource.data.location.size() <= 120
+        && request.resource.data.category is string
+        && request.resource.data.category.size() <= 80
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.response is string
+        && request.resource.data.created is string
+        && request.resource.data.get('createdBy', '') is string
+        && request.resource.data.get('createdByEmail', '') is string
+        && request.resource.data.status == 'recibida'
+        && request.resource.data.votes == 0;
+    }
+
+    match /portal/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if documentId == 'main' && isActiveEditor();
+    }
+
+    match /ideas/{ideaId} {
+      allow read: if true;
+      allow create: if validPublicIdea() || isActiveEditor();
+      allow update, delete: if isActiveEditor();
+    }
+
+    match /users/{userId} {
+      allow get: if isOwnProfile(userId) || isSuperAdmin();
+      allow list: if isSuperAdmin();
+
+      allow create: if isSuperAdmin()
+        || validGuestProfileCreate(userId)
+        || validLegacyMigration(userId);
+
+      allow update: if isSuperAdmin()
+        || validOwnProfileUpdate(userId)
+        || validLegacyMigration(userId);
+
+      allow delete: if isSuperAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow create: if isActiveEditor();
+      allow read: if isSuperAdmin();
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

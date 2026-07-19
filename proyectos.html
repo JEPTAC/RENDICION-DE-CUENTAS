@@ -27,38 +27,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="preload" href="assets/fonts/brother-signature.otf" as="font" type="font/otf" crossorigin>
-  <meta name="description" content="Detalle de noticia del portal de Rendición de Cuentas de San Pedro.">
+  <meta name="description" content="Módulo independiente de proyectos del portal de Rendición de Cuentas de San Pedro.">
   <link rel="icon" href="assets/favicon.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
-  <title>Noticia | Rendición de Cuentas</title>
+  <link rel="stylesheet" href="styles.css?v=11.41-firestore-schema-native">
+  <title>Proyectos | Rendición de Cuentas de San Pedro</title>
 
   <link rel="preconnect" href="https://accounts.google.com">
 </head>
-<body data-page="news">
+<body data-page="projects">
   <div id="siteHeader"></div>
-
-  <main id="main-content">
-    <article class="news-detail" id="newsArticle" aria-live="polite"></article>
-
-    <section class="related-news-section" id="relatedNewsSection">
-      <div class="site-shell">
-        <div class="news-section-heading">
-          <div>
-            <span class="section-kicker">CONTINÚE EXPLORANDO</span>
-            <h2>Noticias relacionadas</h2>
-          </div>
-          <a href="noticias.html">Volver a todas las noticias →</a>
-        </div>
-        <ul class="news-card-grid news-card-grid--related" id="relatedNews"></ul>
-      </div>
-    </section>
-  </main>
-
+  <main id="main-content" aria-label="Módulo de proyectos" style="min-height:72vh;background:#fff"></main>
   <div id="siteFooter"></div>
   <div id="globalDialogs"></div>
-
   <script src="portal-core-v1141.js?v=11.41-firestore-schema-native"></script>
-  <script src="noticia.js"></script>
 </body>
 </html>

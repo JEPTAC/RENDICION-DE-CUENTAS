@@ -3167,11 +3167,15 @@
             <label>Espacios participativos<input name="metricParticipation" type="number" min="0" value="${entity.metrics?.participation || 0}"></label>
           </div>
           <h4 class="inline-form-heading">Líneas estratégicas</h4>
-          ${(entity.sectors || []).slice(0,4).map((sector,index) => `
+          ${(entity.sectors || []).slice(0,4).map((sector,index) => {
+            const sectorName = Array.isArray(sector) ? sector[0] : (sector?.name ?? sector?.label ?? "");
+            const sectorValue = Array.isArray(sector) ? sector[1] : (sector?.value ?? sector?.progress ?? 0);
+            return `
             <div class="inline-sector-row">
-              <input name="sectorName${index}" value="${helpers.escape(sector[0])}" aria-label="Nombre de la línea ${index+1}">
-              <input name="sectorValue${index}" type="number" min="0" max="100" value="${sector[1]}" aria-label="Avance de la línea ${index+1}">
-            </div>`).join("")}
+              <input name="sectorName${index}" value="${helpers.escape(sectorName)}" aria-label="Nombre de la línea ${index+1}">
+              <input name="sectorValue${index}" type="number" min="0" max="100" value="${Number(sectorValue) || 0}" aria-label="Avance de la línea ${index+1}">
+            </div>`;
+          }).join("")}
           <label class="inline-file">Imagen de portada<input name="cover" type="file" accept="image/*"></label>
           ${entity.cover ? '<button type="button" class="inline-mini-button" id="removeEntityImage">Quitar portada</button>' : ""}
           <button class="button button-primary">Guardar vigencia</button>
@@ -3320,8 +3324,11 @@
           participation:Number(data.get("metricParticipation"))
         };
         entity.sectors = [0,1,2,3]
-          .map(index => [data.get(`sectorName${index}`), Number(data.get(`sectorValue${index}`))])
-          .filter(item => item[0]);
+          .map(index => ({
+            name:String(data.get(`sectorName${index}`) || "").trim(),
+            value:Math.max(0,Math.min(100,Number(data.get(`sectorValue${index}`)) || 0))
+          }))
+          .filter(item => item.name);
         if (pendingImage !== null) entity.cover = pendingImage;
       }
 
@@ -3630,7 +3637,12 @@
           questions:0,
           cover:preparedImage,
           metrics:{plan:Number(data.get("progress")),projects:0,commitments:0,participation:0},
-          sectors:[["Infraestructura",0],["Desarrollo social",0],["Gestión administrativa",0],["Participación ciudadana",0]]
+          sectors:[
+          {name:"Infraestructura",value:0},
+          {name:"Desarrollo social",value:0},
+          {name:"Gestión administrativa",value:0},
+          {name:"Participación ciudadana",value:0}
+        ]
         });
       }
 

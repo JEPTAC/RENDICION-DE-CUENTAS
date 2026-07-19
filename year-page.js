@@ -238,8 +238,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#yearMetrics").innerHTML = metrics.map((m,index) => `
     <article class="year-metric reveal"><span>0${index+1}</span><strong>${m[1]}</strong><h3>${m[0]}</h3><p>${m[2]}</p></article>`).join("");
 
-  document.querySelector("#sectorBars").innerHTML = year.sectors.map(item => `
-    <div><span><b>${helpers.escape(item[0])}</b><strong>${item[1]}%</strong></span><i><u style="width:${item[1]}%"></u></i></div>`).join("");
+  document.querySelector("#sectorBars").innerHTML = (year.sectors || []).map(item => {
+    const name = Array.isArray(item) ? item[0] : (item?.name ?? item?.label ?? "");
+    const rawValue = Array.isArray(item) ? item[1] : (item?.value ?? item?.progress ?? 0);
+    const value = Math.max(0,Math.min(100,Number(rawValue) || 0));
+    return `<div><span><b>${helpers.escape(name)}</b><strong>${value}%</strong></span><i><u style="width:${value}%"></u></i></div>`;
+  }).join("");
 
   const resources = state.resources.filter(r => Number(r.year) === year.year);
   const featured = resources.slice(0,6);
